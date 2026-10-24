@@ -98,71 +98,141 @@ function say(text) {
   } catch (e) {}
 }
 
-/* ---------- world ---------- */
+/* ---------- world (eingebaute Karte, wenn keine echte Karte geladen ist) ---------- */
 const R0 = 320;
 function makeWorld(seed = 11) {
-  const r = rng(seed), step = 78, street = 15, blocks = [];
-  for (let gx = -5; gx <= 4; gx++) for (let gy = -5; gy <= 4; gy++) {
-    const x = gx * step + street / 2, y = gy * step + street / 2, w = step - street, h = step - street;
-    const park = (gx === -1 && gy === 0) || (gx === 0 && gy === 0) || r() < .07;
-    const b = { x, y, w, h, park, bld: [] };
+  const r = rng(seed), N = 7, step = 84, rot = -.14, cs = Math.cos(rot), sn = Math.sin(rot);
+  // leicht gedrehtes, verzogenes Straßenraster wie in einer echten Altstadt
+  const node = {};
+  for (let i = -N; i <= N; i++) for (let j = -N; j <= N; j++) {
+    const jx = (i && j) ? (r() - .5) * 18 : 0, jy = (i && j) ? (r() - .5) * 18 : 0;
+    const x = i * step + jx, y = j * step + jy;
+    node[i + ',' + j] = { x: x * cs - y * sn, y: x * sn + y * cs };
+  }
+  const nd = (i, j) => node[i + ',' + j];
+  const roads = [];
+  for (let i = -N; i <= N; i++) {
+    const cls = i === 0 ? 2 : i % 3 === 0 ? 1 : 0;
+    roads.push({ cls, pts: Array.from({ length: 2 * N + 1 }, (_, k) => nd(i, k - N)) });
+    roads.push({ cls, pts: Array.from({ length: 2 * N + 1 }, (_, k) => nd(k - N, i)) });
+  }
+  // Prachtstraße quer durch die Stadt
+  roads.push({ cls: 3, pts: [{ x: -620, y: 430 }, { x: 640, y: -330 }] });
+  const plaza = new Set(['-1,-1', '0,-1', '-1,0', '0,0']);
+  const blockedCells = { '-3,-2': 'Baustelle', '2,-3': 'Bahnhofsgelände', '1,2': 'Schulhof' };
+  const blocks = [], blocked = [], trees = [];
+  for (let i = -N; i < N; i++) for (let j = -N; j < N; j++) {
+    const q = [nd(i, j), nd(i + 1, j), nd(i + 1, j + 1), nd(i, j + 1)];
+    const c = { x: q.reduce((a, p) => a + p.x, 0) / 4, y: q.reduce((a, p) => a + p.y, 0) / 4 };
+    const inset = (poly, d) => poly.map(p => { const dx = c.x - p.x, dy = c.y - p.y, l = Math.hypot(dx, dy); return { x: p.x + dx / l * d, y: p.y + dy / l * d }; });
+    const key = i + ',' + j, poly = inset(q, 13);
+    if (blockedCells[key]) { blocked.push({ poly, name: blockedCells[key], c }); continue; }
+    const park = plaza.has(key) || r() < .09;
+    const b = { poly, park, plaza: plaza.has(key), bld: [] };
+    if (park && !b.plaza) for (let k = 0; k < 26; k++) { const u = r(), w = r(); const a = lerpP(lerpP(poly[0], poly[1], u), lerpP(poly[3], poly[2], u), w); trees.push({ x: a.x, y: a.y, r: 3 + r() * 4 }); }
     if (!park) {
-      const split = r() < .5;
-      if (split) { const k = .35 + r() * .3; b.bld.push([x + 3, y + 3, w * k - 5, h - 6], [x + w * k + 2, y + 3, w * (1 - k) - 5, h - 6]); }
-      else { const k = .35 + r() * .3; b.bld.push([x + 3, y + 3, w - 6, h * k - 5], [x + 3, y + h * k + 2, w - 6, h * (1 - k) - 5]); }
+      // Block in Häuser unterteilen
+      const n = 2 + Math.floor(r() * 3), m = r() < .6 ? 2 : 1;
+      for (let a = 0; a < n; a++) for (let bb = 0; bb < m; bb++) {
+        if (m === 2 && n > 2 && a > 0 && a < n - 1 && r() < .5) continue; // Innenhof
+        const u0 = a / n, u1 = (a + 1) / n, w0 = bb / m, w1 = (bb + 1) / m, g = .035;
+        const P = (u, w) => lerpP(lerpP(poly[0], poly[1], u), lerpP(poly[3], poly[2], u), w);
+        b.bld.push({ pts: [P(u0 + g, w0 + g), P(u1 - g, w0 + g), P(u1 - g, w1 - g), P(u0 + g, w1 - g)], h: .5 + r() * .9 });
+      }
     }
     blocks.push(b);
   }
-  const blocked = [
-    { x: 105, y: -290, w: 200, h: 95, name: 'Bahngelände' },
-    { x: -300, y: 168, w: 230, h: 30, name: 'Kanal' },
-    { x: -160, y: -150, w: 60, h: 55, name: 'Baustelle' },
-    { x: 165, y: 90, w: 150, h: 26, name: 'Schnellstraße' }
-  ];
+  // Fluss am Nordrand, Bahntrasse im Osten
+  const river = Array.from({ length: 30 }, (_, k) => { const x = -700 + k * 50; return { x, y: -395 + Math.sin(x / 170) * 38 }; });
+  const rail = Array.from({ length: 24 }, (_, k) => { const y = -700 + k * 62; return { x: 430 + Math.sin(y / 260) * 40, y }; });
   const labels = [
-    { x: -8, y: -230, t: 'TARASTR.', rot: -Math.PI / 2 },
-    { x: -200, y: -86, t: 'REBECCA-ALLEE', rot: 0 },
-    { x: 150, y: 226, t: 'AM MARKT', rot: 0 }
+    { a: nd(0, -4), b: nd(0, -3), t: 'TARASTRASSE' },
+    { a: nd(-5, 0), b: nd(-4, 0), t: 'REBECCA-ALLEE' },
+    { a: { x: -300, y: 249 }, b: { x: -200, y: 189 }, t: 'BOULEVARD' },
+    { a: nd(3, 3), b: nd(4, 3), t: 'AM MARKT' },
+    { a: { x: -120, y: -405 }, b: { x: -20, y: -400 }, t: 'S P R E E', water: true }
   ];
-  return { blocks, blocked, labels };
+  return { blocks, blocked, trees, roads, river, rail, labels };
 }
+function lerpP(a, b, t) { return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t }; }
 const WORLD = makeWorld();
-function inBlocked(p, m = 2) { if (G && G.useMap) return null; return WORLD.blocked.find(b => p.x > b.x - m && p.x < b.x + b.w + m && p.y > b.y - m && p.y < b.y + b.h + m); }
-
-function hatch(ctx, x, y, w, h, color, gap = 7) {
-  ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
-  ctx.fillStyle = 'rgba(255,79,62,.12)'; ctx.fillRect(x, y, w, h);
-  ctx.strokeStyle = color; ctx.lineWidth = 1.4; ctx.globalAlpha = .7; ctx.beginPath();
-  for (let i = -h; i < w; i += gap) { ctx.moveTo(x + i, y + h); ctx.lineTo(x + i + h, y); }
-  ctx.stroke(); ctx.restore();
-  ctx.strokeStyle = color; ctx.lineWidth = 1.2; ctx.strokeRect(x, y, w, h);
+function inPoly(p, poly) { let k = false; for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) { const a = poly[i], b = poly[j]; if ((a.y > p.y) !== (b.y > p.y) && p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x) k = !k; } return k; }
+function segDist(p, a, b) { const dx = b.x - a.x, dy = b.y - a.y, t = clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / (dx * dx + dy * dy || 1), 0, 1); return Math.hypot(p.x - a.x - t * dx, p.y - a.y - t * dy); }
+function inBlocked(p, m = 2) {
+  if (G && G.useMap) return null;
+  return WORLD.blocked.find(b => inPoly(p, b.poly) || b.poly.some((a, i) => segDist(p, a, b.poly[(i + 1) % b.poly.length]) < m));
 }
-/* draws the static map into ctx; view = {cx, cy, s} */
+
+const worldCache = new Map();
+/* zeichnet die statische Karte in ctx; view = {cx, cy, s}. Wird pro Größe einmal gerendert und dann nur noch kopiert. */
 function drawWorld(ctx, v, W, H, opts = {}) {
-  ctx.fillStyle = '#1b1d22'; ctx.fillRect(0, 0, W, H);
-  const T = (x, y) => [v.cx + x * v.s, v.cy + y * v.s];
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const key = [W, H, v.cx, v.cy, v.s.toFixed(4), opts.labels !== false, opts.blockedLabels !== false].join('|');
+  let cv = worldCache.get(key);
+  if (!cv) {
+    if (worldCache.size > 8) worldCache.clear();
+    cv = document.createElement('canvas'); cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr);
+    const c = cv.getContext('2d'); c.setTransform(dpr, 0, 0, dpr, 0, 0);
+    renderWorld(c, v, W, H, opts); worldCache.set(key, cv);
+  }
+  ctx.drawImage(cv, 0, 0, W, H);
+}
+function renderWorld(ctx, v, W, H, opts) {
+  const s = v.s, T = p => [v.cx + p.x * s, v.cy + p.y * s];
+  const path = (pts, close = true) => { ctx.beginPath(); pts.forEach((p, k) => { const [x, y] = T(p); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); if (close) ctx.closePath(); };
+  const line = (pts, w, col, dash) => { path(pts, false); ctx.lineWidth = Math.max(.6, w * s); ctx.strokeStyle = col; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash(dash || []); ctx.stroke(); ctx.setLineDash([]); };
+  ctx.fillStyle = '#0c0d10'; ctx.fillRect(0, 0, W, H);
+  // Blöcke, Parks, Platz
   for (const b of WORLD.blocks) {
-    const [x, y] = T(b.x, b.y);
-    ctx.fillStyle = b.park ? '#0f1f17' : '#0f1013';
-    ctx.fillRect(x, y, b.w * v.s, b.h * v.s);
-    if (b.park) {
-      ctx.fillStyle = '#163024';
-      for (let i = 0; i < 5; i++) { const px = x + (b.w * v.s) * ((i * 37 % 100) / 100), py = y + (b.h * v.s) * ((i * 61 % 100) / 100); ctx.beginPath(); ctx.arc(px, py, Math.max(1.5, 4 * v.s), 0, 7); ctx.fill(); }
+    path(b.poly); ctx.fillStyle = b.plaza ? '#15161a' : b.park ? '#0c1712' : '#101114'; ctx.fill();
+    if (b.plaza) { // Pflaster-Muster und Brunnen
+      ctx.save(); path(b.poly); ctx.clip(); ctx.strokeStyle = 'rgba(255,255,255,.025)'; ctx.lineWidth = 1;
+      for (let g = -900; g < 900; g += 9) { const [x, y] = T({ x: g, y: -900 }), [x2, y2] = T({ x: g + 120, y: 900 }); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke(); }
+      ctx.restore();
     }
-    ctx.fillStyle = '#15161a';
-    for (const r of b.bld) { const [bx, by] = T(r[0], r[1]); ctx.fillRect(bx, by, r[2] * v.s, r[3] * v.s); }
   }
-  if (opts.labels !== false && v.s > .55) {
-    ctx.fillStyle = 'rgba(236,235,230,.32)'; ctx.font = `600 ${Math.round(9 * Math.min(1.4, v.s))}px "Geist Mono", monospace`; ctx.textAlign = 'center';
-    for (const l of WORLD.labels) { const [x, y] = T(l.x, l.y); ctx.save(); ctx.translate(x, y); ctx.rotate(l.rot); ctx.fillText(l.t, 0, 3); ctx.restore(); }
+  { const [x, y] = T({ x: -32, y: -30 }); ctx.beginPath(); ctx.arc(x, y, 13 * s, 0, 7); ctx.fillStyle = '#0d1a24'; ctx.fill(); ctx.strokeStyle = 'rgba(100,180,255,.18)'; ctx.lineWidth = 1; ctx.stroke(); }
+  for (const t of WORLD.trees) { const [x, y] = T(t); ctx.beginPath(); ctx.arc(x, y, t.r * s, 0, 7); ctx.fillStyle = '#10241a'; ctx.fill(); ctx.beginPath(); ctx.arc(x - t.r * s * .3, y - t.r * s * .3, t.r * s * .45, 0, 7); ctx.fillStyle = '#163222'; ctx.fill(); }
+  // Fluss
+  line(WORLD.river, 64, '#0f1c27'); line(WORLD.river, 54, '#0a1520');
+  // Straßen: Rand, dann Belag
+  const W_ = [8, 13, 17, 22], C_ = ['#1b1d22', '#23262c', '#292c33', '#2d2f35'];
+  for (const r of WORLD.roads) line(r.pts, W_[r.cls] + 3, '#08090b');
+  for (const r of WORLD.roads) line(r.pts, W_[r.cls], C_[r.cls]);
+  for (const r of WORLD.roads) if (r.cls >= 2) line(r.pts, 1, 'rgba(255,255,255,.07)', [6 * s, 9 * s]);
+  // Bahntrasse
+  line(WORLD.rail, 16, '#121317'); line(WORLD.rail, 9, 'rgba(255,255,255,.06)', [1.2 * s, 3.5 * s]); line(WORLD.rail, 1.2, 'rgba(255,255,255,.12)');
+  // Häuser mit Höhe: dunkle Fassade nach Süden versetzt, Dach darüber
+  const off = Math.max(1.2, 6 * s);
+  for (const b of WORLD.blocks) for (const h of b.bld) { path(h.pts.map(p => ({ x: p.x, y: p.y + h.h * off / s }))); ctx.fillStyle = '#060708'; ctx.fill(); }
+  for (const b of WORLD.blocks) for (const h of b.bld) {
+    path(h.pts); const l = 22 + Math.round(h.h * 7); ctx.fillStyle = `rgb(${l},${l + 1},${l + 5})`; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.035)'; ctx.lineWidth = 1; ctx.stroke();
   }
+  // Gesperrte Bereiche: rot getönt, dezente Streifen
   for (const b of WORLD.blocked) {
-    const [x, y] = T(b.x, b.y); hatch(ctx, x, y, b.w * v.s, b.h * v.s, HUNT);
-    if (opts.blockedLabels !== false) {
-      ctx.fillStyle = '#ffb3aa'; ctx.font = `700 ${Math.round(Math.max(8, 9 * Math.min(1.3, v.s)))}px "Geist Mono", monospace`; ctx.textAlign = 'center';
-      ctx.fillText(b.name.toUpperCase(), x + b.w * v.s / 2, y + b.h * v.s / 2 + 3);
+    ctx.save(); path(b.poly); ctx.fillStyle = 'rgba(255,69,58,.09)'; ctx.fill(); ctx.clip();
+    ctx.strokeStyle = 'rgba(255,69,58,.16)'; ctx.lineWidth = 1;
+    for (let g = -900; g < 900; g += 7) { const [x, y] = T({ x: g, y: -900 }), [x2, y2] = T({ x: g + 900, y: 0 }); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke(); }
+    ctx.restore(); path(b.poly); ctx.strokeStyle = 'rgba(255,69,58,.55)'; ctx.lineWidth = 1.2; ctx.stroke();
+    if (opts.blockedLabels !== false && s > .45) {
+      const [x, y] = T(b.c); ctx.font = '600 10px "Geist", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#ff8a80'; ctx.fillText(b.name, x, y); ctx.textBaseline = 'alphabetic';
     }
   }
+  // Straßennamen
+  if (opts.labels !== false && s > .5) {
+    ctx.font = `600 ${Math.round(8.5 * Math.min(1.3, s))}px "Geist Mono", monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const l of WORLD.labels) {
+      const m = lerpP(l.a, l.b, .5), [x, y] = T(m); let ang = Math.atan2(l.b.y - l.a.y, l.b.x - l.a.x); if (ang > Math.PI / 2) ang -= Math.PI; if (ang < -Math.PI / 2) ang += Math.PI;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineWidth = 3; ctx.strokeStyle = '#0c0d10'; ctx.strokeText(l.t, 0, 0);
+      ctx.fillStyle = l.water ? 'rgba(90,150,200,.45)' : 'rgba(236,235,230,.34)'; ctx.fillText(l.t, 0, 0); ctx.restore();
+    }
+    ctx.textBaseline = 'alphabetic';
+  }
+  // Vignette
+  const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.45)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
 function drawZone(ctx, v, W, H, r) {
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(v.cx, v.cy, r * v.s, 0, Math.PI * 2, true);
@@ -186,6 +256,7 @@ function drawMini(c, dots, t, zoom = 1.25) {
   const v = { cx: W / 2, cy: H / 2 + 10, s: (Math.min(W, H) / (2 * R0)) * zoom };
   drawWorld(ctx, v, W, H, { blockedLabels: false });
   drawZone(ctx, v, W, H, R0);
+  LBL = [];
   dots.forEach((d, i) => {
     const x = v.cx + (d.x + Math.sin(t / 1600 + d.ph) * 30) * v.s, y = v.cy + (d.y + Math.cos(t / 1900 + d.ph) * 30) * v.s;
     const col = i === 0 ? HUNT : RUN;
@@ -194,6 +265,7 @@ function drawMini(c, dots, t, zoom = 1.25) {
     ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fillStyle = '#0b0c0f'; ctx.fill();
     label(ctx, i === 0 ? 'Du' : BOT_NAMES[i], x, y - 22);
   });
+  LBL = null;
 }
 function drawZonePreview() {
   const c = $('#zoneCanvas'); const { ctx, W, H } = fitCanvas(c);
@@ -803,8 +875,14 @@ function visibleTo(me, e) {
   if (e.team === 'runner') return true;
   return dist(me, e) < 30 || G.effects.scan > 0;
 }
+let LBL = null; // belegte Label-Flächen im aktuellen Frame, damit sich Namen nicht überlappen
 function label(ctx, text, x, y, fg = '#f4f4f6', bg = 'rgba(10,11,14,.78)', font = '600 11px "Geist", system-ui, sans-serif') {
   ctx.font = font; const w = ctx.measureText(text).width + 14, h = 20;
+  if (LBL) {
+    const hit = yy => LBL.some(r => Math.abs(r.x - x) < (r.w + w) / 2 + 2 && Math.abs(r.y - yy) < h + 1);
+    if (hit(y) && text !== 'Du') return; // lieber weglassen als übereinander stapeln
+    LBL.push({ x, y, w });
+  }
   ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, 10) : ctx.rect(x - w / 2, y - h / 2, w, h); ctx.fill();
   ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + .5); ctx.textBaseline = 'alphabetic';
 }
@@ -816,6 +894,7 @@ function drawGame() {
   if (G.useMap) { const mv = mapView(); if (!mv) return; v = mv; T = mv.T; }
   else { ctx.drawImage(worldLayer, 0, 0, W, H); T = p => [v.cx + p.x * v.s, v.cy + p.y * v.s]; }
   drawZone(ctx, v, W, H, G.zoneR);
+  LBL = [];
   const me = G.me, now = performance.now();
   // start marker
   { const [x, y] = T({ x: 0, y: 0 }); ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.strokeStyle = 'rgba(255,214,10,.6)'; ctx.lineWidth = 2; ctx.stroke(); }
@@ -866,6 +945,7 @@ function drawGame() {
     label(ctx, tag, x, y - 20, e === me ? '#0b0c0f' : '#f4f4f6', e === me ? '#f4f4f6' : 'rgba(10,11,14,.78)');
     ctx.globalAlpha = 1;
   }
+  LBL = null;
   if (G.effects.scan > 0 || G.effects.drone > 0) { ctx.fillStyle = 'rgba(255,214,10,.05)'; ctx.fillRect(0, 0, W, H); }
 }
 function updateHud() {
