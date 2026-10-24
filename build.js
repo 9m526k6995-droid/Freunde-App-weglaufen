@@ -1,11 +1,11 @@
 // Baut aus src/ und recht/ eine einzelne Datei public/index.html
-// Der Google-Maps-Schlüssel kommt aus der Umgebungsvariable GOOGLE_MAPS_API_KEY (in Netlify setzen).
+// Karte: MapLibre + OpenFreeMap, gratis und ohne Schlüssel. MAP_STYLE_URL kann optional einen anderen Kartenstil setzen.
 const fs = require('fs');
 const path = require('path');
 const root = __dirname;
 const legal = {};
 for (const f of fs.readdirSync(path.join(root, 'recht'))) legal[f.replace('.md', '')] = fs.readFileSync(path.join(root, 'recht', f), 'utf8');
-const config = { mapsKey: process.env.GOOGLE_MAPS_API_KEY || '' };
+const config = { mapStyle: process.env.MAP_STYLE_URL || '' };
 const safe = o => JSON.stringify(o).replace(/</g, '\\u003c');
 let body = fs.readFileSync(path.join(root, 'src/app.src.html'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'src/app.js'), 'utf8');
@@ -18,4 +18,4 @@ fs.mkdirSync(path.join(root, 'public'), { recursive: true });
 fs.writeFileSync(path.join(root, 'public/index.html'), html);
 // Artifact-Vorschau ohne Doctype-Gerüst
 if (process.argv.includes('--preview')) fs.writeFileSync(path.join(root, 'preview.html'), body);
-console.log('public/index.html', html.length, 'bytes', config.mapsKey ? '(mit Google Maps)' : '(ohne Google-Maps-Schlüssel)');
+console.log('public/index.html', html.length, 'bytes');

@@ -221,8 +221,12 @@ textarea.input { padding: 12px 14px; min-height: 160px; font: 12px/1.5 var(--mon
 /* game */
 .game { position: fixed; inset: 0; background: #0b0c0f; z-index: 20; overflow: hidden; }
 .game #gameMap { position: absolute; inset: 0; }
-.game canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
-.game.gmap canvas { pointer-events: none; }
+.game #gameCanvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.game.gmap #gameCanvas { pointer-events: none; }
+.game .maplibregl-ctrl-top-right { top: calc(env(safe-area-inset-top, 0px) + 78px); }
+.game .maplibregl-ctrl-attrib { background: rgba(10, 11, 14, .7) !important; color: #8d8e96; font: 500 10px/1.4 "Geist", sans-serif; }
+.game .maplibregl-ctrl-attrib a { color: #b7b8bf; }
+.game .maplibregl-ctrl-attrib-button { filter: invert(1); background-color: transparent !important; }
 .glass { background: var(--glass); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(255, 255, 255, .06); }
 .hud-top { position: absolute; z-index: 2; left: 0; right: 0; top: 0; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
 .hud-bar { width: 100%; max-width: 460px; display: flex; justify-content: space-between; align-items: center; border-radius: 22px; padding: 10px 12px 10px 14px; gap: 10px; }

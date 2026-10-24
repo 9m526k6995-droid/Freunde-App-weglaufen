@@ -60,6 +60,7 @@ Die Sprachansagen der KI-Spielleitung werden auf deinem Gerät erzeugt. Dabei we
 - Mitspieler der jeweiligen Runde (Standort zu Pings, Spielername, Rolle am Ende)
 - Hosting-Dienstleister in der EU: [Anbieter, Sitz], als Auftragsverarbeiter nach Art. 28 DSGVO
 - Apple Inc. bzw. Google Ireland Ltd. für Käufe und Push-Mitteilungen
+- OpenFreeMap (Kartenkacheln, Kartendaten © OpenStreetMap-Mitwirkende) und unpkg.com (Auslieferung der Kartenbibliothek MapLibre): Beim Anzeigen der Karte lädt dein Gerät Kartendaten von diesen Servern und übermittelt dabei technisch bedingt deine IP-Adresse, nicht deinen Standort. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO. [Vor dem Launch prüfen, ob die Kartendaten selbst gehostet werden sollen.]
 - Behörden nur, wenn wir gesetzlich dazu verpflichtet sind
 
 Eine Übermittlung in Länder außerhalb der EU findet nur statt, wenn ein Angemessenheitsbeschluss (z. B. EU-US Data Privacy Framework) oder Standardvertragsklauseln vorliegen.

@@ -464,7 +464,7 @@ function beginGame() {
   $('#hudMode').textContent = m.t + (G.gps ? ' · GPS' : ' · Demo');
   $('#btnSpeed').textContent = '×1'; $('#btnSpeed').disabled = G.gps;
   $('#game').classList.toggle('gmap', G.useMap);
-  if (G.useMap) setupMap();
+  if (G.useMap && !setupMap()) { G.useMap = false; $('#game').classList.remove('gmap'); }
   if (G.gps) startGps();
   try { navigator.wakeLock && navigator.wakeLock.request('screen').then(l => G.wake = l, () => {}); } catch (e) {}
   setBanner(roleOf(G.me) === 'hunter' ? 'Vorsprung läuft' : 'Lauf!', roleOf(G.me) === 'hunter' ? '' : 'green');
@@ -508,62 +508,83 @@ GC.addEventListener('pointerdown', e => {
   const r = GC.getBoundingClientRect(); tryMoveTo(toWorld(e.clientX - r.left, e.clientY - r.top));
 });
 
-/* ---------- Google Maps + GPS ---------- */
-const GM = { map: null, ov: null, loading: null };
-function mapsReady() { return !!(window.google && google.maps && google.maps.Map); }
-function loadGoogleMaps() {
+/* ---------- Karte (MapLibre + OpenFreeMap, gratis, ohne Schlüssel) + GPS ---------- */
+const MAPLIB = 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl';
+const MAP_STYLE_URL = CFG.mapStyle || 'https://tiles.openfreemap.org/styles/liberty';
+const GM = { map: null, style: null, loading: null };
+function mapsReady() { return !!(window.maplibregl && GM.style); }
+function loadScript(src) {
+  return new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = src; sc.async = true; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
+}
+function loadMap() {
   if (mapsReady()) return Promise.resolve();
-  if (!CFG.mapsKey) return Promise.reject(new Error('nokey'));
   if (GM.loading) return GM.loading;
-  GM.loading = new Promise((res, rej) => {
-    window.__pingedMaps = () => res();
-    const sc = document.createElement('script');
-    sc.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(CFG.mapsKey) + '&callback=__pingedMaps&loading=async&v=weekly';
-    sc.async = true; sc.onerror = () => rej(new Error('load'));
-    document.head.appendChild(sc);
-    setTimeout(() => rej(new Error('timeout')), 10000);
-  }).catch(e => { GM.loading = null; throw e; });
+  const lnk = document.createElement('link'); lnk.rel = 'stylesheet'; lnk.href = MAPLIB + '.css'; document.head.appendChild(lnk);
+  const timeout = new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000));
+  GM.loading = Promise.race([Promise.all([
+    window.maplibregl ? Promise.resolve() : loadScript(MAPLIB + '.js'),
+    fetch(MAP_STYLE_URL).then(r => { if (!r.ok) throw new Error('style'); return r.json(); })
+  ]), timeout]).then(([, style]) => { GM.style = darkStyle(style); })
+    .catch(e => { GM.loading = null; throw e; });
   return GM.loading;
 }
-const MAP_STYLE = [
-  { elementType: 'geometry', stylers: [{ color: '#111216' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#6b6d75' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0b0c0f' }] },
-  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
-  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
-  { featureType: 'poi.park', stylers: [{ visibility: 'on' }] },
-  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0f1d16' }] },
-  { featureType: 'poi.park', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#22252b' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#111216' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3a2a26' }] },
-  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2a2d34' }] },
-  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'transit.line', elementType: 'geometry', stylers: [{ visibility: 'on' }, { color: '#3d2622' }] },
-  { featureType: 'administrative', elementType: 'geometry', stylers: [{ visibility: 'off' }] },
-  { featureType: 'landscape.man_made', elementType: 'geometry', stylers: [{ color: '#16171c' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0a1620' }] },
-  { featureType: 'water', elementType: 'labels', stylers: [{ visibility: 'off' }] }
-];
+// Färbt den hellen OpenFreeMap-Stil in das PINGED-Dunkel um
+function darkStyle(st) {
+  const P = (l, k, v) => { l.paint = l.paint || {}; l.paint[k] = v; };
+  const hide = l => { l.layout = l.layout || {}; l.layout.visibility = 'none'; };
+  for (const l of st.layers) {
+    const id = l.id.toLowerCase();
+    if (l.type === 'background') P(l, 'background-color', '#0b0c0f');
+    else if (l.type === 'fill') {
+      if (l.paint) delete l.paint['fill-pattern'];
+      P(l, 'fill-color', /water/.test(id) ? '#0a1620' : /park|wood|grass|wetland|pitch|cemetery|landcover|natural|forest/.test(id) ? '#0e1813' : /building/.test(id) ? '#17181d' : '#101115');
+      P(l, 'fill-outline-color', 'rgba(0,0,0,0)');
+    }
+    else if (l.type === 'fill-extrusion') { P(l, 'fill-extrusion-color', '#1b1d23'); P(l, 'fill-extrusion-opacity', .9); }
+    else if (l.type === 'line') {
+      if (l.paint) delete l.paint['line-pattern'];
+      if (/boundary|admin/.test(id)) { hide(l); continue; }
+      P(l, 'line-color', /water|river|stream|canal|ditch|drain/.test(id) ? '#0d1a26'
+        : /rail|transit|subway|tram/.test(id) ? '#2b1e1c'
+        : /casing/.test(id) ? '#0b0c0f'
+        : /motorway|trunk/.test(id) ? '#3a2a26'
+        : /primary|secondary|tertiary/.test(id) ? '#2a2d34'
+        : /path|foot|pedestrian|track|steps|cycle/.test(id) ? '#1d1f24' : '#23262c');
+    }
+    else if (l.type === 'symbol') {
+      if (/poi|shield|oneway|airport|aerodrome|country|state|continent/.test(id) || !(l.layout && l.layout['text-field'])) { hide(l); continue; }
+      if (l.layout) delete l.layout['icon-image'];
+      P(l, 'text-color', /water/.test(id) ? '#2c4a63' : '#6b6d75');
+      P(l, 'text-halo-color', '#0b0c0f'); P(l, 'text-halo-width', 1.2);
+    }
+    else if (l.type === 'raster' || l.type === 'hillshade') hide(l);
+  }
+  return st;
+}
 const M_LAT = 111320;
 function toLL(p) { const o = G.origin; return { lat: o.lat - p.y / M_LAT, lng: o.lng + p.x / (M_LAT * Math.cos(o.lat * Math.PI / 180)) }; }
-function fromLL(ll) { const o = G.origin, lat = typeof ll.lat === 'function' ? ll.lat() : ll.lat, lng = typeof ll.lng === 'function' ? ll.lng() : ll.lng; return { x: (lng - o.lng) * M_LAT * Math.cos(o.lat * Math.PI / 180), y: (o.lat - lat) * M_LAT }; }
+function fromLL(ll) { const o = G.origin; return { x: (ll.lng - o.lng) * M_LAT * Math.cos(o.lat * Math.PI / 180), y: (o.lat - ll.lat) * M_LAT }; }
+const lngLat = p => { const ll = toLL(p); return [ll.lng, ll.lat]; };
 function setupMap() {
-  const el = $('#gameMap');
-  if (!GM.map) {
-    GM.map = new google.maps.Map(el, { center: G.origin, zoom: 16, disableDefaultUI: true, gestureHandling: 'greedy', clickableIcons: false, keyboardShortcuts: false, backgroundColor: '#0b0c0f', styles: MAP_STYLE });
-    GM.ov = new google.maps.OverlayView(); GM.ov.onAdd = () => {}; GM.ov.draw = () => {}; GM.ov.onRemove = () => {};
-    GM.ov.setMap(GM.map);
-    GM.map.addListener('click', ev => { if (G.running) tryMoveTo(fromLL(ev.latLng)); });
-  }
-  GM.map.setCenter(G.origin);
-  const b = new google.maps.LatLngBounds(toLL({ x: -R0, y: -R0 }), toLL({ x: R0, y: R0 }));
-  b.extend(toLL({ x: R0, y: R0 })); b.extend(toLL({ x: -R0, y: -R0 }));
-  setTimeout(() => GM.map.fitBounds(b, { top: 150, bottom: 210, left: 10, right: 10 }), 50);
+  try {
+    if (!GM.map) {
+      GM.map = new maplibregl.Map({
+        container: $('#gameMap'), style: GM.style, center: [G.origin.lng, G.origin.lat], zoom: 16,
+        attributionControl: false, dragRotate: false, pitchWithRotate: false, touchPitch: false, keyboard: false, fadeDuration: 0
+      });
+      GM.map.touchZoomRotate.disableRotation();
+      GM.map.addControl(new maplibregl.AttributionControl({ compact: true }), 'top-right');
+      GM.map.on('click', ev => { if (G.running) tryMoveTo(fromLL(ev.lngLat)); });
+    }
+    GM.map.resize();
+    GM.map.jumpTo({ center: [G.origin.lng, G.origin.lat] });
+    GM.map.fitBounds([lngLat({ x: -R0, y: R0 }), lngLat({ x: R0, y: -R0 })], { padding: { top: 150, bottom: 210, left: 10, right: 10 }, duration: 0 });
+    return true;
+  } catch (e) { GM.map = null; return false; }
 }
 function mapView() {
-  const pr = GM.ov && GM.ov.getProjection(); if (!pr) return null;
-  const T = p => { const pt = pr.fromLatLngToContainerPixel(new google.maps.LatLng(toLL(p))); return [pt.x, pt.y]; };
+  if (!GM.map) return null;
+  const T = p => { const pt = GM.map.project(lngLat(p)); return [pt.x, pt.y]; };
   const a = T({ x: 0, y: 0 }), b = T({ x: 100, y: 0 });
   return { T, cx: a[0], cy: a[1], s: Math.hypot(b[0] - a[0], b[1] - a[1]) / 100, W: G.view.W, H: G.view.H };
 }
@@ -901,7 +922,7 @@ function loop(now) {
 /* ---------- HUD controls ---------- */
 $('#btnSpeed').onclick = () => { if (G.gps) { toast('Im echten Spiel läuft die Zeit normal.'); return; } G.speed = G.speed === 1 ? 2 : G.speed === 2 ? 4 : 1; $('#btnSpeed').textContent = '×' + G.speed; };
 $('#btnCatch').onclick = () => { const t = catchable(); if (t) catchRunner(G.me, t); };
-$('#btnCenter').onclick = () => { if (G.useMap && GM.map) { GM.map.panTo(toLL(G.me)); GM.map.setZoom(Math.max(GM.map.getZoom(), 17)); } else toast('Die ganze Zone ist im Bild.'); };
+$('#btnCenter').onclick = () => { if (G.useMap && GM.map) { GM.map.easeTo({ center: lngLat(G.me), zoom: Math.max(GM.map.getZoom(), 17), duration: 500 }); } else toast('Die ganze Zone ist im Bild.'); };
 $('#btnLeave').onclick = () => {
   G.paused = true;
   overlay(`<h3>Runde verlassen?</h3><p>Dein Standort wird ab sofort nicht mehr geteilt. Die anderen spielen ohne dich weiter.</p><button class="btn red" id="ovA">Verlassen</button><button class="btn ghost small" id="ovB">Weiterspielen</button>`,
@@ -1158,6 +1179,6 @@ function openDoc(k) {
 function boot() {
   if (S.profile && S.consents.agb) goHome(); else { S = fresh(); show('scr-welcome', false); }
   requestAnimationFrame(miniLoop);
-  loadGoogleMaps().catch(() => {});
+  loadMap().catch(() => {});
 }
 boot();

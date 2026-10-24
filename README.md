@@ -23,7 +23,9 @@ Erzeugt `public/index.html` aus `src/` und `recht/`. Kein `npm install` nötig.
 
 ## Stand
 
-Der aktuelle Stand ist ein spielbarer Prototyp: Die Runde läuft mit computergesteuerten Mitspielern auf einer Beispielkarte. Käufe, E-Mails und SOS-Benachrichtigungen sind nur angedeutet.
+Der aktuelle Stand ist ein spielbarer Prototyp: Die Runde läuft mit computergesteuerten Mitspielern, entweder im Demo-Modus oder mit echtem GPS.
+
+Die Spielkarte nutzt MapLibre mit Kartendaten von OpenFreeMap (© OpenStreetMap-Mitwirkende). Das ist gratis, braucht keinen API-Schlüssel und darf kommerziell genutzt werden. Ist die Karte nicht erreichbar, schaltet die App auf ihre eingebaute Karte um. Käufe, E-Mails und SOS-Benachrichtigungen sind nur angedeutet.
 
 Das Supabase-Schema für echtes Multiplayer mit GPS ist fertig (Profile, Einwilligungs-Protokoll, Runden, Pings, Käufe, Meldungen). Die App nutzt es noch nicht.
 
