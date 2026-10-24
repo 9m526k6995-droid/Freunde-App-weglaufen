@@ -2,9 +2,11 @@
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const KEY = 'pinged.v1', BUYKEY = 'pinged.purchase';
-const COLORS = ['#4fd88f', '#5cc8ff', '#c38bff', '#ff7ab6', '#ffb547', '#7ee0d6'];
+const COLORS = ['#32d74b', '#64d2ff', '#bf5af2', '#ff375f', '#ff9f0a', '#66d4cf'];
 const BOT_NAMES = ['Dominick', 'Noah', 'Cyrus', 'Lina', 'Mara', 'Jonas', 'Elif', 'Ben', 'Aylin', 'Theo', 'Sofia'];
-const HUNT = '#ff4f3e', TAPE = '#f3d433', RUN = '#4fd88f';
+const HUNT = '#ff453a', TAPE = '#ffd60a', RUN = '#32d74b';
+const CFG = window.PINGED_CONFIG || {};
+const DEFAULT_ORIGIN = { lat: 52.5219, lng: 13.4132 }; // Alexanderplatz, Berlin
 
 /* ---------- storage ---------- */
 function load() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } }
@@ -125,7 +127,7 @@ function makeWorld(seed = 11) {
   return { blocks, blocked, labels };
 }
 const WORLD = makeWorld();
-function inBlocked(p, m = 2) { return WORLD.blocked.find(b => p.x > b.x - m && p.x < b.x + b.w + m && p.y > b.y - m && p.y < b.y + b.h + m); }
+function inBlocked(p, m = 2) { if (G && G.useMap) return null; return WORLD.blocked.find(b => p.x > b.x - m && p.x < b.x + b.w + m && p.y > b.y - m && p.y < b.y + b.h + m); }
 
 function hatch(ctx, x, y, w, h, color, gap = 7) {
   ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
@@ -137,27 +139,27 @@ function hatch(ctx, x, y, w, h, color, gap = 7) {
 }
 /* draws the static map into ctx; view = {cx, cy, s} */
 function drawWorld(ctx, v, W, H, opts = {}) {
-  ctx.fillStyle = '#2b2f38'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#1b1d22'; ctx.fillRect(0, 0, W, H);
   const T = (x, y) => [v.cx + x * v.s, v.cy + y * v.s];
   for (const b of WORLD.blocks) {
     const [x, y] = T(b.x, b.y);
-    ctx.fillStyle = b.park ? '#1d2c25' : '#1a1d23';
+    ctx.fillStyle = b.park ? '#0f1f17' : '#0f1013';
     ctx.fillRect(x, y, b.w * v.s, b.h * v.s);
     if (b.park) {
-      ctx.fillStyle = '#244232';
+      ctx.fillStyle = '#163024';
       for (let i = 0; i < 5; i++) { const px = x + (b.w * v.s) * ((i * 37 % 100) / 100), py = y + (b.h * v.s) * ((i * 61 % 100) / 100); ctx.beginPath(); ctx.arc(px, py, Math.max(1.5, 4 * v.s), 0, 7); ctx.fill(); }
     }
-    ctx.fillStyle = '#23272f';
+    ctx.fillStyle = '#15161a';
     for (const r of b.bld) { const [bx, by] = T(r[0], r[1]); ctx.fillRect(bx, by, r[2] * v.s, r[3] * v.s); }
   }
   if (opts.labels !== false && v.s > .55) {
-    ctx.fillStyle = 'rgba(236,235,230,.32)'; ctx.font = `600 ${Math.round(9 * Math.min(1.4, v.s))}px "JetBrains Mono", monospace`; ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(236,235,230,.32)'; ctx.font = `600 ${Math.round(9 * Math.min(1.4, v.s))}px "Geist Mono", monospace`; ctx.textAlign = 'center';
     for (const l of WORLD.labels) { const [x, y] = T(l.x, l.y); ctx.save(); ctx.translate(x, y); ctx.rotate(l.rot); ctx.fillText(l.t, 0, 3); ctx.restore(); }
   }
   for (const b of WORLD.blocked) {
     const [x, y] = T(b.x, b.y); hatch(ctx, x, y, b.w * v.s, b.h * v.s, HUNT);
     if (opts.blockedLabels !== false) {
-      ctx.fillStyle = '#ffb3aa'; ctx.font = `700 ${Math.round(Math.max(8, 9 * Math.min(1.3, v.s)))}px "JetBrains Mono", monospace`; ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffb3aa'; ctx.font = `700 ${Math.round(Math.max(8, 9 * Math.min(1.3, v.s)))}px "Geist Mono", monospace`; ctx.textAlign = 'center';
       ctx.fillText(b.name.toUpperCase(), x + b.w * v.s / 2, y + b.h * v.s / 2 + 3);
     }
   }
@@ -186,13 +188,11 @@ function drawMini(c, dots, t, zoom = 1.25) {
   drawZone(ctx, v, W, H, R0);
   dots.forEach((d, i) => {
     const x = v.cx + (d.x + Math.sin(t / 1600 + d.ph) * 30) * v.s, y = v.cy + (d.y + Math.cos(t / 1900 + d.ph) * 30) * v.s;
-    const pulse = ((t / 1000 + d.ph) % 2.4) / 2.4;
-    if (i > 0) { ctx.beginPath(); ctx.arc(x, y, 6 + pulse * 22, 0, 7); ctx.strokeStyle = `rgba(79,216,143,${1 - pulse})`; ctx.lineWidth = 2; ctx.stroke(); }
-    ctx.beginPath(); ctx.arc(x, y, i === 0 ? 7 : 8, 0, 7); ctx.fillStyle = i === 0 ? HUNT : 'rgba(79,216,143,.85)'; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = '#0f1115'; ctx.stroke();
-    ctx.fillStyle = '#ecebe6'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
-    ctx.fillText(i === 0 ? 'DU' : BOT_NAMES[i].toUpperCase(), x, y - 14);
-    if (i > 0) { ctx.fillStyle = 'rgba(236,235,230,.6)'; ctx.font = '500 9px "JetBrains Mono", monospace'; ctx.fillText('LIVE PING', x, y + 22); }
+    const col = i === 0 ? HUNT : RUN;
+    if (i > 0) for (let k = 0; k < 2; k++) { const pulse = ((t / 1000 + d.ph + k * .8) % 1.6) / 1.6; ctx.beginPath(); ctx.arc(x, y, 8 + pulse * 24, 0, 7); ctx.strokeStyle = `rgba(50,215,75,${.9 * (1 - pulse)})`; ctx.lineWidth = 2; ctx.stroke(); }
+    ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fillStyle = '#0b0c0f'; ctx.fill();
+    label(ctx, i === 0 ? 'Du' : BOT_NAMES[i], x, y - 22);
   });
 }
 function drawZonePreview() {
@@ -200,7 +200,7 @@ function drawZonePreview() {
   const v = { cx: W / 2, cy: H / 2, s: Math.min(W, H) / (2 * R0 * 1.08) };
   drawWorld(ctx, v, W, H); drawZone(ctx, v, W, H, R0);
   ctx.beginPath(); ctx.arc(v.cx, v.cy, 9, 0, 7); ctx.fillStyle = TAPE; ctx.fill();
-  ctx.fillStyle = '#ecebe6'; ctx.font = '700 11px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('START', v.cx, v.cy - 16);
+  ctx.fillStyle = '#ecebe6'; ctx.font = '700 11px "Geist Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('START', v.cx, v.cy - 16);
 }
 function miniLoop(t) {
   if (!$('#scr-welcome').hidden) drawMini($('#heroCanvas'), heroDots, t);
@@ -248,7 +248,7 @@ function permRows(prefix) {
   return PERMS.map(p => `<div class="perm"><span class="ic"><svg viewBox="0 0 24 24">${ICONS[p.k]}</svg></span><span><b>${p.t}${p.req ? '<span class="req">PFLICHT</span>' : ''}</b><small>${p.d}</small></span><label class="switch"><input type="checkbox" id="${prefix}${p.k}" aria-label="${p.t}"${S.consents[p.k] ? ' checked' : ''}><span></span></label></div>`).join('');
 }
 onShow['scr-consent'] = () => {
-  $('#permList').innerHTML = '<span class="eyebrow">Berechtigungen</span>' + permRows('perm_') + '<p class="note">Dein Handy fragt danach noch einmal selbst nach. Du kannst alles jederzeit im Datenschutz-Center ändern.</p>';
+  $('#permList').innerHTML = permRows('perm_') + '<p class="note">Dein Handy fragt danach noch einmal selbst nach. Du kannst alles jederzeit im Datenschutz-Center ändern.</p>';
   const check = () => { $('#consentGo').disabled = !($('#cAgb').checked && $('#cDs').checked && $('#cSafe').checked && $('#perm_loc').checked); };
   $$('#scr-consent input').forEach(i => i.onchange = check); check();
 };
@@ -272,7 +272,7 @@ $('#profileGo').onclick = () => {
 
 /* ---------- home ---------- */
 onShow['scr-home'] = () => {
-  $('#homeName').textContent = S.profile.name; $('#homeDot').style.background = S.profile.color; $('#homeDot').style.color = S.profile.color;
+  $('#homeName').textContent = S.profile.name; $('#homeDot').style.background = S.profile.color; $('#homeDot').textContent = S.profile.name.charAt(0).toUpperCase();
   const b = $('#homeBadge'); b.className = 'badge' + (S.pass ? ' pass' : S.minor ? ' minor' : '');
   b.textContent = S.pass ? 'Pass' : S.minor ? 'U18 · Free' : 'Free';
   $('#stRounds').textContent = S.stats.rounds; $('#stCatches').textContent = S.stats.catches; $('#stEscapes').textContent = S.stats.escapes;
@@ -290,6 +290,14 @@ function needLoc() {
 }
 
 /* ---------- create ---------- */
+const MODE_ICON = {
+  classic: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+  traitor: '<path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.5"/>',
+  infect: '<circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3"/>',
+  zone: '<circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="4"/>',
+  mrx: '<path d="M12 3l9 18H3z"/><path d="M12 10v5M12 18v.01"/>',
+  bounty: '<path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'
+};
 const MODES = [
   { k: 'classic', t: 'Klassik', d: 'Jäger gegen Läufer, Pings in festen Abständen.', pass: false },
   { k: 'traitor', t: 'Verräter', d: 'Ein Läufer spielt heimlich für die Jäger.', pass: true },
@@ -310,7 +318,7 @@ function seg(el, opts, cur, onPick) {
 }
 function renderCreate() {
   const P = C.hostPass;
-  $('#modes').innerHTML = MODES.map(m => `<button class="mode" aria-pressed="${C.mode === m.k}" data-k="${m.k}"${m.soon ? ' disabled' : ''}>${m.pass && !P ? '<span class="lock">PASS</span>' : ''}${m.soon ? '<span class="lock">BALD</span>' : ''}<b>${m.t}</b><small>${m.d}</small></button>`).join('');
+  $('#modes').innerHTML = MODES.map(m => `<button class="mode" aria-pressed="${C.mode === m.k}" data-k="${m.k}"${m.soon ? ' disabled' : ''}>${m.pass && !P ? '<span class="lock">PASS</span>' : ''}${m.soon ? '<span class="lock">BALD</span>' : ''}<span class="mi"><svg class="i" viewBox="0 0 24 24">${MODE_ICON[m.k]}</svg></span><b>${m.t}</b><small>${m.d}</small></button>`).join('');
   $$('#modes .mode').forEach(b => b.onclick = () => { const m = MODES.find(x => x.k === b.dataset.k); if (m.pass && !P) return upsell('Der Modus „' + m.t + '“'); C.mode = m.k; renderCreate(); });
   seg($('#segPlayers'), [4, 6, 8, 12].map(n => ({ v: n, l: n, lock: n > 6 && !P })), C.players, v => { C.players = v; renderCreate(); });
   seg($('#segDur'), [30, 45, 60].map(n => ({ v: n, l: n + ' min' })), C.dur, v => { C.dur = v; renderCreate(); });
@@ -349,8 +357,10 @@ function openLobby() {
   C.roster = [{ name: S.profile.name, me: true, color: S.profile.color, ready: false }];
   if (C.joined) C.roster.unshift({ name: C.host, color: COLORS[1], ready: true, host: true });
   names.forEach((n, i) => C.roster.push({ name: n, color: COLORS[(i + 2) % COLORS.length], ready: false, pending: true }));
+  C.play = C.play || 'demo';
   show('scr-lobby');
   $('#rcLoc').checked = false; $('#rcFilm').checked = S.consents.cam;
+  renderPlayMode();
   const pend = C.roster.filter(p => p.pending);
   pend.forEach((p, i) => lobbyTimers.push(setTimeout(() => { p.pending = false; p.ready = true; renderLobby(); }, 500 + i * 380)));
   renderLobby();
@@ -360,14 +370,34 @@ function renderLobby() {
   $('#lobbyCode').textContent = C.code;
   $('#lobbyMeta').textContent = `${m.t} · ${C.dur} min · Ping alle ${C.ping} min · Host: ${C.host}${C.hostPass ? ' (Pass)' : ''}`;
   $('#rcN').textContent = C.roster.length - 1;
-  $('#lobbyPlayers').innerHTML = C.roster.map(p => `<div class="pl"><span class="dot" style="background:${p.color};color:${p.color}"></span><span class="n">${esc(p.name)}${p.me ? ' (du)' : ''}${p.host ? ' · Host' : ''}</span>${p.pending ? '<span class="wait">TRITT BEI …</span>' : p.me ? (p.ready ? '<span class="ok">BEREIT ✓</span>' : '<span class="wait">ZUSTIMMUNG FEHLT</span>') : '<span class="ok">ZUGESTIMMT ✓</span>'}</div>`).join('');
+  $('#lobbyPlayers').innerHTML = C.roster.map(p => `<div class="pl"><span class="avatar" style="background:${p.color}">${esc(p.name.charAt(0).toUpperCase())}</span><span class="n">${esc(p.name)}${p.me ? ' (du)' : ''}${p.host ? ' · Host' : ''}</span>${p.pending ? '<span class="wait">tritt bei …</span>' : p.me ? (p.ready ? '<span class="ok">Bereit</span>' : '<span class="wait">Zustimmung fehlt</span>') : '<span class="ok">Zugestimmt</span>'}</div>`).join('');
   const all = C.roster.every(p => !p.pending);
   const me = C.roster.find(p => p.me); me.ready = $('#rcLoc').checked;
   const b = $('#lobbyGo');
-  b.disabled = !(all && me.ready);
+  b.disabled = !(all && me.ready) || C.locating;
   b.textContent = !all ? 'Warte auf Spieler …' : !me.ready ? 'Erst zustimmen' : C.joined ? 'Bereit' : 'Runde starten';
 }
 $('#rcLoc').onchange = renderLobby;
+function renderPlayMode() {
+  $$('#playMode .pm').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === C.play)));
+  const st = $('#gpsStatus');
+  if (C.play === 'gps') st.textContent = C.locating ? 'Suche deinen Standort …' : C.origin ? `Standort gefunden (± ${Math.round(C.accuracy || 0)} m). Die Spielzone liegt um dich herum.` : '';
+  else st.textContent = mapsReady() ? 'Demo auf echter Karte rund um den Alexanderplatz. Tippe auf die Karte, um zu laufen.' : 'Demo auf der Beispielkarte. Tippe auf die Karte, um zu laufen.';
+}
+$$('#playMode .pm').forEach(b => b.onclick = () => {
+  if (b.dataset.v === 'demo') { C.play = 'demo'; renderPlayMode(); renderLobby(); return; }
+  if (!('geolocation' in navigator)) { toast('Dein Gerät kann keinen Standort liefern.'); return; }
+  C.play = 'gps'; C.locating = true; renderPlayMode(); renderLobby();
+  try {
+    navigator.geolocation.getCurrentPosition(pos => {
+      C.locating = false; C.origin = { lat: pos.coords.latitude, lng: pos.coords.longitude }; C.accuracy = pos.coords.accuracy;
+      renderPlayMode(); renderLobby();
+    }, err => {
+      C.locating = false; C.play = 'demo'; C.origin = null; renderPlayMode(); renderLobby();
+      toast(err && err.code === 1 ? 'Standort nicht erlaubt. Erlaube ihn in den Browser-Einstellungen.' : 'Standort nicht verfügbar. Hier geht nur die Demo.');
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 });
+  } catch (e) { C.locating = false; C.play = 'demo'; renderPlayMode(); renderLobby(); toast('Standort nicht verfügbar. Hier geht nur die Demo.'); }
+});
 $('#lobbyGo').onclick = () => {
   audio();
   if (C.joined) { $('#lobbyGo').disabled = true; $('#lobbyGo').textContent = 'Dominick startet …'; setTimeout(startRound, 1100); }
@@ -401,7 +431,8 @@ function startRound() {
     nextPing: C.head * 60 + C.ping * 60, pass: C.hostPass, voice: C.hostPass && C.voice, loot: C.hostPass && C.loot,
     markers: [], crates: [], items: [], effects: { scan: 0, drone: 0, invis: false, fake: null }, betrayCd: 0,
     banner: null, events: [], rec: [], recT: 0, speed: 1, lastSay: 0, heartT: 0, warned30: false, said5: false, result: null,
-    zoneR: R0, started: performance.now(), view: null
+    zoneR: R0, started: performance.now(), view: null,
+    useMap: mapsReady(), gps: C.play === 'gps' && !!C.origin, origin: (C.play === 'gps' && C.origin) || DEFAULT_ORIGIN, watch: null
   };
   if (G.loot) { const r = rng(Math.floor(Math.random() * 1e9)); while (G.crates.length < 7) { const a = r() * 6.283, d = 60 + r() * 230, p = { x: Math.cos(a) * d, y: Math.sin(a) * d }; if (!inBlocked(p, 8)) G.crates.push(p); } }
   showRole();
@@ -417,7 +448,9 @@ function showRole() {
   const r = G.me.mrx ? 'mrx' : roleOf(G.me), info = ROLE_TXT[r];
   const card = $('#roleCard');
   card.className = 'rolecard ' + (r === 'mrx' ? 'runner' : r);
-  card.innerHTML = `<span class="eyebrow">Deine Rolle · ${MODES.find(m => m.k === G.mode).t}</span><span class="big">${info.t}</span><p>${info.d}</p><p class="note">${r === 'hunter' ? `Die Läufer haben ${C.head} Minuten Vorsprung. Du wartest am Start.` : `Du hast ${C.head} Minuten Vorsprung. Tippe auf die Karte, um dorthin zu laufen.`}</p>`;
+  const glyph = { hunter: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>', runner: '<circle cx="14" cy="4.5" r="2"/><path d="M8 21l3-6 3 2v5M6 12l3-4 4 1 3 4 3 1"/>', traitor: '<path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.5"/><path d="M4 4l16 16"/>', mrx: '<path d="M12 3l9 18H3z"/><path d="M12 10v5M12 18v.01"/>' }[r];
+  const howMove = G.gps ? 'Lauf los, dein GPS bewegt dich auf der Karte.' : 'Tippe auf die Karte, um dorthin zu laufen.';
+  card.innerHTML = `<span class="glyph"><svg class="i" viewBox="0 0 24 24">${glyph}</svg></span><span class="eyebrow">Modus ${MODES.find(m => m.k === G.mode).t}</span><span class="big">${info.t}</span><p>${info.d}</p><p class="note">${r === 'hunter' ? `Die Läufer haben ${C.head} Minuten Vorsprung. Du wartest am Start.` : `Du hast ${C.head} Minuten Vorsprung. ${howMove}`}</p>`;
   card.classList.remove('show'); void card.offsetWidth; card.classList.add('show');
   show('scr-role');
   if (G.voice) say(`Du bist ${info.t}.`);
@@ -428,7 +461,12 @@ function beginGame() {
   $('#game').hidden = false; document.body.style.overflow = 'hidden';
   G.running = true; G.last = performance.now();
   const m = MODES.find(x => x.k === G.mode);
-  $('#hudMode').textContent = m.t.toUpperCase();
+  $('#hudMode').textContent = m.t + (G.gps ? ' · GPS' : ' · Demo');
+  $('#btnSpeed').textContent = '×1'; $('#btnSpeed').disabled = G.gps;
+  $('#game').classList.toggle('gmap', G.useMap);
+  if (G.useMap) setupMap();
+  if (G.gps) startGps();
+  try { navigator.wakeLock && navigator.wakeLock.request('screen').then(l => G.wake = l, () => {}); } catch (e) {}
   setBanner(roleOf(G.me) === 'hunter' ? 'Vorsprung läuft' : 'Lauf!', roleOf(G.me) === 'hunter' ? '' : 'green');
   say(roleOf(G.me) === 'hunter' ? `Runde gestartet. Die Läufer haben ${C.head} Minuten Vorsprung.` : `Runde gestartet. Du hast ${C.head} Minuten Vorsprung. Lauf.`);
   sfx.ping();
@@ -436,8 +474,9 @@ function beginGame() {
   requestAnimationFrame(loop);
 }
 function setBanner(text, kind = '') {
-  const b = $('#hudBanner'); b.textContent = text; b.className = 'hud-banner anim ' + kind; b.hidden = false;
+  const b = $('#hudBanner'); b.textContent = text; b.className = 'island anim ' + kind; b.hidden = false;
   void b.offsetWidth; G.bannerUntil = performance.now() + 2600;
+  try { navigator.vibrate && navigator.vibrate(kind === 'red' ? [80, 60, 80] : 40); } catch (e) {}
 }
 
 /* ---------- game view ---------- */
@@ -445,6 +484,7 @@ const GC = $('#gameCanvas');
 let worldLayer = null;
 function resizeGame() {
   const { W, H } = fitCanvas(GC);
+  if (G.useMap) { G.view = { W, H, cx: W / 2, cy: H / 2, s: 1 }; worldLayer = null; return; }
   const top = 150, bottom = 190, avail = Math.max(180, Math.min(W - 16, H - top - bottom));
   const s = avail / (2 * R0);
   G.view = { cx: W / 2, cy: top + (H - top - bottom) / 2, s, W, H };
@@ -454,15 +494,91 @@ function resizeGame() {
 }
 window.addEventListener('resize', () => { if (G.running) resizeGame(); });
 function toWorld(px, py) { const v = G.view; return { x: (px - v.cx) / v.s, y: (py - v.cy) / v.s }; }
-GC.addEventListener('pointerdown', e => {
+function tryMoveTo(p) {
   if (!G.running || G.paused) return;
   const me = G.me; if (me.caught && G.mode !== 'infect') return;
+  if (G.gps) { toast('Im echten Spiel bewegst du dich, indem du läufst.'); return; }
   if (me.team === 'hunter' && G.t < G.head) { toast('Warte, bis der Vorsprung vorbei ist.'); return; }
-  const r = GC.getBoundingClientRect(), p = toWorld(e.clientX - r.left, e.clientY - r.top);
   const b = inBlocked(p);
   if (b) { toast(b.name + ' ist gesperrt.'); return; }
   me.tx = p.x; me.ty = p.y;
+}
+GC.addEventListener('pointerdown', e => {
+  if (G.useMap) return;
+  const r = GC.getBoundingClientRect(); tryMoveTo(toWorld(e.clientX - r.left, e.clientY - r.top));
 });
+
+/* ---------- Google Maps + GPS ---------- */
+const GM = { map: null, ov: null, loading: null };
+function mapsReady() { return !!(window.google && google.maps && google.maps.Map); }
+function loadGoogleMaps() {
+  if (mapsReady()) return Promise.resolve();
+  if (!CFG.mapsKey) return Promise.reject(new Error('nokey'));
+  if (GM.loading) return GM.loading;
+  GM.loading = new Promise((res, rej) => {
+    window.__pingedMaps = () => res();
+    const sc = document.createElement('script');
+    sc.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(CFG.mapsKey) + '&callback=__pingedMaps&loading=async&v=weekly';
+    sc.async = true; sc.onerror = () => rej(new Error('load'));
+    document.head.appendChild(sc);
+    setTimeout(() => rej(new Error('timeout')), 10000);
+  }).catch(e => { GM.loading = null; throw e; });
+  return GM.loading;
+}
+const MAP_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#111216' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#6b6d75' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0b0c0f' }] },
+  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi.park', stylers: [{ visibility: 'on' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0f1d16' }] },
+  { featureType: 'poi.park', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#22252b' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#111216' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3a2a26' }] },
+  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2a2d34' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit.line', elementType: 'geometry', stylers: [{ visibility: 'on' }, { color: '#3d2622' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ visibility: 'off' }] },
+  { featureType: 'landscape.man_made', elementType: 'geometry', stylers: [{ color: '#16171c' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0a1620' }] },
+  { featureType: 'water', elementType: 'labels', stylers: [{ visibility: 'off' }] }
+];
+const M_LAT = 111320;
+function toLL(p) { const o = G.origin; return { lat: o.lat - p.y / M_LAT, lng: o.lng + p.x / (M_LAT * Math.cos(o.lat * Math.PI / 180)) }; }
+function fromLL(ll) { const o = G.origin, lat = typeof ll.lat === 'function' ? ll.lat() : ll.lat, lng = typeof ll.lng === 'function' ? ll.lng() : ll.lng; return { x: (lng - o.lng) * M_LAT * Math.cos(o.lat * Math.PI / 180), y: (o.lat - lat) * M_LAT }; }
+function setupMap() {
+  const el = $('#gameMap');
+  if (!GM.map) {
+    GM.map = new google.maps.Map(el, { center: G.origin, zoom: 16, disableDefaultUI: true, gestureHandling: 'greedy', clickableIcons: false, keyboardShortcuts: false, backgroundColor: '#0b0c0f', styles: MAP_STYLE });
+    GM.ov = new google.maps.OverlayView(); GM.ov.onAdd = () => {}; GM.ov.draw = () => {}; GM.ov.onRemove = () => {};
+    GM.ov.setMap(GM.map);
+    GM.map.addListener('click', ev => { if (G.running) tryMoveTo(fromLL(ev.latLng)); });
+  }
+  GM.map.setCenter(G.origin);
+  const b = new google.maps.LatLngBounds(toLL({ x: -R0, y: -R0 }), toLL({ x: R0, y: R0 }));
+  b.extend(toLL({ x: R0, y: R0 })); b.extend(toLL({ x: -R0, y: -R0 }));
+  setTimeout(() => GM.map.fitBounds(b, { top: 150, bottom: 210, left: 10, right: 10 }), 50);
+}
+function mapView() {
+  const pr = GM.ov && GM.ov.getProjection(); if (!pr) return null;
+  const T = p => { const pt = pr.fromLatLngToContainerPixel(new google.maps.LatLng(toLL(p))); return [pt.x, pt.y]; };
+  const a = T({ x: 0, y: 0 }), b = T({ x: 100, y: 0 });
+  return { T, cx: a[0], cy: a[1], s: Math.hypot(b[0] - a[0], b[1] - a[1]) / 100, W: G.view.W, H: G.view.H };
+}
+function startGps() {
+  const me = G.me; let last = null;
+  me.x = 0; me.y = 0;
+  try {
+    G.watch = navigator.geolocation.watchPosition(pos => {
+      const p = fromLL({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      if (last) { const d = Math.hypot(p.x - last.x, p.y - last.y); if (d > 2 && d < 80) me.meters += d; }
+      last = p; me.x = p.x; me.y = p.y; me.acc = pos.coords.accuracy; G.gpsAt = performance.now();
+    }, () => toast('GPS-Signal verloren. Bleib kurz stehen.'), { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 });
+  } catch (e) { toast('GPS nicht verfügbar.'); }
+}
+function stopGps() { if (G.watch != null) { try { navigator.geolocation.clearWatch(G.watch); } catch (e) {} G.watch = null; } }
 
 /* ---------- simulation ---------- */
 function zoneR() {
@@ -543,9 +659,9 @@ function doPing(extra = false) {
   if (G.effects.invis && !extra) { G.effects.invis = false; if (me.team === 'runner') toast('Du warst bei diesem Ping unsichtbar.'); }
   if (G.effects.fake && !extra) { G.effects.fake = null; if (me.team === 'runner') toast('Fake-Ping gesendet. Die Jäger suchen an der falschen Stelle.'); }
   G.events.push({ t: G.t, type: 'ping', n });
-  if (me.team === 'hunter' || me.traitor) { setBanner('Ping detected'); sfx.ping(); say(n === 1 ? 'Ping. Ein Läufer geortet.' : `Ping. ${n} Läufer geortet.`); }
+  if (me.team === 'hunter' || me.traitor) { setBanner('Ping erkannt'); sfx.ping(); say(n === 1 ? 'Ping. Ein Läufer geortet.' : `Ping. ${n} Läufer geortet.`); }
   else if (!me.caught) { setBanner(me.mrx ? 'Umkreis gesendet' : 'Du wurdest gepingt', 'red'); sfx.pinged(); say('Du wurdest gepingt. Bleib in Bewegung.'); }
-  else { setBanner('Ping detected'); sfx.ping(); }
+  else { setBanner('Ping erkannt'); sfx.ping(); }
   // bot traitor leaks
   const tr = G.ents.find(e => e.traitor && !e.me && !e.caught);
   if (tr && Math.random() < .55) {
@@ -643,7 +759,6 @@ function renderItems() {
   const me = G.me, box = $('#hudItems'); if (!box) return;
   let html = G.items.map((it, i) => `<button class="hot" data-i="${i}">${ITEM[it].t}</button>`).join('');
   if (me.traitor && !me.caught) html += `<button class="hot" id="btnBetray"${G.betrayCd > 0 || G.t < G.head ? ' disabled' : ''}>Verraten</button>`;
-  html += `<button class="catch" id="btnCatch" hidden>FANGEN</button>`;
   if ((me.caught && G.mode !== 'infect')) html += `<button id="btnSkip">Vorspulen ×8</button>`;
   box.innerHTML = html;
   box.querySelectorAll('[data-i]').forEach(b => b.onclick = () => useItem(+b.dataset.i));
@@ -651,8 +766,7 @@ function renderItems() {
     const victims = activeRunners().filter(r => r !== me); const [v] = nearest(me, victims);
     if (v) { leak(v, true); G.betrayCd = G.ping; renderItems(); }
   };
-  const bc = $('#btnCatch'); bc.onclick = () => { const t = catchable(); if (t) { catchRunner(me, t); } };
-  const sk = $('#btnSkip'); if (sk) sk.onclick = () => { G.speed = 8; $('#btnSpeed').textContent = 'Tempo ×8'; };
+  const sk = $('#btnSkip'); if (sk) sk.onclick = () => { G.speed = 8; $('#btnSpeed').textContent = '×8'; };
 }
 function catchable() {
   const me = G.me; if (me.team !== 'hunter' || G.t < G.head || me.caught) return null;
@@ -668,72 +782,90 @@ function visibleTo(me, e) {
   if (e.team === 'runner') return true;
   return dist(me, e) < 30 || G.effects.scan > 0;
 }
+function label(ctx, text, x, y, fg = '#f4f4f6', bg = 'rgba(10,11,14,.78)', font = '600 11px "Geist", system-ui, sans-serif') {
+  ctx.font = font; const w = ctx.measureText(text).width + 14, h = 20;
+  ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, 10) : ctx.rect(x - w / 2, y - h / 2, w, h); ctx.fill();
+  ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + .5); ctx.textBaseline = 'alphabetic';
+}
 function drawGame() {
-  const v = G.view, { W, H } = v, ctx = GC.getContext('2d');
+  let v = G.view; const { W, H } = v, ctx = GC.getContext('2d');
   const dpr = Math.min(2, window.devicePixelRatio || 1); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(worldLayer, 0, 0, W, H);
+  let T;
+  if (G.useMap) { const mv = mapView(); if (!mv) return; v = mv; T = mv.T; }
+  else { ctx.drawImage(worldLayer, 0, 0, W, H); T = p => [v.cx + p.x * v.s, v.cy + p.y * v.s]; }
   drawZone(ctx, v, W, H, G.zoneR);
-  const T = p => [v.cx + p.x * v.s, v.cy + p.y * v.s];
   const me = G.me, now = performance.now();
   // start marker
-  { const [x, y] = T({ x: 0, y: 0 }); ctx.strokeStyle = 'rgba(243,212,51,.5)'; ctx.lineWidth = 1.5; ctx.strokeRect(x - 5, y - 5, 10, 10); }
+  { const [x, y] = T({ x: 0, y: 0 }); ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.strokeStyle = 'rgba(255,214,10,.6)'; ctx.lineWidth = 2; ctx.stroke(); }
   // crates
-  for (const c of G.crates) { const [x, y] = T(c); ctx.fillStyle = TAPE; ctx.fillRect(x - 6, y - 6, 12, 12); ctx.fillStyle = '#1a1700'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('?', x, y + 4); }
+  for (const c of G.crates) {
+    const [x, y] = T(c), bob = Math.sin(now / 400 + c.x) * 2;
+    ctx.save(); ctx.shadowColor = TAPE; ctx.shadowBlur = 14; ctx.fillStyle = TAPE;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - 8, y - 8 + bob, 16, 16, 5) : ctx.rect(x - 8, y - 8 + bob, 16, 16); ctx.fill(); ctx.restore();
+    ctx.fillStyle = '#141100'; ctx.font = '800 11px "Geist", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('?', x, y + bob + .5); ctx.textBaseline = 'alphabetic';
+  }
   // markers (only for hunter-side viewers)
   const hunterView = me.team === 'hunter' || me.traitor || (me.caught && G.mode !== 'infect');
   if (hunterView) for (const m of G.markers) {
     const age = G.t - m.t; if (age > G.ping * 1.3) continue;
-    const a = clamp(1 - age / (G.ping * 1.3), .25, 1), [x, y] = T(m);
+    const a = clamp(1 - age / (G.ping * 1.3), .3, 1), [x, y] = T(m);
     const col = m.kind === 'tip' ? TAPE : m.kind === 'out' ? HUNT : RUN;
-    if (m.fuzzy) { ctx.beginPath(); ctx.arc(x, y, 60 * v.s, 0, 7); ctx.fillStyle = `rgba(79,216,143,${.15 * a})`; ctx.fill(); ctx.strokeStyle = `rgba(79,216,143,${.6 * a})`; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); }
-    const pulse = ((now / 1000) % 1.6) / 1.6;
-    ctx.globalAlpha = a;
-    ctx.beginPath(); ctx.arc(x, y, 10 + pulse * 18, 0, 7); ctx.strokeStyle = col; ctx.globalAlpha = a * (1 - pulse); ctx.lineWidth = 2; ctx.stroke();
-    ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x, y, 10, 0, 7); ctx.fillStyle = col; ctx.fill();
-    ctx.fillStyle = '#ecebe6'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
-    ctx.fillText(m.name.toUpperCase(), x, y - 16);
-    ctx.fillStyle = 'rgba(236,235,230,.75)'; ctx.font = '500 9px "JetBrains Mono", monospace';
-    const lbl = m.kind === 'tip' ? 'TIPP' : m.kind === 'out' ? 'AUSSERHALB' : 'LIVE PING';
-    ctx.fillText(`${lbl} · ${age < 30 ? 'jetzt' : 'vor ' + Math.max(1, Math.round(age / 60)) + ' min'}`, x, y + 22);
+    if (m.fuzzy) { ctx.beginPath(); ctx.arc(x, y, 60 * v.s, 0, 7); ctx.fillStyle = `rgba(50,215,75,${.12 * a})`; ctx.fill(); ctx.strokeStyle = `rgba(50,215,75,${.5 * a})`; ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]); }
+    for (let k = 0; k < 2; k++) {
+      const pulse = ((now / 1000 + k * .8) % 1.6) / 1.6;
+      ctx.globalAlpha = a * (1 - pulse); ctx.beginPath(); ctx.arc(x, y, 9 + pulse * 26, 0, 7); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+    }
+    ctx.globalAlpha = a; ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, 7); ctx.fillStyle = '#0b0c0f'; ctx.fill();
+    const lbl = m.kind === 'tip' ? 'Tipp' : m.kind === 'out' ? 'Außerhalb' : 'Ping';
+    label(ctx, m.name, x, y - 22);
+    label(ctx, `${lbl} · ${age < 30 ? 'jetzt' : 'vor ' + Math.max(1, Math.round(age / 60)) + ' min'}`, x, y + 22, col, 'rgba(10,11,14,.78)', '500 10px "Geist", sans-serif');
     ctx.globalAlpha = 1;
   }
   // my target line
-  if (me.tx != null) { const [a, b] = T(me), [c, d] = T({ x: me.tx, y: me.ty }); ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(236,235,230,.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.arc(c, d, 4, 0, 7); ctx.fillStyle = 'rgba(236,235,230,.7)'; ctx.fill(); }
+  if (me.tx != null) { const [a, b] = T(me), [c, d] = T({ x: me.tx, y: me.ty }); ctx.setLineDash([2, 6]); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(244,244,246,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.arc(c, d, 5, 0, 7); ctx.strokeStyle = '#f4f4f6'; ctx.lineWidth = 2; ctx.stroke(); }
   // entities
   for (const e of G.ents) {
     if (!visibleTo(me, e)) continue;
     const [x, y] = T(e);
-    if (e.caught) { ctx.globalAlpha = .35; }
+    if (e.caught) ctx.globalAlpha = .35;
     const col = e.team === 'hunter' ? HUNT : e.color;
-    if (e === me) { ctx.beginPath(); ctx.arc(x, y, 15, 0, 7); ctx.fillStyle = 'rgba(236,235,230,.12)'; ctx.fill(); }
-    ctx.beginPath(); ctx.arc(x, y, e === me ? 8 : 6.5, 0, 7); ctx.fillStyle = col; ctx.fill();
-    ctx.lineWidth = e === me ? 3 : 2; ctx.strokeStyle = e === me ? '#ecebe6' : '#0f1115'; ctx.stroke();
-    ctx.fillStyle = '#ecebe6'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
-    let tag = e === me ? 'DU' : e.name.toUpperCase();
-    if ((me.traitor || (me.caught && G.mode !== 'infect')) && e.traitor && e !== me) tag += ' · V';
-    ctx.fillText(tag + (e.caught ? ' ✕' : ''), x, y - 13);
+    if (e === me) {
+      if (G.gps && me.acc) { ctx.beginPath(); ctx.arc(x, y, Math.min(120, me.acc * v.s), 0, 7); ctx.fillStyle = 'rgba(10,132,255,.12)'; ctx.fill(); }
+      const pr = (now % 2000) / 2000; ctx.beginPath(); ctx.arc(x, y, 12 + pr * 16, 0, 7); ctx.fillStyle = `rgba(244,244,246,${.18 * (1 - pr)})`; ctx.fill();
+    }
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(x, y, e === me ? 10 : 8, 0, 7); ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, e === me ? 7 : 5.5, 0, 7); ctx.fillStyle = col; ctx.fill();
+    let tag = e === me ? 'Du' : e.name;
+    if ((me.traitor || (me.caught && G.mode !== 'infect')) && e.traitor && e !== me) tag += ' · Verräter';
+    if (e.caught) tag += ' · gefangen';
+    label(ctx, tag, x, y - 20, e === me ? '#0b0c0f' : '#f4f4f6', e === me ? '#f4f4f6' : 'rgba(10,11,14,.78)');
     ctx.globalAlpha = 1;
   }
-  // scan/drone tint
-  if (G.effects.scan > 0 || G.effects.drone > 0) { ctx.fillStyle = 'rgba(243,212,51,.05)'; ctx.fillRect(0, 0, W, H); }
+  if (G.effects.scan > 0 || G.effects.drone > 0) { ctx.fillStyle = 'rgba(255,214,10,.05)'; ctx.fillRect(0, 0, W, H); }
 }
 function updateHud() {
   const me = G.me;
-  const r = me.caught && G.mode !== 'infect' ? 'ZUSCHAUER' : me.team === 'hunter' ? (me.infected ? 'INFIZIERT' : 'JÄGER') : me.mrx ? 'MISTER X' : me.traitor ? 'VERRÄTER' : 'LÄUFER';
-  const role = $('#hudRole'); role.textContent = r; role.style.color = me.team === 'hunter' ? HUNT : me.traitor ? TAPE : r === 'ZUSCHAUER' ? '#9097a5' : RUN;
+  const r = me.caught && G.mode !== 'infect' ? 'Zuschauer' : me.team === 'hunter' ? (me.infected ? 'Infiziert' : 'Jäger') : me.mrx ? 'Mister X' : me.traitor ? 'Verräter' : 'Läufer';
+  $('#hudRole').textContent = r;
+  $('#hudDot').style.background = me.team === 'hunter' ? HUNT : me.traitor ? TAPE : r === 'Zuschauer' ? '#8d8e96' : RUN;
   $('#hudClock').textContent = fmt(G.dur - G.t);
-  if (G.t < G.head) { $('#hudNextLbl').textContent = 'JAGD STARTET IN'; $('#hudNext').textContent = fmt(G.head - G.t); }
-  else { $('#hudNextLbl').textContent = 'NÄCHSTER PING'; $('#hudNext').textContent = fmt(G.nextPing - G.t); }
+  let frac;
+  if (G.t < G.head) { $('#hudNextLbl').textContent = 'Jagd startet in'; $('#hudNext').textContent = fmt(G.head - G.t); frac = 1 - G.t / G.head; }
+  else { $('#hudNextLbl').textContent = 'Nächster Ping'; $('#hudNext').textContent = fmt(G.nextPing - G.t); frac = (G.nextPing - G.t) / G.ping; }
+  $('#pingRing').style.strokeDashoffset = String(150.8 * (1 - clamp(frac, 0, 1)));
   const rs = G.ents.filter(e => e.team === 'runner'), alive = rs.filter(e => !e.caught).length;
-  let info = `Läufer ${alive}/${rs.length} · Jäger ${G.ents.filter(e => e.team === 'hunter').length}`;
+  let info = `${alive} von ${rs.length} Läufern frei · ${G.ents.filter(e => e.team === 'hunter').length} Jäger`;
   if (G.mode === 'zone' && G.t > G.head) info += ` · Zone ${Math.round(G.zoneR)} m`;
   if (G.effects.scan > 0) info += ` · Scan ${Math.ceil(G.effects.scan)} s`;
   if (G.effects.drone > 0) info += ` · Drohne ${Math.ceil(G.effects.drone)} s`;
-  if (me.team === 'runner' && !me.caught && me.outT > 0) info = `<b style="color:var(--hunt)">AUSSERHALB DER ZONE · live sichtbar in ${Math.max(0, Math.ceil(30 - me.outT))} s</b>`;
+  if (G.gps && G.gpsAt && performance.now() - G.gpsAt > 20000) info = '<span style="color:#ffb340">Warte auf GPS-Signal …</span>';
+  if (me.team === 'runner' && !me.caught && me.outT > 0) info = `<span style="color:var(--hunt);font-weight:600">Außerhalb der Zone · live sichtbar in ${Math.max(0, Math.ceil(30 - me.outT))} s</span>`;
   $('#hudInfo').innerHTML = info;
   if (performance.now() > (G.bannerUntil || 0)) $('#hudBanner').hidden = true;
-  // compass for runners
   const comp = $('#hudCompass');
   if (me.team === 'runner' && !me.caught && G.t >= G.head) {
     const [h, d] = nearest(me, hunters());
@@ -741,9 +873,8 @@ function updateHud() {
     if (h) {
       const ang = Math.atan2(h.y - me.y, h.x - me.x) + Math.PI / 2;
       $('#compArrow').setAttribute('transform', `rotate(${ang * 180 / Math.PI} 17 17)`);
-      const band = d < 40 ? 'SEHR NAH' : d < 90 ? 'NAH' : d < 180 ? 'MITTEL' : 'WEIT';
-      $('#compTxt').innerHTML = `Nächster Jäger: <b style="color:${d < 90 ? 'var(--hunt)' : 'inherit'}">${band}</b>${G.pass ? ` · ${Math.round(d / 10) * 10} m` : ''}`;
-      // voice + heartbeat (pass)
+      const band = d < 40 ? 'Sehr nah' : d < 90 ? 'Nah' : d < 180 ? 'Mittel' : 'Weit';
+      $('#compTxt').innerHTML = `<span style="color:${d < 90 ? 'var(--hunt)' : 'inherit'}">${band}</span>${G.pass ? `<br><span style="color:var(--muted);font-weight:500">${Math.round(d / 10) * 10} m</span>` : ''}`;
       if (G.voice) {
         const now = performance.now();
         if (d < 60 && now - G.lastSay > 9000) { G.lastSay = now; say(`Jäger in ${Math.round(d / 10) * 10} Metern.`); }
@@ -752,14 +883,14 @@ function updateHud() {
       }
     }
   } else comp.hidden = true;
-  const bc = $('#btnCatch'); if (bc) bc.hidden = !catchable();
+  $('#btnCatch').hidden = !catchable();
   const bt = $('#btnBetray'); if (bt) bt.disabled = G.betrayCd > 0 || G.t < G.head;
 }
 function loop(now) {
   if (!G.running) return;
   const dtReal = Math.min(.1, (now - G.last) / 1000); G.last = now;
   if (!G.paused) {
-    let dt = dtReal * SPEED_BASE * G.speed;
+    let dt = dtReal * (G.gps ? 1 : SPEED_BASE) * G.speed;
     while (dt > 0 && G.running) { const d = Math.min(dt, 1); step(d); dt -= d; }
   }
   if (!G.running) return;
@@ -768,7 +899,9 @@ function loop(now) {
 }
 
 /* ---------- HUD controls ---------- */
-$('#btnSpeed').onclick = () => { G.speed = G.speed === 1 ? 2 : G.speed === 2 ? 4 : 1; $('#btnSpeed').textContent = 'Tempo ×' + G.speed; };
+$('#btnSpeed').onclick = () => { if (G.gps) { toast('Im echten Spiel läuft die Zeit normal.'); return; } G.speed = G.speed === 1 ? 2 : G.speed === 2 ? 4 : 1; $('#btnSpeed').textContent = '×' + G.speed; };
+$('#btnCatch').onclick = () => { const t = catchable(); if (t) catchRunner(G.me, t); };
+$('#btnCenter').onclick = () => { if (G.useMap && GM.map) { GM.map.panTo(toLL(G.me)); GM.map.setZoom(Math.max(GM.map.getZoom(), 17)); } else toast('Die ganze Zone ist im Bild.'); };
 $('#btnLeave').onclick = () => {
   G.paused = true;
   overlay(`<h3>Runde verlassen?</h3><p>Dein Standort wird ab sofort nicht mehr geteilt. Die anderen spielen ohne dich weiter.</p><button class="btn red" id="ovA">Verlassen</button><button class="btn ghost small" id="ovB">Weiterspielen</button>`,
@@ -790,7 +923,7 @@ function sos() {
   overlay(`<div class="tape"></div><h3>SOS ausgelöst</h3><p>Die Runde ist für alle gestoppt. Alle Mitspieler sehen jetzt deinen Standort. Dein Notfallkontakt (${contact}) wurde benachrichtigt.</p><p><b>Bei Lebensgefahr: Notruf 112</b></p><p class="demo-note">Demo: Es wurde nichts gesendet.</p><button class="btn ghost" id="ovA">Entwarnung, weiterspielen</button><button class="btn red" id="ovB">Runde für alle beenden</button>`,
     c => { c.querySelector('#ovA').onclick = () => { closeOverlay(); G.paused = false; toast('Entwarnung gesendet. Weiter geht’s.'); }; c.querySelector('#ovB').onclick = () => { closeOverlay(); endRound('sos'); }; });
 }
-function quitGame() { G.running = false; $('#game').hidden = true; document.body.style.overflow = ''; try { speechSynthesis.cancel(); } catch (e) {} }
+function quitGame() { G.running = false; stopGps(); try { G.wake && G.wake.release(); } catch (e) {} $('#game').hidden = true; document.body.style.overflow = ''; try { speechSynthesis.cancel(); } catch (e) {} }
 
 /* ---------- end ---------- */
 function endRound(winner) {
@@ -839,7 +972,12 @@ function playTrailer() {
   const s = (W * .92) / (2 * R0), v = { cx: W / 2, cy: H * .47, s };
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const layer = document.createElement('canvas'); layer.width = W * dpr; layer.height = H * dpr;
-  const lc = layer.getContext('2d'); lc.setTransform(dpr, 0, 0, dpr, 0, 0); drawWorld(lc, v, W, H, { labels: false, blockedLabels: false });
+  const lc = layer.getContext('2d'); lc.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (G.useMap) {
+    lc.fillStyle = '#0b0c0f'; lc.fillRect(0, 0, W, H); lc.strokeStyle = 'rgba(255,255,255,.05)'; lc.lineWidth = 1;
+    for (let gx = -R0 * 1.4; gx <= R0 * 1.4; gx += 40) { lc.beginPath(); lc.moveTo(v.cx + gx * s, 0); lc.lineTo(v.cx + gx * s, H); lc.stroke(); }
+    for (let gy = -R0 * 2.4; gy <= R0 * 2.4; gy += 40) { lc.beginPath(); lc.moveTo(0, v.cy + gy * s); lc.lineTo(W, v.cy + gy * s); lc.stroke(); }
+  } else drawWorld(lc, v, W, H, { labels: false, blockedLabels: false });
   drawZone(lc, v, W, H, R0);
   const rec = G.rec, evs = G.events, ents = G.ents, gEnd = G.t;
   const intro = 1.8, outro = 3, mid = total - intro - outro;
@@ -848,7 +986,7 @@ function playTrailer() {
   const capOf = e => e.type === 'ping' ? 'PING.' : e.type === 'catch' ? `${e.name.toUpperCase()} GEFANGEN` : e.type === 'tip' ? 'VERRATEN.' : e.type === 'hunt' ? 'DIE JAGD BEGINNT' : null;
   const endTitle = G.result === 'sos' ? 'ABGEBROCHEN' : G.result === 'hunters' ? 'JÄGER GEWINNEN' : 'LÄUFER ENTKOMMEN';
   function caption(text, alpha = 1, size = 64, y = H * .8) {
-    ctx.save(); ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.font = `900 ${size}px "Big Shoulders Display", Impact, sans-serif`;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.font = `900 ${size}px "Geist", system-ui, sans-serif`;
     ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.lineJoin = 'round';
     const words = text.split(' '), lines = []; let cur = '';
     for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > W * .86 && cur) { lines.push(cur); cur = w; } else cur = t; }
@@ -883,7 +1021,7 @@ function playTrailer() {
         ctx.stroke(); ctx.restore();
         const q = rec[fi].p[k], x = v.cx + q[0] * s, y = v.cy + q[1] * s;
         ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.fillStyle = q[3] ? '#555' : col; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#000'; ctx.stroke();
-        if (e.film) { ctx.fillStyle = '#fff'; ctx.font = '700 12px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText(e.name.toUpperCase(), x, y - 12); }
+        if (e.film) { ctx.fillStyle = '#fff'; ctx.font = '700 12px "Geist Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText(e.name.toUpperCase(), x, y - 12); }
       });
       // event fx
       let cap = null;
@@ -904,7 +1042,7 @@ function playTrailer() {
       }
       ctx.restore();
       // timer
-      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(16, 16, 112, 34); ctx.fillStyle = TAPE; ctx.font = '700 20px "JetBrains Mono", monospace'; ctx.textAlign = 'left'; ctx.fillText(fmt(gEnd - gt), 26, 40);
+      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(16, 16, 112, 34); ctx.fillStyle = TAPE; ctx.font = '700 20px "Geist Mono", monospace'; ctx.textAlign = 'left'; ctx.fillText(fmt(gEnd - gt), 26, 40);
       if (cap) caption(cap.t, clamp(cap.a, 0, 1), cap.t.length > 12 ? 54 : 78);
     } else {
       const k = el - intro - mid;
@@ -914,7 +1052,7 @@ function playTrailer() {
       if (k > 1.4) {
         ctx.save(); ctx.globalAlpha = clamp((k - 1.4) * 3, 0, 1);
         ctx.fillStyle = TAPE; ctx.fillRect(0, H * .66, W, 70);
-        ctx.fillStyle = '#14161b'; ctx.font = '900 56px "Big Shoulders Display", Impact, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('PINGED', W / 2, H * .66 + 54);
+        ctx.fillStyle = '#14161b'; ctx.font = '900 56px "Geist", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('PINGED', W / 2, H * .66 + 54);
         ctx.restore();
       }
     }
@@ -922,9 +1060,9 @@ function playTrailer() {
     if (!pass) {
       ctx.save(); ctx.translate(W / 2, H * .93); ctx.rotate(-.04);
       ctx.fillStyle = 'rgba(243,212,51,.92)'; ctx.fillRect(-W, -16, W * 2, 32);
-      ctx.fillStyle = '#14161b'; ctx.font = '900 20px "Big Shoulders Display", Impact, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#14161b'; ctx.font = '900 20px "Geist", system-ui, sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('MADE WITH PINGED · FREE VERSION · MADE WITH PINGED', 0, 7); ctx.restore();
-    } else { ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '900 18px "Big Shoulders Display", Impact, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('PINGED', W - 16, 38); }
+    } else { ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '900 18px "Geist", system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('PINGED', W - 16, 38); }
     if (el < total) TR.raf = requestAnimationFrame(draw);
   }
   TR.raf = requestAnimationFrame(draw);
@@ -959,7 +1097,7 @@ $('#passRestore').onclick = () => {
 
 /* ---------- privacy center ---------- */
 onShow['scr-privacy'] = () => {
-  $('#privPerms').innerHTML = '<span class="eyebrow">Einwilligungen</span>' + permRows('priv_') + `<p class="note">Erteilt am ${S.consents.at ? new Date(S.consents.at).toLocaleString('de-DE') : '–'}${S.minor ? ` · Einwilligung der Eltern (${esc(S.parent.mail)}) am ${S.parent.confirmedAt ? new Date(S.parent.confirmedAt).toLocaleDateString('de-DE') : '–'}` : ''}</p>`;
+  $('#privPerms').innerHTML = permRows('priv_') + `<p class="note">Erteilt am ${S.consents.at ? new Date(S.consents.at).toLocaleString('de-DE') : '–'}${S.minor ? ` · Einwilligung der Eltern (${esc(S.parent.mail)}) am ${S.parent.confirmedAt ? new Date(S.parent.confirmedAt).toLocaleDateString('de-DE') : '–'}` : ''}</p>`;
   PERMS.forEach(p => $('#priv_' + p.k).onchange = e => {
     S.consents[p.k] = e.target.checked; save(); renderData();
     toast(e.target.checked ? `${p.t}: erlaubt` : `${p.t}: widerrufen`);
@@ -1020,5 +1158,6 @@ function openDoc(k) {
 function boot() {
   if (S.profile && S.consents.agb) goHome(); else { S = fresh(); show('scr-welcome', false); }
   requestAnimationFrame(miniLoop);
+  loadGoogleMaps().catch(() => {});
 }
 boot();

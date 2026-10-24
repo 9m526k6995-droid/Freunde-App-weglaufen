@@ -2,244 +2,323 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Big+Shoulders+Display:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap">
 <style>
-/* Layout: one phone-width column, screens swap in place; the hunt is a full-bleed map with a HUD like a police scanner. */
+/* Layout: one phone column of large-title screens and inset grouped lists; the hunt is a full-bleed map under floating glass. */
 :root {
-  --asphalt: #14161b;
-  --panel: #1d2028;
-  --panel-2: #262a34;
-  --line: #343a47;
-  --fg: #ecebe6;
-  --muted: #9097a5;
-  --tape: #f3d433;
-  --tape-ink: #1a1700;
-  --hunt: #ff4f3e;
-  --run: #4fd88f;
-  --warn: #ff9d2e;
-  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
-  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --bg: #08090b;
+  --elev: #141518;
+  --elev-2: #1c1d21;
+  --glass: rgba(22, 23, 27, .72);
+  --hair: rgba(255, 255, 255, .08);
+  --fg: #f4f4f6;
+  --muted: #8d8e96;
+  --dim: #55565d;
+  --signal: #ffd60a;
+  --signal-ink: #141100;
+  --hunt: #ff453a;
+  --run: #32d74b;
+  --info: #0a84ff;
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r-lg: 22px;
+  --r-md: 16px;
   color-scheme: dark;
 }
 html, body { height: 100%; }
 body {
-  background: var(--asphalt); color: var(--fg);
-  font: 15px/1.5 var(--body);
-  -webkit-font-smoothing: antialiased;
+  background: var(--bg); color: var(--fg);
+  font: 400 16px/1.45 var(--sans); letter-spacing: -.005em;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 button, input, select, textarea { font: inherit; color: inherit; }
-a { color: var(--tape); }
-:focus-visible { outline: 2px solid var(--tape); outline-offset: 2px; }
+button { -webkit-tap-highlight-color: transparent; }
+a { color: var(--signal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 8px; }
+p { margin: 0; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
 .app {
-  max-width: 480px; margin: 0 auto; min-height: 100%;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 12px 32px;
+  max-width: 460px; margin: 0 auto; min-height: 100%;
+  padding-left: max(18px, env(safe-area-inset-left, 0px));
+  padding-right: max(18px, env(safe-area-inset-right, 0px));
+  padding-block: 10px 40px;
 }
-.screen { display: flex; flex-direction: column; gap: 18px; }
-.topbar { display: flex; align-items: center; gap: 10px; min-height: 44px; }
-.topbar h2 { margin: 0; flex: 1; font: 900 26px/1 var(--display); letter-spacing: .02em; text-transform: uppercase; }
-.iconbtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; cursor: pointer; font-size: 18px; }
+.screen { display: flex; flex-direction: column; gap: 20px; animation: enter .38s cubic-bezier(.2, .8, .2, 1); }
+@keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-h1, h2, h3 { text-wrap: balance; }
-.eyebrow { font: 700 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.lead { color: var(--muted); margin: 0; }
-p { margin: 0; }
+/* nav */
+.nav { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+.nav .bar { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+.nav h2 { font: 800 34px/1.05 var(--sans); letter-spacing: -.035em; }
+.circle {
+  width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(255, 255, 255, .08); display: grid; place-items: center; color: var(--fg);
+  transition: background .2s, transform .15s;
+}
+.circle:hover { background: rgba(255, 255, 255, .13); }
+.circle:active { transform: scale(.94); }
+.circle svg.i { width: 20px; height: 20px; }
 
+.eyebrow { font: 600 12px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.lead { color: var(--muted); font-size: 16px; }
+.note { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.demo-note { font-size: 13px; line-height: 1.45; color: #ffcf6b; background: rgba(255, 196, 0, .08); border-radius: 14px; padding: 10px 12px; }
+
+/* buttons */
 .btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 52px; padding: 0 18px; border-radius: 12px; border: 0; cursor: pointer;
-  font: 900 20px/1 var(--display); letter-spacing: .04em; text-transform: uppercase;
-  background: var(--tape); color: var(--tape-ink); width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 0 22px; border-radius: 999px; border: 0; cursor: pointer; width: 100%;
+  font: 600 17px/1 var(--sans); letter-spacing: -.01em;
+  background: var(--signal); color: var(--signal-ink);
+  transition: transform .15s, filter .2s, opacity .2s;
 }
-.btn:disabled { opacity: .35; cursor: not-allowed; }
-.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
-.btn.dark { background: var(--panel-2); color: var(--fg); }
+.btn:hover { filter: brightness(1.06); }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .3; cursor: not-allowed; transform: none; filter: none; }
+.btn.ghost, .btn.dark { background: rgba(255, 255, 255, .08); color: var(--fg); }
 .btn.red { background: var(--hunt); color: #fff; }
-.btn.small { min-height: 40px; font-size: 16px; }
+.btn.small { min-height: 46px; font-size: 15.5px; }
 .row { display: flex; gap: 10px; }
 .row > * { flex: 1; min-width: 0; }
 
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.note { font-size: 13px; color: var(--muted); }
-.demo-note { font: 500 12px/1.4 var(--mono); color: var(--warn); border: 1px dashed color-mix(in srgb, var(--warn) 55%, transparent); border-radius: 10px; padding: 8px 10px; }
+/* grouped lists */
+.card, .group { background: var(--elev); border-radius: var(--r-lg); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.group { padding: 0; gap: 0; overflow: hidden; }
+.group > * { padding: 14px 16px; }
+.group > * + * { border-top: 1px solid var(--hair); }
+.section-title { font: 600 13px/1 var(--sans); color: var(--muted); padding: 0 6px; margin-bottom: -10px; }
 
-/* caution tape */
-.tape {
-  background: repeating-linear-gradient(-45deg, var(--tape) 0 14px, var(--tape-ink) 14px 28px);
-  height: 10px; border-radius: 2px;
-}
-
-/* welcome */
-.hero { display: flex; flex-direction: column; gap: 14px; padding-top: 24px; }
-.logo { font: 900 clamp(64px, 22vw, 104px)/.82 var(--display); letter-spacing: -.01em; margin: 0; }
-.logo span { color: var(--tape); }
-.hero-map { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 4/3; max-width: 100%; background: var(--panel); }
-.hero-map canvas { width: 100%; height: 100%; display: block; }
-.banner {
-  background: var(--tape); color: var(--tape-ink); text-align: center;
-  font: 900 24px/1 var(--display); letter-spacing: .08em; padding: 10px 8px; text-transform: uppercase;
-}
-.hero-map .banner { position: absolute; left: 12px; right: 12px; top: 12px; border-radius: 4px; }
-
-/* forms */
-label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+label.field { display: flex; flex-direction: column; gap: 8px; font-weight: 500; font-size: 15px; }
 .input, select.input {
-  min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2);
-  padding: 0 12px; width: 100%;
+  min-height: 52px; border-radius: 14px; border: 1px solid transparent; background: rgba(255, 255, 255, .06);
+  padding: 0 14px; width: 100%; font-size: 17px; transition: border-color .2s, background .2s;
 }
-textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mono); }
-.check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
-.check input { width: 22px; height: 22px; accent-color: var(--tape); flex: none; margin: 1px 0 0; }
+.input:focus { outline: none; border-color: rgba(255, 214, 10, .6); background: rgba(255, 255, 255, .08); }
+textarea.input { padding: 12px 14px; min-height: 160px; font: 12px/1.5 var(--mono); }
+.check { display: flex; gap: 14px; align-items: flex-start; cursor: pointer; font-size: 15px; }
+.check input { appearance: none; width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--dim); flex: none; margin: 0; display: grid; place-items: center; cursor: pointer; transition: background .15s, border-color .15s; }
+.check input:checked { background: var(--signal); border-color: var(--signal); }
+.check input:checked::after { content: ""; width: 7px; height: 12px; border: solid var(--signal-ink); border-width: 0 2.5px 2.5px 0; transform: translateY(-1px) rotate(45deg); }
 .check .t { min-width: 0; }
-.check small { display: block; color: var(--muted); font-size: 13px; }
-.req { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--tape); margin-left: 4px; }
-.perm { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
-.perm:first-child { border-top: 0; padding-top: 0; }
-.perm .ic { width: 36px; height: 36px; border-radius: 9px; background: var(--panel-2); display: grid; place-items: center; }
-.perm .ic svg { width: 20px; height: 20px; stroke: var(--fg); fill: none; stroke-width: 1.8; }
-.perm b { display: block; }
-.perm small { color: var(--muted); font-size: 13px; display: block; }
-.switch { position: relative; width: 50px; height: 30px; flex: none; }
+.check small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.req { font: 600 10px/1 var(--sans); letter-spacing: .06em; color: var(--signal); margin-left: 6px; vertical-align: 2px; }
+
+.perm { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; }
+.perm .ic { width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, .07); display: grid; place-items: center; }
+.perm .ic svg { width: 18px; height: 18px; stroke: var(--fg); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.perm b { display: block; font-weight: 600; font-size: 15.5px; }
+.perm small { color: var(--muted); font-size: 13px; display: block; line-height: 1.4; }
+.switch { position: relative; width: 51px; height: 31px; flex: none; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
-.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--line); transition: background .2s; }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--fg); transition: transform .2s; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: rgba(120, 120, 128, .32); transition: background .25s; }
+.switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .25); transition: transform .25s cubic-bezier(.3, .7, .3, 1); }
 .switch input:checked + span { background: var(--run); }
 .switch input:checked + span::after { transform: translateX(20px); }
-.switch input:disabled + span { opacity: .5; }
-.switch input:focus-visible + span { outline: 2px solid var(--tape); outline-offset: 2px; }
-.colors { display: flex; gap: 10px; flex-wrap: wrap; }
-.colors button { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
-.colors button[aria-pressed="true"] { border-color: var(--fg); }
+.switch input:focus-visible + span { outline: 2px solid var(--signal); outline-offset: 2px; }
+.colors { display: flex; gap: 12px; flex-wrap: wrap; }
+.colors button { width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: 0 0 0 0 var(--fg); transition: box-shadow .2s, transform .15s; }
+.colors button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--fg); }
+
+/* welcome */
+.welcome { min-height: calc(100vh - 60px); justify-content: flex-end; gap: 22px; }
+.welcome-map { position: fixed; inset: 0 0 auto 0; height: 64vh; z-index: -1; }
+.welcome-map canvas { width: 100%; height: 100%; display: block; }
+.welcome-map::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 9, 11, .2) 0%, rgba(8, 9, 11, 0) 35%, var(--bg) 100%); }
+.logo { font: 900 clamp(68px, 21vw, 96px)/.86 var(--sans); letter-spacing: -.06em; }
+.logo .dot { display: inline-block; width: .17em; height: .17em; border-radius: 50%; background: var(--signal); margin-left: .04em; box-shadow: 0 0 0 0 rgba(255, 214, 10, .6); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 214, 10, .55); } 70% { box-shadow: 0 0 0 .35em rgba(255, 214, 10, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 214, 10, 0); } }
+.welcome .lead { font-size: 18px; max-width: 30ch; color: #b9bac1; }
 
 /* home */
-.player-chip { display: flex; align-items: center; gap: 10px; }
-.dot { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 25%, transparent); }
-.badge { font: 700 11px/1 var(--mono); letter-spacing: .1em; padding: 6px 8px; border-radius: 6px; background: var(--panel-2); color: var(--muted); text-transform: uppercase; white-space: nowrap; }
-.badge.pass { background: var(--tape); color: var(--tape-ink); }
-.badge.minor { background: color-mix(in srgb, var(--warn) 20%, var(--panel)); color: var(--warn); }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; text-align: center; }
-.stat b { display: block; font: 900 28px/1 var(--display); font-variant-numeric: tabular-nums; }
-.stat span { font: 500 10px/1.2 var(--mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
-.menu { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-.menu button { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px 16px; background: var(--panel); border: 0; border-top: 1px solid var(--line); cursor: pointer; text-align: left; }
-.menu button:first-child { border-top: 0; }
-.menu button small { color: var(--muted); }
+.home-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 6px; }
+.home-head .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 800 18px/1 var(--sans); color: #0b0b0b; flex: none; }
+.home-head b { font: 800 26px/1 var(--sans); letter-spacing: -.03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.home-head small { color: var(--muted); font-size: 13px; }
+.badge { font: 600 12px/1 var(--sans); padding: 8px 12px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: var(--muted); white-space: nowrap; }
+.badge.pass { background: var(--signal); color: var(--signal-ink); }
+.badge.minor { background: rgba(255, 159, 10, .15); color: #ffb340; }
+.map-card { position: relative; border-radius: 26px; overflow: hidden; aspect-ratio: 1 / .82; max-width: 100%; background: var(--elev); }
+.map-card canvas { width: 100%; height: 100%; display: block; }
+.map-card .float { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; gap: 10px; }
+.map-card .chip { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 999px; padding: 9px 14px; font: 500 13px/1 var(--sans); display: inline-flex; align-items: center; gap: 8px; }
+.livedot { width: 8px; height: 8px; border-radius: 50%; background: var(--run); box-shadow: 0 0 0 4px rgba(50, 215, 75, .2); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--elev); border-radius: var(--r-lg); padding: 16px 6px; }
+.stat { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.stat + .stat { border-left: 1px solid var(--hair); }
+.stat b { font: 700 24px/1 var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.menu { display: flex; flex-direction: column; background: var(--elev); border-radius: var(--r-lg); overflow: hidden; }
+.menu button { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; padding: 13px 16px; background: transparent; border: 0; cursor: pointer; text-align: left; transition: background .15s; }
+.menu button + button { border-top: 1px solid var(--hair); }
+.menu button:hover { background: rgba(255, 255, 255, .03); }
+.menu .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; }
+.menu .ic svg { width: 19px; height: 19px; }
+.menu b { font-weight: 600; font-size: 16px; display: block; }
+.menu small { color: var(--muted); font-size: 13px; }
+.menu .chev { color: var(--dim); }
 
 /* create */
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.mode { position: relative; text-align: left; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.mode b { font: 900 20px/1 var(--display); text-transform: uppercase; letter-spacing: .03em; }
-.mode small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
-.mode[aria-pressed="true"] { border-color: var(--tape); box-shadow: inset 0 0 0 1px var(--tape); }
-.mode .lock { position: absolute; top: 10px; right: 10px; font: 700 10px/1 var(--mono); color: var(--tape); }
-.mode:disabled { cursor: not-allowed; opacity: .55; }
-.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.seg button { flex: 1; min-height: 42px; background: var(--panel); border: 0; border-left: 1px solid var(--line); cursor: pointer; font: 700 13px/1 var(--mono); min-width: 0; }
-.seg button:first-child { border-left: 0; }
-.seg button[aria-pressed="true"] { background: var(--tape); color: var(--tape-ink); }
-.seg button:disabled { opacity: .4; cursor: not-allowed; }
-.zone-prev { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 1; max-width: 100%; }
+.mode { position: relative; text-align: left; padding: 14px; border-radius: 18px; border: 0; background: var(--elev); cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; box-shadow: inset 0 0 0 1.5px transparent; transition: box-shadow .2s, transform .15s, background .2s; }
+.mode:active { transform: scale(.98); }
+.mode .mi { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: rgba(255, 255, 255, .07); margin-bottom: 4px; }
+.mode .mi svg { width: 19px; height: 19px; }
+.mode b { font: 700 17px/1.1 var(--sans); letter-spacing: -.02em; }
+.mode small { color: var(--muted); font-size: 13px; line-height: 1.35; }
+.mode[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--signal); background: #1a1a14; }
+.mode[aria-pressed="true"] .mi { background: var(--signal); color: var(--signal-ink); }
+.mode .lock { position: absolute; top: 12px; right: 12px; font: 600 10.5px/1 var(--sans); letter-spacing: .04em; padding: 5px 7px; border-radius: 999px; background: rgba(255, 214, 10, .14); color: var(--signal); }
+.mode:disabled { cursor: not-allowed; opacity: .45; }
+.seg { display: flex; padding: 3px; gap: 2px; border-radius: 12px; background: rgba(118, 118, 128, .2); }
+.seg button { flex: 1; min-height: 36px; background: transparent; border: 0; border-radius: 9px; cursor: pointer; font: 600 14px/1 var(--sans); min-width: 0; color: var(--fg); transition: background .2s, box-shadow .2s; }
+.seg button[aria-pressed="true"] { background: #636366; box-shadow: 0 3px 8px rgba(0, 0, 0, .3); }
+.seg button[data-lock] { color: var(--dim); }
+.setting { display: flex; flex-direction: column; gap: 10px; }
+.setting > span { font-size: 14px; color: var(--muted); font-weight: 500; }
+.zone-prev { border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 1; max-width: 100%; background: var(--elev); }
 .zone-prev canvas { width: 100%; height: 100%; display: block; }
-.blocked-list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
-.blocked-list div { display: flex; gap: 8px; align-items: center; }
-.blocked-list i { width: 12px; height: 12px; border-radius: 3px; background: repeating-linear-gradient(-45deg, var(--hunt) 0 3px, transparent 3px 6px); border: 1px solid var(--hunt); flex: none; }
+.blocked-list { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #c9cad0; }
+.blocked-list div { display: flex; gap: 10px; align-items: center; }
+.blocked-list i { width: 10px; height: 10px; border-radius: 3px; background: var(--hunt); flex: none; }
 
 /* lobby */
-.code { font: 700 40px/1 var(--mono); letter-spacing: .2em; text-align: center; color: var(--tape); }
-.plist { display: flex; flex-direction: column; gap: 8px; }
-.pl { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); }
-.pl .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pl .ok { font: 700 11px/1 var(--mono); color: var(--run); }
-.pl .wait { font: 700 11px/1 var(--mono); color: var(--muted); }
+.code { font: 700 44px/1 var(--mono); letter-spacing: .14em; text-align: center; }
+.code-card { align-items: center; padding: 22px 16px; gap: 10px; text-align: center; }
+.plist { display: flex; flex-direction: column; background: var(--elev); border-radius: var(--r-lg); overflow: hidden; }
+.pl { display: flex; align-items: center; gap: 12px; padding: 12px 16px; animation: enter .3s ease-out; }
+.pl + .pl { border-top: 1px solid var(--hair); }
+.pl .avatar { width: 34px; height: 34px; font-size: 14px; }
+.pl .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pl .ok { font: 600 12px/1 var(--sans); color: var(--run); }
+.pl .wait { font: 600 12px/1 var(--sans); color: var(--muted); }
+.play-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pm { text-align: left; border: 0; border-radius: 18px; padding: 14px; background: var(--elev); cursor: pointer; display: flex; flex-direction: column; gap: 4px; box-shadow: inset 0 0 0 1.5px transparent; transition: box-shadow .2s; min-width: 0; }
+.pm b { font-weight: 700; font-size: 16px; }
+.pm small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.pm[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--signal); }
 
 /* role */
-.rolecard { border-radius: 18px; padding: 28px 20px; text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; border: 2px solid var(--line); background: var(--panel); }
-.rolecard .big { font: 900 64px/.9 var(--display); text-transform: uppercase; }
-.rolecard.hunter { border-color: var(--hunt); }
-.rolecard.hunter .big { color: var(--hunt); }
-.rolecard.runner { border-color: var(--run); }
-.rolecard.runner .big { color: var(--run); }
-.rolecard.traitor { border-color: var(--tape); background: repeating-linear-gradient(-45deg, var(--panel) 0 18px, color-mix(in srgb, var(--tape) 8%, var(--panel)) 18px 36px); }
-.rolecard.traitor .big { color: var(--tape); }
-@keyframes flip { from { transform: rotateY(90deg) scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
-.rolecard.show { animation: flip .6s cubic-bezier(.2,.8,.2,1); }
+.rolecard { border-radius: 30px; padding: 40px 22px 30px; text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; background: var(--elev); position: relative; overflow: hidden; }
+.rolecard::before { content: ""; position: absolute; inset: -40% -20% auto; height: 80%; background: radial-gradient(closest-side, var(--rc, var(--signal)), transparent); opacity: .22; }
+.rolecard > * { position: relative; }
+.rolecard .glyph { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: var(--rc); color: #0b0b0b; }
+.rolecard .glyph svg { width: 40px; height: 40px; stroke-width: 2.2; }
+.rolecard .big { font: 900 54px/.95 var(--sans); letter-spacing: -.05em; }
+.rolecard.hunter { --rc: var(--hunt); }
+.rolecard.runner { --rc: var(--run); }
+.rolecard.traitor { --rc: var(--signal); }
+.rolecard p { max-width: 34ch; color: #c9cad0; }
+@keyframes reveal { from { transform: scale(.92) translateY(14px); opacity: 0; filter: blur(8px); } to { transform: none; opacity: 1; filter: none; } }
+.rolecard.show { animation: reveal .6s cubic-bezier(.2, .8, .2, 1); }
 
 /* game */
-.game { position: fixed; inset: 0; background: #0f1115; z-index: 20; display: flex; flex-direction: column; }
+.game { position: fixed; inset: 0; background: #0b0c0f; z-index: 20; overflow: hidden; }
+.game #gameMap { position: absolute; inset: 0; }
 .game canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
-.hud-top { position: relative; z-index: 2; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.hud-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(12,13,16,.86); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; gap: 10px; }
-.hud-bar .brand { font: 700 13px/1.1 var(--mono); letter-spacing: .06em; }
-.hud-bar .brand em { font-style: normal; display: block; color: var(--tape); }
-.hud-bar .clock { font: 700 30px/1 var(--mono); font-variant-numeric: tabular-nums; }
-.hud-banner { background: var(--tape); color: var(--tape-ink); text-align: center; font: 900 28px/1 var(--display); letter-spacing: .1em; padding: 10px; border-radius: 3px; text-transform: uppercase; }
-.hud-banner.red { background: var(--hunt); color: #fff; }
-.hud-banner.green { background: var(--run); color: #062014; }
-@keyframes slam { 0% { transform: scale(1.4); opacity: 0; } 40% { transform: scale(.97); opacity: 1; } 100% { transform: none; } }
-.hud-banner.anim { animation: slam .45s ease-out; }
-.hud-info { align-self: flex-start; background: rgba(12,13,16,.86); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: 500 12px/1.4 var(--mono); }
-.hud-bottom { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 12px) max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 8px; }
-.hud-panel { background: rgba(12,13,16,.9); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-.hud-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 700 15px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
-.hud-line .big { font-size: 22px; }
-.hud-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.hud-actions button { flex: 1 1 auto; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font: 700 13px/1.1 var(--mono); padding: 6px 10px; min-width: 0; }
-.hud-actions button.hot { background: var(--tape); color: var(--tape-ink); border-color: var(--tape); }
-.hud-actions button.catch { background: var(--hunt); color: #fff; border-color: var(--hunt); font-size: 18px; }
-.hud-actions button:disabled { opacity: .4; }
-.sos { position: relative; overflow: hidden; background: transparent !important; border-color: var(--hunt) !important; color: var(--hunt); flex: 0 0 auto !important; }
-.sos i { position: absolute; inset: 0; background: var(--hunt); transform-origin: left; transform: scaleX(0); opacity: .45; }
-.compass { display: flex; align-items: center; gap: 10px; }
-.compass svg { width: 34px; height: 34px; flex: none; }
-.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(8,9,11,.82); display: grid; place-items: center; padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
-.overlay .card { max-width: 420px; width: 100%; max-height: 90vh; overflow: auto; }
-.overlay h3 { margin: 0; font: 900 30px/1 var(--display); text-transform: uppercase; }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); z-index: 50; background: var(--fg); color: var(--asphalt); padding: 10px 14px; border-radius: 10px; font-weight: 700; max-width: calc(100% - 32px); text-align: center; }
+.game.gmap canvas { pointer-events: none; }
+.glass { background: var(--glass); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(255, 255, 255, .06); }
+.hud-top { position: absolute; z-index: 2; left: 0; right: 0; top: 0; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+.hud-bar { width: 100%; max-width: 460px; display: flex; justify-content: space-between; align-items: center; border-radius: 22px; padding: 10px 12px 10px 14px; gap: 10px; }
+.hud-bar .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hud-bar .rdot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.hud-bar .brand b { font: 700 15px/1.1 var(--sans); display: block; letter-spacing: -.01em; }
+.hud-bar .brand small { font: 500 12px/1.1 var(--sans); color: var(--muted); display: block; }
+.hud-bar .clock { font: 600 28px/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.island { display: inline-flex; align-items: center; gap: 10px; background: #000; color: var(--signal); border-radius: 999px; padding: 12px 20px 12px 14px; font: 800 17px/1 var(--sans); letter-spacing: .02em; text-transform: uppercase; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.island::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent); }
+.island.red { color: var(--hunt); }
+.island.green { color: var(--run); }
+@keyframes drop { 0% { transform: translateY(-30px) scale(.7); opacity: 0; } 60% { transform: translateY(2px) scale(1.04); opacity: 1; } 100% { transform: none; } }
+.island.anim { animation: drop .5s cubic-bezier(.2, .9, .3, 1.2); }
+.hud-info { font: 500 13px/1.3 var(--sans); padding: 8px 14px; border-radius: 999px; }
+.hud-bottom { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; padding: 0 max(10px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 10px) max(10px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+.hud-bottom > * { pointer-events: auto; }
+.catch-btn { min-height: 64px; padding: 0 34px; border-radius: 999px; border: 0; background: var(--hunt); color: #fff; font: 800 20px/1 var(--sans); letter-spacing: .04em; cursor: pointer; box-shadow: 0 12px 30px rgba(255, 69, 58, .45); animation: drop .4s ease-out; }
+.sheet { width: 100%; max-width: 460px; border-radius: 28px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.sheet-main { display: flex; align-items: center; gap: 14px; }
+.ring { position: relative; width: 58px; height: 58px; flex: none; }
+.ring svg { width: 58px; height: 58px; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 5; }
+.ring .bgc { stroke: rgba(255, 255, 255, .1); }
+.ring .fgc { stroke: var(--signal); stroke-linecap: round; transition: stroke-dashoffset .3s linear; }
+.ring .ic { position: absolute; inset: 0; display: grid; place-items: center; color: var(--signal); }
+.ring .ic svg { width: 22px; height: 22px; transform: none; }
+.sheet-txt { flex: 1; min-width: 0; }
+.sheet-txt small { display: block; font: 500 13px/1.2 var(--sans); color: var(--muted); }
+.sheet-txt b { display: block; font: 700 30px/1.05 var(--mono); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.compass { display: flex; align-items: center; gap: 8px; padding: 8px 12px 8px 8px; border-radius: 999px; background: rgba(255, 255, 255, .06); flex: none; }
+.compass svg { width: 30px; height: 30px; flex: none; }
+.compass span { font: 600 12.5px/1.2 var(--sans); }
+.items { display: flex; gap: 8px; flex-wrap: wrap; }
+.items:empty { display: none; }
+.items button { min-height: 40px; border-radius: 999px; border: 0; background: rgba(255, 214, 10, .14); color: var(--signal); cursor: pointer; font: 600 14px/1 var(--sans); padding: 0 16px; }
+.items button:disabled { opacity: .4; }
+.actions { display: flex; gap: 8px; }
+.actions button { flex: 1; min-height: 46px; border-radius: 16px; border: 0; background: rgba(255, 255, 255, .07); cursor: pointer; font: 600 14px/1 var(--sans); display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; color: var(--fg); }
+.actions button svg.i { width: 18px; height: 18px; }
+.sos { position: relative; overflow: hidden; color: var(--hunt) !important; background: rgba(255, 69, 58, .12) !important; }
+.sos i { position: absolute; inset: 0; background: var(--hunt); transform-origin: left; transform: scaleX(0); opacity: .5; }
+.sos span { position: relative; }
+
+/* overlay sheet */
+.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, .55); display: flex; align-items: flex-end; justify-content: center; padding: 10px max(10px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 10px) max(10px, env(safe-area-inset-left, 0px)); animation: fade .2s ease-out; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes up { from { transform: translateY(40px); opacity: 0; } }
+.overlay .card { max-width: 460px; width: 100%; max-height: 88vh; overflow: auto; border-radius: 28px; padding: 22px 18px 18px; background: var(--elev-2); animation: up .3s cubic-bezier(.2, .8, .2, 1); }
+.overlay h3 { font: 800 26px/1.1 var(--sans); letter-spacing: -.03em; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 14px); z-index: 60; background: #f4f4f6; color: #0b0b0b; padding: 12px 18px; border-radius: 999px; font: 600 14.5px/1.3 var(--sans); max-width: calc(100% - 32px); text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, .4); animation: drop .35s ease-out; }
 
 /* end */
-.result { text-align: center; display: flex; flex-direction: column; gap: 8px; padding-top: 10px; }
-.result .big { font: 900 54px/.9 var(--display); text-transform: uppercase; }
-.reveal { border: 2px dashed var(--tape); border-radius: 14px; padding: 14px; text-align: center; }
-.reveal b { font: 900 30px/1 var(--display); color: var(--tape); text-transform: uppercase; }
-.table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.table th, .table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
-.table th { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
-.table td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+.result { text-align: center; display: flex; flex-direction: column; gap: 10px; padding-top: 24px; align-items: center; }
+.result .big { font: 900 64px/.9 var(--sans); letter-spacing: -.06em; }
+.reveal { border-radius: var(--r-lg); padding: 18px; text-align: center; background: rgba(255, 214, 10, .08); display: flex; flex-direction: column; gap: 6px; }
+.reveal b { font: 900 34px/1 var(--sans); color: var(--signal); letter-spacing: -.04em; }
+.table-wrap { background: var(--elev); border-radius: var(--r-lg); overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.table th, .table td { text-align: left; padding: 12px 7px; }
+.table tr + tr td { border-top: 1px solid var(--hair); }
+.table th { font: 600 12px/1 var(--sans); color: var(--muted); padding-top: 14px; }
+.table td.num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table td:first-child, .table th:first-child { padding-left: 16px; }
+.table td:last-child, .table th:last-child { padding-right: 16px; }
+.pdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 8px; }
 
 /* trailer */
-.trailer-wrap { position: relative; border-radius: 14px; overflow: hidden; background: #000; aspect-ratio: 9/16; max-width: 100%; max-height: 70vh; margin: 0 auto; width: 100%; }
+.trailer-wrap { position: relative; border-radius: 26px; overflow: hidden; background: #000; aspect-ratio: 9 / 16; max-width: 100%; max-height: 68vh; margin: 0 auto; width: 100%; }
 .trailer-wrap canvas { width: 100%; height: 100%; display: block; }
 
 /* pass */
-.pass-hero { border-radius: 18px; padding: 22px 18px; background: var(--tape); color: var(--tape-ink); display: flex; flex-direction: column; gap: 6px; }
-.pass-hero .t { font: 900 46px/.9 var(--display); text-transform: uppercase; }
-.pass-hero .p { font: 900 34px/1 var(--display); }
-.pass-hero .p small { font: 700 13px/1 var(--mono); }
-.feat { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
-.feat b { font: 900 18px/1.2 var(--display); text-transform: uppercase; letter-spacing: .03em; grid-column: 2; }
-.feat p { grid-column: 2; color: var(--muted); font-size: 13.5px; }
-.feat i { grid-row: span 2; font: 700 12px/1.6 var(--mono); color: var(--tape); font-style: normal; }
-.cmp { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.cmp th, .cmp td { padding: 9px 6px; border-bottom: 1px solid var(--line); text-align: left; }
-.cmp th { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
-.cmp td:nth-child(n+2) { text-align: center; white-space: nowrap; }
+.pass-hero { border-radius: 28px; padding: 26px 22px; background: radial-gradient(120% 120% at 100% 0%, #fff3a3 0%, var(--signal) 40%, #ff9f0a 100%); color: var(--signal-ink); display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+.pass-hero .t { font: 900 40px/.95 var(--sans); letter-spacing: -.05em; }
+.pass-hero .p { font: 800 30px/1 var(--sans); letter-spacing: -.03em; }
+.pass-hero .p small { font: 600 13px/1 var(--sans); opacity: .7; letter-spacing: 0; }
+.feat { display: grid; grid-template-columns: 38px 1fr; gap: 2px 14px; align-items: start; }
+.feat .fi { grid-row: span 2; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(255, 214, 10, .12); color: var(--signal); }
+.feat .fi svg { width: 19px; height: 19px; }
+.feat b { font-weight: 700; font-size: 16px; }
+.feat p { color: var(--muted); font-size: 14px; }
+.cmp { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cmp th, .cmp td { padding: 11px 6px; text-align: left; }
+.cmp tr + tr td { border-top: 1px solid var(--hair); }
+.cmp th { font: 600 12px/1 var(--sans); color: var(--muted); }
+.cmp td:nth-child(n+2), .cmp th:nth-child(n+2) { text-align: center; white-space: nowrap; }
+.cmp td:last-child { color: var(--signal); font-weight: 600; }
 
 /* legal doc */
-.doc { display: flex; flex-direction: column; gap: 10px; }
-.doc h1 { font: 900 34px/1 var(--display); text-transform: uppercase; margin: 0; }
-.doc h2 { font: 900 22px/1.1 var(--display); text-transform: uppercase; margin: 14px 0 0; letter-spacing: .02em; }
-.doc h3 { font: 700 15px/1.3 var(--body); margin: 8px 0 0; }
-.doc p, .doc li { color: color-mix(in srgb, var(--fg) 88%, var(--muted)); max-width: 65ch; }
+.doc { display: flex; flex-direction: column; gap: 12px; }
+.doc h1 { font: 800 30px/1.1 var(--sans); letter-spacing: -.03em; }
+.doc h2 { font: 700 20px/1.2 var(--sans); letter-spacing: -.02em; margin-top: 14px; }
+.doc h3 { font: 600 16px/1.3 var(--sans); margin-top: 6px; }
+.doc p, .doc li { color: #c9cad0; max-width: 65ch; font-size: 15.5px; }
 .doc ul, .doc ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
-.doc mark { background: color-mix(in srgb, var(--warn) 25%, transparent); color: var(--warn); border-radius: 3px; padding: 0 2px; }
-.doc .draft { font: 500 12px/1.4 var(--mono); color: var(--warn); }
+.doc mark { background: rgba(255, 159, 10, .16); color: #ffb340; border-radius: 4px; padding: 0 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -249,38 +328,33 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 <div class="app" id="app">
 
 <!-- WELCOME -->
-<section class="screen" id="scr-welcome" hidden>
-  <div class="hero">
-    <span class="eyebrow">Manhunt in echt · ab 14</span>
-    <h1 class="logo">PING<span>ED</span></h1>
-    <p class="lead">Jäger gegen Läufer, draußen in deiner Stadt. Die Jäger sehen dich nur, wenn du gepingt wirst. Dazwischen gehört die Straße dir.</p>
-  </div>
-  <div class="hero-map"><canvas id="heroCanvas" width="600" height="450"></canvas><div class="banner">Ping detected</div></div>
-  <div class="demo-note">Prototyp: Die Runde wird mit computergesteuerten Mitspielern auf einer Beispielkarte simuliert. Käufe und E-Mails sind nur angedeutet.</div>
-  <button class="btn" id="welcomeGo">Konto erstellen</button>
-  <p class="note">Mit dem Erstellen eines Kontos bestätigst du im nächsten Schritt AGB, Datenschutz und Sicherheitsregeln.</p>
+<section class="screen welcome" id="scr-welcome" hidden>
+  <div class="welcome-map"><canvas id="heroCanvas"></canvas></div>
+  <span class="eyebrow">Manhunt in echt · ab 14</span>
+  <h1 class="logo">PINGED<span class="dot"></span></h1>
+  <p class="lead">Jäger gegen Läufer, draußen in deiner Stadt. Die Jäger sehen dich nur, wenn du gepingt wirst.</p>
+  <button class="btn" id="welcomeGo">Loslegen</button>
+  <p class="note" style="text-align:center">Im nächsten Schritt bestätigst du AGB, Datenschutz und Sicherheitsregeln.</p>
 </section>
 
 <!-- AGE -->
 <section class="screen" id="scr-age" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Dein Alter</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 1 von 4</span><span style="width:40px"></span></div><h2>Wie alt bist du?</h2></div>
   <p class="lead">PINGED ist ab 14. Unter 18 brauchst du das Okay deiner Eltern und spielst nur private Runden bis 22 Uhr.</p>
-  <div class="card">
-    <label class="field" for="dob">Geburtsdatum<input class="input" type="date" id="dob" max="2026-10-24"></label>
-    <p class="note" id="ageMsg">Wir speichern dein Geburtsdatum nur, um Altersgrenzen einzuhalten.</p>
-  </div>
+  <label class="field" for="dob">Geburtsdatum<input class="input" type="date" id="dob" max="2026-10-24"></label>
+  <p class="note" id="ageMsg">Wir speichern dein Geburtsdatum nur, um Altersgrenzen einzuhalten.</p>
   <button class="btn" id="ageGo" disabled>Weiter</button>
 </section>
 
 <!-- PARENT -->
 <section class="screen" id="scr-parent" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Okay der Eltern</h2></div>
-  <p class="lead">Du bist unter 18. Ein Erziehungsberechtigter muss zustimmen, bevor du spielen kannst.</p>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 2 von 4</span><span style="width:40px"></span></div><h2>Okay der Eltern</h2></div>
+  <p class="lead">Ein Erziehungsberechtigter muss zustimmen, bevor du spielen kannst.</p>
   <div class="card">
     <label class="field" for="parentMail">E-Mail eines Erziehungsberechtigten<input class="input" type="email" id="parentMail" placeholder="mama@beispiel.de" autocomplete="off"></label>
     <p class="note">Wir schicken die <a href="#" data-doc="eltern">Einverständniserklärung</a> an diese Adresse. Sie wird auch dein Notfallkontakt für den SOS-Knopf.</p>
     <button class="btn dark small" id="parentSend" disabled>Bestätigung anfordern</button>
-    <div id="parentSent" hidden class="demo-note">Demo: Hier würde jetzt eine E-Mail mit Bestätigungslink rausgehen. Tippe unten, um die Bestätigung durch die Eltern zu simulieren.</div>
+    <div id="parentSent" hidden class="demo-note">Demo: Hier geht jetzt eine E-Mail mit Bestätigungslink raus. Tippe unten, um die Bestätigung zu simulieren.</div>
     <button class="btn ghost small" id="parentConfirm" hidden>Eltern haben bestätigt (Demo)</button>
   </div>
   <button class="btn" id="parentGo" disabled>Weiter</button>
@@ -288,35 +362,34 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 
 <!-- CONSENT -->
 <section class="screen" id="scr-consent" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Einwilligungen</h2></div>
-  <p class="lead">Du entscheidest. Alles außer dem Standort ist freiwillig und lässt sich später im Datenschutz-Center ändern.</p>
-  <div class="card">
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 3 von 4</span><span style="width:40px"></span></div><h2>Deine Einwilligungen</h2></div>
+  <p class="lead">Alles außer dem Standort ist freiwillig und jederzeit im Datenschutz-Center änderbar.</p>
+  <div class="group">
     <label class="check" for="cAgb"><input type="checkbox" id="cAgb"><span class="t">Ich akzeptiere die <a href="#" data-doc="agb">AGB</a>.<span class="req">PFLICHT</span></span></label>
     <label class="check" for="cDs"><input type="checkbox" id="cDs"><span class="t">Ich habe die <a href="#" data-doc="datenschutz">Datenschutzerklärung</a> gelesen.<span class="req">PFLICHT</span></span></label>
-    <label class="check" for="cSafe"><input type="checkbox" id="cSafe"><span class="t">Ich halte mich an die <a href="#" data-doc="sicherheit">10 Sicherheitsregeln</a>: Verkehr geht vor, nur öffentliche Orte, kein Körperkontakt. Ich spiele auf eigene Verantwortung.<span class="req">PFLICHT</span></span></label>
+    <label class="check" for="cSafe"><input type="checkbox" id="cSafe"><span class="t">Ich halte mich an die <a href="#" data-doc="sicherheit">10 Sicherheitsregeln</a> und spiele auf eigene Verantwortung.<span class="req">PFLICHT</span><small>Verkehr geht vor, nur öffentliche Orte, kein Körperkontakt.</small></span></label>
   </div>
-  <div class="card" id="permList"></div>
+  <span class="section-title">Berechtigungen</span>
+  <div class="group" id="permList"></div>
   <button class="btn" id="consentGo" disabled>Weiter</button>
 </section>
 
 <!-- PROFILE -->
 <section class="screen" id="scr-profile" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Dein Profil</h2></div>
-  <div class="card">
-    <label class="field" for="pName">Spielername<input class="input" id="pName" maxlength="14" placeholder="z. B. Cyrus" autocomplete="off"></label>
-    <div class="field">Deine Ping-Farbe<div class="colors" id="colorPick"></div></div>
-    <label class="field" for="pEmergency" id="emergencyField">Notfallkontakt für SOS (Telefon oder E-Mail, optional)<input class="input" id="pEmergency" placeholder="+49 …" autocomplete="off"></label>
-  </div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 4 von 4</span><span style="width:40px"></span></div><h2>Dein Profil</h2></div>
+  <label class="field" for="pName">Spielername<input class="input" id="pName" maxlength="14" placeholder="z. B. Cyrus" autocomplete="off"></label>
+  <div class="field">Deine Farbe auf der Karte<div class="colors" id="colorPick"></div></div>
+  <label class="field" for="pEmergency" id="emergencyField">Notfallkontakt für SOS (optional)<input class="input" id="pEmergency" placeholder="Telefon oder E-Mail" autocomplete="off"></label>
   <button class="btn" id="profileGo" disabled>Fertig</button>
 </section>
 
 <!-- HOME -->
 <section class="screen" id="scr-home" hidden>
-  <div class="topbar">
-    <div class="player-chip" style="flex:1;min-width:0"><span class="dot" id="homeDot"></span><b id="homeName" style="font:900 26px/1 var(--display);text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b></div>
+  <div class="home-head">
+    <div class="who"><span class="avatar" id="homeDot"></span><div style="min-width:0"><small>Bereit für die Jagd</small><b id="homeName"></b></div></div>
     <span class="badge" id="homeBadge">Free</span>
   </div>
-  <div class="hero-map" style="aspect-ratio:16/10"><canvas id="homeCanvas" width="640" height="400"></canvas><div class="banner" style="font-size:18px">Bereit für die Jagd</div></div>
+  <div class="map-card"><canvas id="homeCanvas"></canvas><div class="float"><span class="chip"><span class="livedot"></span>4 Läufer gepingt</span></div></div>
   <div class="row">
     <button class="btn" id="goCreate">Runde erstellen</button>
   </div>
@@ -328,156 +401,160 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
     <div class="stat"><b id="stKm">0,0</b><span>km</span></div>
   </div>
   <div class="menu">
-    <button id="goPass"><span><b>PINGED Pass</b><br><small id="passMenuSub">19,99 € einmalig, kein Abo</small></span><span>→</span></button>
-    <button id="goPrivacy"><span><b>Datenschutz-Center</b><br><small>Einwilligungen, Datenexport, Konto löschen</small></span><span>→</span></button>
-    <button id="goLegal"><span><b>Rechtliches</b><br><small>AGB, Datenschutz, Impressum, Widerruf</small></span><span>→</span></button>
+    <button id="goPass"><span class="ic" style="background:var(--signal);color:var(--signal-ink)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg></span><span><b>PINGED Pass</b><small id="passMenuSub">19,99 € einmalig, kein Abo</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button id="goPrivacy"><span class="ic" style="background:var(--info)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></span><span><b>Datenschutz-Center</b><small>Einwilligungen, Datenexport, Konto löschen</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button id="goLegal"><span class="ic" style="background:#5e5ce6"><svg class="i" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg></span><span><b>Rechtliches</b><small>AGB, Datenschutz, Impressum, Widerruf</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>
 </section>
 
 <!-- CREATE -->
 <section class="screen" id="scr-create" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Neue Runde</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Neue Runde</h2></div>
   <div id="nightBlock" class="demo-note" hidden></div>
-  <div class="field"><span class="eyebrow">Modus</span><div class="modes" id="modes"></div></div>
+  <div class="modes" id="modes"></div>
   <div class="card">
-    <div class="field"><span class="eyebrow">Spieler (inkl. dir)</span><div class="seg" id="segPlayers"></div></div>
-    <div class="field"><span class="eyebrow">Dauer</span><div class="seg" id="segDur"></div></div>
-    <div class="field"><span class="eyebrow">Ping alle</span><div class="seg" id="segPing"></div></div>
-    <div class="field"><span class="eyebrow">Vorsprung Läufer</span><div class="seg" id="segHead"></div></div>
-    <div class="field"><span class="eyebrow">Deine Rolle</span><div class="seg" id="segRole"></div></div>
+    <div class="setting"><span>Spieler inklusive dir</span><div class="seg" id="segPlayers"></div></div>
+    <div class="setting"><span>Dauer</span><div class="seg" id="segDur"></div></div>
+    <div class="setting"><span>Ping alle</span><div class="seg" id="segPing"></div></div>
+    <div class="setting"><span>Vorsprung für Läufer</span><div class="seg" id="segHead"></div></div>
+    <div class="setting"><span>Deine Rolle</span><div class="seg" id="segRole"></div></div>
   </div>
-  <div class="card">
-    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z"/></svg></span><span><b>Loot auf der Karte</b><small>Kisten mit Fake-Ping, Unsichtbar, Scan und Drohne</small></span><label class="switch"><input type="checkbox" id="optLoot" aria-label="Loot"><span></span></label></div>
-    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1"/><rect x="17" y="14" width="4" height="6" rx="1"/></svg></span><span><b>KI-Spielleitung im Ohr</b><small>Live-Ansagen und Herzschlag, wenn ein Jäger nah ist</small></span><label class="switch"><input type="checkbox" id="optVoice" aria-label="KI-Spielleitung"><span></span></label></div>
-    <p class="note" id="passHint"></p>
+  <div class="group">
+    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 8l8-5 8 5v8l-8 5-8-5z"/><path d="M4 8l8 5 8-5M12 13v8"/></svg></span><span><b>Loot auf der Karte</b><small>Fake-Ping, Unsichtbar, Scan und Drohne</small></span><label class="switch"><input type="checkbox" id="optLoot" aria-label="Loot"><span></span></label></div>
+    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></span><span><b>KI-Spielleitung im Ohr</b><small>Live-Ansagen und Herzschlag, wenn Jäger nah sind</small></span><label class="switch"><input type="checkbox" id="optVoice" aria-label="KI-Spielleitung"><span></span></label></div>
   </div>
-  <div class="field">
-    <span class="eyebrow">Spielzone · Radius 320 m · automatisch geprüft</span>
-    <div class="zone-prev"><canvas id="zoneCanvas" width="600" height="600"></canvas></div>
-    <div class="blocked-list" id="blockedList"></div>
-  </div>
+  <p class="note" id="passHint" style="margin-top:-8px;padding:0 6px"></p>
+  <span class="section-title">Spielzone · 320 m Radius</span>
+  <div class="zone-prev"><canvas id="zoneCanvas"></canvas></div>
+  <div class="blocked-list" id="blockedList"></div>
   <button class="btn" id="createGo">Lobby öffnen</button>
 </section>
 
 <!-- JOIN -->
 <section class="screen" id="scr-join" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Beitreten</h2></div>
-  <div class="card">
-    <label class="field" for="joinCode">Runden-Code<input class="input" id="joinCode" maxlength="6" placeholder="z. B. 7K4QX2" autocomplete="off" style="font:700 24px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase"></label>
-    <p class="note">Demo: Jeder 6-stellige Code bringt dich in die Lobby von Dominick. Dominick hat den Pass, also bekommst du in seiner Runde alle Pass-Funktionen.</p>
-  </div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Beitreten</h2></div>
+  <label class="field" for="joinCode">Runden-Code<input class="input" id="joinCode" maxlength="6" placeholder="7K4QX2" autocomplete="off" style="font:600 28px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;text-align:center;min-height:68px"></label>
+  <p class="note">Demo: Jeder 6-stellige Code bringt dich in die Lobby von Dominick. Er hat den Pass, also bekommst du in seiner Runde alle Pass-Funktionen.</p>
   <button class="btn" id="joinGo" disabled>Beitreten</button>
 </section>
 
 <!-- LOBBY -->
 <section class="screen" id="scr-lobby" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Lobby</h2></div>
-  <div class="card" style="align-items:center">
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Lobby</h2></div>
+  <div class="card code-card">
     <span class="eyebrow">Runden-Code</span>
     <div class="code" id="lobbyCode"></div>
-    <p class="note" id="lobbyMeta" style="text-align:center"></p>
+    <p class="note" id="lobbyMeta"></p>
   </div>
   <div class="plist" id="lobbyPlayers"></div>
-  <div class="card">
-    <span class="eyebrow">Zustimmung für diese Runde</span>
+  <span class="section-title">Wo spielst du?</span>
+  <div class="play-mode" id="playMode">
+    <button class="pm" data-v="gps"><b>Echt draußen</b><small>Dein GPS-Standort, echte Zeit</small></button>
+    <button class="pm" data-v="demo"><b>Demo</b><small>Auf der Karte tippen, 10-fache Zeit</small></button>
+  </div>
+  <p class="note" id="gpsStatus" style="padding:0 6px;margin-top:-8px"></p>
+  <span class="section-title">Zustimmung für diese Runde</span>
+  <div class="group">
     <label class="check" for="rcLoc"><input type="checkbox" id="rcLoc"><span class="t">Ich teile meinen Standort mit den <span id="rcN"></span> Spielern dieser Runde, bis die Runde endet.<span class="req">PFLICHT</span><small>Danach wird er gelöscht.</small></span></label>
-    <label class="check" for="rcFilm"><input type="checkbox" id="rcFilm"><span class="t">Mitspieler dürfen mich filmen, Clips von mir dürfen im Trailer erscheinen.<small>Freiwillig. Ohne Haken wirst du im Trailer nur als Punkt gezeigt.</small></span></label>
+    <label class="check" for="rcFilm"><input type="checkbox" id="rcFilm"><span class="t">Mitspieler dürfen mich filmen und Clips von mir im Trailer zeigen.<small>Freiwillig. Ohne Haken bist du im Trailer nur ein Punkt.</small></span></label>
   </div>
   <button class="btn" id="lobbyGo" disabled>Warte auf Spieler …</button>
 </section>
 
 <!-- ROLE -->
 <section class="screen" id="scr-role" hidden>
+  <div style="height:4vh"></div>
   <div class="rolecard" id="roleCard"></div>
-  <button class="btn" id="roleGo">Los</button>
+  <button class="btn" id="roleGo">Los geht's</button>
 </section>
 
 <!-- END -->
 <section class="screen" id="scr-end" hidden>
   <div class="result" id="endResult"></div>
   <div id="endReveal"></div>
-  <div class="card" style="overflow-x:auto"><table class="table" id="endTable"></table></div>
+  <div class="table-wrap"><table class="table" id="endTable"></table></div>
   <button class="btn" id="endTrailer">Trailer ansehen</button>
-  <div class="row"><button class="btn ghost small" id="endAgain">Revanche</button><button class="btn ghost small" id="endHome">Zur Startseite</button></div>
+  <div class="row"><button class="btn ghost small" id="endAgain">Revanche</button><button class="btn ghost small" id="endHome">Startseite</button></div>
   <button class="btn dark small" id="endReport">Spieler melden</button>
-  <p class="note">Dein Standortverlauf dieser Runde wird jetzt gelöscht. Für den Trailer bleibt nur eine vereinfachte Laufspur, 30 Tage lang.</p>
+  <p class="note" style="text-align:center">Dein Standortverlauf dieser Runde wird jetzt gelöscht. Für den Trailer bleibt nur eine vereinfachte Laufspur, 30 Tage lang.</p>
 </section>
 
 <!-- TRAILER -->
 <section class="screen" id="scr-trailer" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Trailer</h2><button class="iconbtn" id="trSound" aria-label="Ton an oder aus">♪</button></div>
-  <div class="trailer-wrap"><canvas id="trCanvas" width="540" height="960"></canvas></div>
-  <div class="row"><button class="btn" id="trPlay">Nochmal abspielen</button></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Trailer</span><button class="circle" id="trSound" aria-label="Ton an oder aus"><svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button></div></div>
+  <div class="trailer-wrap"><canvas id="trCanvas"></canvas></div>
+  <button class="btn" id="trPlay">Nochmal abspielen</button>
   <p class="note" id="trNote"></p>
 </section>
 
 <!-- PASS -->
 <section class="screen" id="scr-pass" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>PINGED Pass</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div></div>
   <div class="pass-hero">
+    <span style="font:700 13px/1 var(--sans);letter-spacing:.06em;opacity:.7">PINGED PASS</span>
     <span class="t">Einmal zahlen.<br>Für immer drin.</span>
     <span class="p">19,99 € <small>einmalig · kein Abo · inkl. MwSt.</small></span>
   </div>
   <div class="card">
-    <div class="feat"><i>01</i><b>Der Verräter</b><p>Ein Läufer arbeitet heimlich für die Jäger. Am Ende wird aufgedeckt, wer es war.</p></div>
-    <div class="feat"><i>02</i><b>KI-Spielleitung im Ohr</b><p>Live-Ansagen zu Pings, Entfernungen und Catches, dazu ein Herzschlag, wenn Jäger nah sind.</p></div>
-    <div class="feat"><i>03</i><b>Voller Trailer</b><p>Doppelte Länge, ohne Wasserzeichen, mit Musik. Fertig für TikTok und Reels.</p></div>
-    <div class="feat"><i>04</i><b>Loot auf der Karte</b><p>Fake-Ping, Unsichtbar, Scan für Läufer. Drohne und Extra-Ping für Jäger.</p></div>
-    <div class="feat"><i>05</i><b>Alle Modi</b><p>Verräter, Infektion, Schrumpfende Zone, Mister X.</p></div>
-    <div class="feat"><i>06</i><b>Bis 100 Spieler</b><p>Und deine ganze Lobby spielt mit deinen Pass-Funktionen, auch ohne eigenen Pass.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/><path d="M17 4l3 3"/></svg></span><b>Der Verräter</b><p>Ein Läufer spielt heimlich für die Jäger. Am Ende wird er enttarnt.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></span><b>KI-Spielleitung im Ohr</b><p>Live-Ansagen zu Pings und Entfernungen, Herzschlag wenn Jäger nah sind.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M10 9l5 3-5 3z"/></svg></span><b>Voller Trailer</b><p>20 Sekunden, mit Musik, ohne Wasserzeichen. Fertig für TikTok.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M4 8l8-5 8 5v8l-8 5-8-5z"/><path d="M4 8l8 5 8-5M12 13v8"/></svg></span><b>Loot auf der Karte</b><p>Fake-Ping, Unsichtbar, Scan. Drohne und Extra-Ping für Jäger.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span><b>Alle Modi, bis 100 Spieler</b><p>Verräter, Infektion, Zone, Mister X. Deine ganze Lobby spielt mit.</p></div>
   </div>
-  <div class="card" style="overflow-x:auto">
+  <div class="card" style="overflow-x:auto;padding-block:6px">
     <table class="cmp"><thead><tr><th>Funktion</th><th>Free</th><th>Pass</th></tr></thead><tbody>
       <tr><td>Spieler pro Runde</td><td>6</td><td>100</td></tr>
-      <tr><td>Klassischer Manhunt</td><td>Ja</td><td>Ja</td></tr>
-      <tr><td>Weitere Modi</td><td>Nein</td><td>4</td></tr>
-      <tr><td>Loot und KI-Stimme</td><td>Nein</td><td>Ja</td></tr>
-      <tr><td>Trailer</td><td>10 s, Wasserzeichen</td><td>20 s, mit Musik</td></tr>
+      <tr><td>Spielmodi</td><td>1</td><td>5</td></tr>
+      <tr><td>Loot und KI-Stimme</td><td>–</td><td>Ja</td></tr>
+      <tr><td>Trailer</td><td>10 s</td><td>20 s</td></tr>
     </tbody></table>
   </div>
-  <div id="passBuyBox" class="card">
-    <label class="check" for="pbExec"><input type="checkbox" id="pbExec"><span class="t">Ich stimme ausdrücklich zu, dass der Pass sofort freigeschaltet wird, also vor Ablauf der 14-tägigen Widerrufsfrist.</span></label>
+  <div id="passBuyBox" class="group">
+    <label class="check" for="pbExec"><input type="checkbox" id="pbExec"><span class="t">Ich stimme zu, dass der Pass sofort freigeschaltet wird, also vor Ablauf der 14-tägigen Widerrufsfrist.</span></label>
     <label class="check" for="pbLose"><input type="checkbox" id="pbLose"><span class="t">Mir ist bekannt, dass ich dadurch mein <a href="#" data-doc="widerruf">Widerrufsrecht</a> verliere.</span></label>
-    <label class="check" for="pbParent" id="pbParentRow" hidden><input type="checkbox" id="pbParent"><span class="t">Meine Eltern sind mit dem Kauf einverstanden. Sie bekommen eine Kopie der Kaufbestätigung.</span></label>
-    <p class="note">Es gelten die <a href="#" data-doc="agb">AGB</a>. Bezahlt wird über den App Store bzw. Google Play. Die Kaufbestätigung kommt per E-Mail.</p>
-    <button class="btn" id="passBuy" disabled>Zahlungspflichtig kaufen · 19,99 €</button>
-    <button class="btn ghost small" id="passRestore">Käufe wiederherstellen</button>
+    <label class="check" for="pbParent" id="pbParentRow" hidden><input type="checkbox" id="pbParent"><span class="t">Meine Eltern sind mit dem Kauf einverstanden.</span></label>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn" id="passBuy" disabled>Zahlungspflichtig kaufen</button>
+      <button class="btn ghost small" id="passRestore">Käufe wiederherstellen</button>
+      <p class="note">Es gelten die <a href="#" data-doc="agb">AGB</a>. Bezahlt wird über App Store bzw. Google Play.</p>
+    </div>
   </div>
   <div id="passOwned" class="card" hidden>
-    <b style="font:900 26px/1 var(--display);text-transform:uppercase;color:var(--tape)">Pass aktiv</b>
+    <b style="font:800 24px/1 var(--sans);letter-spacing:-.03em;color:var(--signal)">Pass aktiv</b>
     <p class="note" id="passOwnedTxt"></p>
   </div>
 </section>
 
 <!-- PRIVACY -->
 <section class="screen" id="scr-privacy" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Datenschutz</h2></div>
-  <p class="lead">Hier kannst du jede freiwillige Einwilligung widerrufen. Das gilt ab sofort für alle künftigen Runden.</p>
-  <div class="card" id="privPerms"></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Datenschutz</h2></div>
+  <p class="lead">Jede freiwillige Einwilligung kannst du hier widerrufen. Das gilt sofort für alle künftigen Runden.</p>
+  <div class="group" id="privPerms"></div>
+  <span class="section-title">Gespeicherte Daten</span>
   <div class="card">
-    <span class="eyebrow">Gespeicherte Daten</span>
-    <p class="note">Das ist alles, was die App über dich speichert. Standortdaten vergangener Runden sind nicht dabei, weil sie nach der Runde gelöscht werden.</p>
+    <p class="note">Das ist alles, was die App über dich speichert. Standortverläufe sind nicht dabei, weil sie nach jeder Runde gelöscht werden.</p>
     <textarea class="input" id="privData" readonly aria-label="Gespeicherte Daten"></textarea>
     <button class="btn dark small" id="privCopy">Daten kopieren</button>
   </div>
+  <span class="section-title">Konto</span>
   <div class="card">
-    <span class="eyebrow">Konto löschen</span>
-    <p class="note">Löscht Profil, Statistiken und Einwilligungen. Ein gekaufter Pass kann über „Käufe wiederherstellen“ zurückgeholt werden.</p>
+    <p class="note">Löscht Profil, Statistiken und Einwilligungen. Ein gekaufter Pass lässt sich über „Käufe wiederherstellen“ zurückholen.</p>
     <button class="btn red small" id="privDelete">Konto löschen</button>
-    <div id="privDeleteConfirm" hidden class="row"><button class="btn red small" id="privDeleteYes">Ja, endgültig löschen</button><button class="btn ghost small" id="privDeleteNo">Abbrechen</button></div>
+    <div id="privDeleteConfirm" hidden class="row"><button class="btn red small" id="privDeleteYes">Endgültig löschen</button><button class="btn ghost small" id="privDeleteNo">Abbrechen</button></div>
   </div>
 </section>
 
 <!-- LEGAL -->
 <section class="screen" id="scr-legal" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Rechtliches</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Rechtliches</h2></div>
   <div class="demo-note">Alle Texte sind Entwürfe. Vor dem Launch müssen sie von einem Anwalt geprüft und die Angaben in eckigen Klammern ausgefüllt werden.</div>
   <div class="menu" id="legalMenu"></div>
 </section>
 
 <!-- DOC -->
 <section class="screen" id="scr-doc" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2 id="docTitle">Dokument</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow" id="docTitle">Dokument</span><span style="width:40px"></span></div></div>
   <article class="doc" id="docBody"></article>
 </section>
 
@@ -485,20 +562,26 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 
 <!-- GAME -->
 <div class="game" id="game" hidden>
+  <div id="gameMap"></div>
   <canvas id="gameCanvas"></canvas>
   <div class="hud-top">
-    <div class="hud-bar"><div class="brand">PINGED.<span id="hudMode">KLASSIK</span><em id="hudRole">HUNTER</em></div><div class="clock" id="hudClock">60:00</div></div>
-    <div class="hud-banner" id="hudBanner" hidden></div>
-    <div class="hud-info" id="hudInfo"></div>
+    <div class="hud-bar glass"><div class="brand"><span class="rdot" id="hudDot"></span><div><b id="hudRole">Jäger</b><small id="hudMode">Klassik</small></div></div><div class="clock" id="hudClock">60:00</div></div>
+    <div class="island" id="hudBanner" hidden></div>
+    <div class="hud-info glass" id="hudInfo"></div>
   </div>
   <div class="hud-bottom">
-    <div class="hud-panel">
-      <div class="hud-line"><span id="hudNextLbl">NÄCHSTER PING</span><span class="big" id="hudNext">02:00</span></div>
-      <div class="compass" id="hudCompass" hidden><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="currentColor" stroke-opacity=".35"/><path id="compArrow" d="M17 5 L22 20 L17 17 L12 20 Z" fill="var(--hunt)"/></svg><span id="compTxt" style="font:700 13px/1.3 var(--mono)"></span></div>
-      <div class="hud-actions" id="hudItems"></div>
-      <div class="hud-actions">
-        <button class="sos" id="btnSos" aria-label="SOS, 2 Sekunden halten"><i id="sosFill"></i><span style="position:relative">SOS halten</span></button>
-        <button id="btnSpeed">Tempo ×1</button>
+    <button class="catch-btn" id="btnCatch" hidden>FANGEN</button>
+    <div class="sheet glass">
+      <div class="sheet-main">
+        <div class="ring"><svg viewBox="0 0 58 58"><circle class="bgc" cx="29" cy="29" r="24"/><circle class="fgc" id="pingRing" cx="29" cy="29" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/></svg><span class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4M5 5a10 10 0 000 14M19 5a10 10 0 010 14"/></svg></span></div>
+        <div class="sheet-txt"><small id="hudNextLbl">Nächster Ping</small><b id="hudNext">02:00</b></div>
+        <div class="compass" id="hudCompass" hidden><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2"/><path id="compArrow" d="M17 5 L22 20 L17 17 L12 20 Z" fill="var(--hunt)"/></svg><span id="compTxt"></span></div>
+      </div>
+      <div class="items" id="hudItems"></div>
+      <div class="actions">
+        <button class="sos" id="btnSos" aria-label="SOS, 2 Sekunden halten"><i id="sosFill"></i><span>SOS</span></button>
+        <button id="btnCenter" aria-label="Karte zentrieren"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+        <button id="btnSpeed">×1</button>
         <button id="btnLeave">Verlassen</button>
       </div>
     </div>
@@ -510,5 +593,6 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 
 <script>
 const LEGAL = /*__LEGAL__*/{};
+window.PINGED_CONFIG = /*__CONFIG__*/{};
 /*__APPJS__*/
 </script>

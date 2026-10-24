@@ -3,251 +3,332 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#14161b">
+<meta name="theme-color" content="#08090b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 <body>
 <title>PINGED</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Big+Shoulders+Display:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800;900&family=Geist+Mono:wght@500;600;700&display=swap">
 <style>
-/* Layout: one phone-width column, screens swap in place; the hunt is a full-bleed map with a HUD like a police scanner. */
+/* Layout: one phone column of large-title screens and inset grouped lists; the hunt is a full-bleed map under floating glass. */
 :root {
-  --asphalt: #14161b;
-  --panel: #1d2028;
-  --panel-2: #262a34;
-  --line: #343a47;
-  --fg: #ecebe6;
-  --muted: #9097a5;
-  --tape: #f3d433;
-  --tape-ink: #1a1700;
-  --hunt: #ff4f3e;
-  --run: #4fd88f;
-  --warn: #ff9d2e;
-  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
-  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --bg: #08090b;
+  --elev: #141518;
+  --elev-2: #1c1d21;
+  --glass: rgba(22, 23, 27, .72);
+  --hair: rgba(255, 255, 255, .08);
+  --fg: #f4f4f6;
+  --muted: #8d8e96;
+  --dim: #55565d;
+  --signal: #ffd60a;
+  --signal-ink: #141100;
+  --hunt: #ff453a;
+  --run: #32d74b;
+  --info: #0a84ff;
+  --sans: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --r-lg: 22px;
+  --r-md: 16px;
   color-scheme: dark;
 }
 html, body { height: 100%; }
 body {
-  background: var(--asphalt); color: var(--fg);
-  font: 15px/1.5 var(--body);
-  -webkit-font-smoothing: antialiased;
+  background: var(--bg); color: var(--fg);
+  font: 400 16px/1.45 var(--sans); letter-spacing: -.005em;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
   overscroll-behavior: none;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 button, input, select, textarea { font: inherit; color: inherit; }
-a { color: var(--tape); }
-:focus-visible { outline: 2px solid var(--tape); outline-offset: 2px; }
+button { -webkit-tap-highlight-color: transparent; }
+a { color: var(--signal); text-decoration: none; }
+a:hover { text-decoration: underline; }
+:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 8px; }
+p { margin: 0; }
+h1, h2, h3 { margin: 0; text-wrap: balance; }
+svg.i { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 
 .app {
-  max-width: 480px; margin: 0 auto; min-height: 100%;
-  padding-left: max(16px, env(safe-area-inset-left, 0px));
-  padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 12px 32px;
+  max-width: 460px; margin: 0 auto; min-height: 100%;
+  padding-left: max(18px, env(safe-area-inset-left, 0px));
+  padding-right: max(18px, env(safe-area-inset-right, 0px));
+  padding-block: 10px 40px;
 }
-.screen { display: flex; flex-direction: column; gap: 18px; }
-.topbar { display: flex; align-items: center; gap: 10px; min-height: 44px; }
-.topbar h2 { margin: 0; flex: 1; font: 900 26px/1 var(--display); letter-spacing: .02em; text-transform: uppercase; }
-.iconbtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; cursor: pointer; font-size: 18px; }
+.screen { display: flex; flex-direction: column; gap: 20px; animation: enter .38s cubic-bezier(.2, .8, .2, 1); }
+@keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
-h1, h2, h3 { text-wrap: balance; }
-.eyebrow { font: 700 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
-.lead { color: var(--muted); margin: 0; }
-p { margin: 0; }
+/* nav */
+.nav { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+.nav .bar { display: flex; align-items: center; justify-content: space-between; min-height: 40px; }
+.nav h2 { font: 800 34px/1.05 var(--sans); letter-spacing: -.035em; }
+.circle {
+  width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer;
+  background: rgba(255, 255, 255, .08); display: grid; place-items: center; color: var(--fg);
+  transition: background .2s, transform .15s;
+}
+.circle:hover { background: rgba(255, 255, 255, .13); }
+.circle:active { transform: scale(.94); }
+.circle svg.i { width: 20px; height: 20px; }
 
+.eyebrow { font: 600 12px/1 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.lead { color: var(--muted); font-size: 16px; }
+.note { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
+.demo-note { font-size: 13px; line-height: 1.45; color: #ffcf6b; background: rgba(255, 196, 0, .08); border-radius: 14px; padding: 10px 12px; }
+
+/* buttons */
 .btn {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  min-height: 52px; padding: 0 18px; border-radius: 12px; border: 0; cursor: pointer;
-  font: 900 20px/1 var(--display); letter-spacing: .04em; text-transform: uppercase;
-  background: var(--tape); color: var(--tape-ink); width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 56px; padding: 0 22px; border-radius: 999px; border: 0; cursor: pointer; width: 100%;
+  font: 600 17px/1 var(--sans); letter-spacing: -.01em;
+  background: var(--signal); color: var(--signal-ink);
+  transition: transform .15s, filter .2s, opacity .2s;
 }
-.btn:disabled { opacity: .35; cursor: not-allowed; }
-.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
-.btn.dark { background: var(--panel-2); color: var(--fg); }
+.btn:hover { filter: brightness(1.06); }
+.btn:active { transform: scale(.98); }
+.btn:disabled { opacity: .3; cursor: not-allowed; transform: none; filter: none; }
+.btn.ghost, .btn.dark { background: rgba(255, 255, 255, .08); color: var(--fg); }
 .btn.red { background: var(--hunt); color: #fff; }
-.btn.small { min-height: 40px; font-size: 16px; }
+.btn.small { min-height: 46px; font-size: 15.5px; }
 .row { display: flex; gap: 10px; }
 .row > * { flex: 1; min-width: 0; }
 
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.note { font-size: 13px; color: var(--muted); }
-.demo-note { font: 500 12px/1.4 var(--mono); color: var(--warn); border: 1px dashed color-mix(in srgb, var(--warn) 55%, transparent); border-radius: 10px; padding: 8px 10px; }
+/* grouped lists */
+.card, .group { background: var(--elev); border-radius: var(--r-lg); padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.group { padding: 0; gap: 0; overflow: hidden; }
+.group > * { padding: 14px 16px; }
+.group > * + * { border-top: 1px solid var(--hair); }
+.section-title { font: 600 13px/1 var(--sans); color: var(--muted); padding: 0 6px; margin-bottom: -10px; }
 
-/* caution tape */
-.tape {
-  background: repeating-linear-gradient(-45deg, var(--tape) 0 14px, var(--tape-ink) 14px 28px);
-  height: 10px; border-radius: 2px;
-}
-
-/* welcome */
-.hero { display: flex; flex-direction: column; gap: 14px; padding-top: 24px; }
-.logo { font: 900 clamp(64px, 22vw, 104px)/.82 var(--display); letter-spacing: -.01em; margin: 0; }
-.logo span { color: var(--tape); }
-.hero-map { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 4/3; max-width: 100%; background: var(--panel); }
-.hero-map canvas { width: 100%; height: 100%; display: block; }
-.banner {
-  background: var(--tape); color: var(--tape-ink); text-align: center;
-  font: 900 24px/1 var(--display); letter-spacing: .08em; padding: 10px 8px; text-transform: uppercase;
-}
-.hero-map .banner { position: absolute; left: 12px; right: 12px; top: 12px; border-radius: 4px; }
-
-/* forms */
-label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+label.field { display: flex; flex-direction: column; gap: 8px; font-weight: 500; font-size: 15px; }
 .input, select.input {
-  min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2);
-  padding: 0 12px; width: 100%;
+  min-height: 52px; border-radius: 14px; border: 1px solid transparent; background: rgba(255, 255, 255, .06);
+  padding: 0 14px; width: 100%; font-size: 17px; transition: border-color .2s, background .2s;
 }
-textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mono); }
-.check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
-.check input { width: 22px; height: 22px; accent-color: var(--tape); flex: none; margin: 1px 0 0; }
+.input:focus { outline: none; border-color: rgba(255, 214, 10, .6); background: rgba(255, 255, 255, .08); }
+textarea.input { padding: 12px 14px; min-height: 160px; font: 12px/1.5 var(--mono); }
+.check { display: flex; gap: 14px; align-items: flex-start; cursor: pointer; font-size: 15px; }
+.check input { appearance: none; width: 24px; height: 24px; border-radius: 8px; border: 2px solid var(--dim); flex: none; margin: 0; display: grid; place-items: center; cursor: pointer; transition: background .15s, border-color .15s; }
+.check input:checked { background: var(--signal); border-color: var(--signal); }
+.check input:checked::after { content: ""; width: 7px; height: 12px; border: solid var(--signal-ink); border-width: 0 2.5px 2.5px 0; transform: translateY(-1px) rotate(45deg); }
 .check .t { min-width: 0; }
-.check small { display: block; color: var(--muted); font-size: 13px; }
-.req { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--tape); margin-left: 4px; }
-.perm { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
-.perm:first-child { border-top: 0; padding-top: 0; }
-.perm .ic { width: 36px; height: 36px; border-radius: 9px; background: var(--panel-2); display: grid; place-items: center; }
-.perm .ic svg { width: 20px; height: 20px; stroke: var(--fg); fill: none; stroke-width: 1.8; }
-.perm b { display: block; }
-.perm small { color: var(--muted); font-size: 13px; display: block; }
-.switch { position: relative; width: 50px; height: 30px; flex: none; }
+.check small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
+.req { font: 600 10px/1 var(--sans); letter-spacing: .06em; color: var(--signal); margin-left: 6px; vertical-align: 2px; }
+
+.perm { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; }
+.perm .ic { width: 34px; height: 34px; border-radius: 10px; background: rgba(255, 255, 255, .07); display: grid; place-items: center; }
+.perm .ic svg { width: 18px; height: 18px; stroke: var(--fg); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.perm b { display: block; font-weight: 600; font-size: 15.5px; }
+.perm small { color: var(--muted); font-size: 13px; display: block; line-height: 1.4; }
+.switch { position: relative; width: 51px; height: 31px; flex: none; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
-.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--line); transition: background .2s; }
-.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--fg); transition: transform .2s; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: rgba(120, 120, 128, .32); transition: background .25s; }
+.switch span::after { content: ""; position: absolute; top: 2px; left: 2px; width: 27px; height: 27px; border-radius: 50%; background: #fff; box-shadow: 0 3px 8px rgba(0, 0, 0, .25); transition: transform .25s cubic-bezier(.3, .7, .3, 1); }
 .switch input:checked + span { background: var(--run); }
 .switch input:checked + span::after { transform: translateX(20px); }
-.switch input:disabled + span { opacity: .5; }
-.switch input:focus-visible + span { outline: 2px solid var(--tape); outline-offset: 2px; }
-.colors { display: flex; gap: 10px; flex-wrap: wrap; }
-.colors button { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
-.colors button[aria-pressed="true"] { border-color: var(--fg); }
+.switch input:focus-visible + span { outline: 2px solid var(--signal); outline-offset: 2px; }
+.colors { display: flex; gap: 12px; flex-wrap: wrap; }
+.colors button { width: 40px; height: 40px; border-radius: 50%; border: 0; cursor: pointer; box-shadow: 0 0 0 0 var(--fg); transition: box-shadow .2s, transform .15s; }
+.colors button[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--fg); }
+
+/* welcome */
+.welcome { min-height: calc(100vh - 60px); justify-content: flex-end; gap: 22px; }
+.welcome-map { position: fixed; inset: 0 0 auto 0; height: 64vh; z-index: -1; }
+.welcome-map canvas { width: 100%; height: 100%; display: block; }
+.welcome-map::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(8, 9, 11, .2) 0%, rgba(8, 9, 11, 0) 35%, var(--bg) 100%); }
+.logo { font: 900 clamp(68px, 21vw, 96px)/.86 var(--sans); letter-spacing: -.06em; }
+.logo .dot { display: inline-block; width: .17em; height: .17em; border-radius: 50%; background: var(--signal); margin-left: .04em; box-shadow: 0 0 0 0 rgba(255, 214, 10, .6); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 214, 10, .55); } 70% { box-shadow: 0 0 0 .35em rgba(255, 214, 10, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 214, 10, 0); } }
+.welcome .lead { font-size: 18px; max-width: 30ch; color: #b9bac1; }
 
 /* home */
-.player-chip { display: flex; align-items: center; gap: 10px; }
-.dot { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 25%, transparent); }
-.badge { font: 700 11px/1 var(--mono); letter-spacing: .1em; padding: 6px 8px; border-radius: 6px; background: var(--panel-2); color: var(--muted); text-transform: uppercase; white-space: nowrap; }
-.badge.pass { background: var(--tape); color: var(--tape-ink); }
-.badge.minor { background: color-mix(in srgb, var(--warn) 20%, var(--panel)); color: var(--warn); }
-.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; text-align: center; }
-.stat b { display: block; font: 900 28px/1 var(--display); font-variant-numeric: tabular-nums; }
-.stat span { font: 500 10px/1.2 var(--mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
-.menu { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
-.menu button { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px 16px; background: var(--panel); border: 0; border-top: 1px solid var(--line); cursor: pointer; text-align: left; }
-.menu button:first-child { border-top: 0; }
-.menu button small { color: var(--muted); }
+.home-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 6px; }
+.home-head .who { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; font: 800 18px/1 var(--sans); color: #0b0b0b; flex: none; }
+.home-head b { font: 800 26px/1 var(--sans); letter-spacing: -.03em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.home-head small { color: var(--muted); font-size: 13px; }
+.badge { font: 600 12px/1 var(--sans); padding: 8px 12px; border-radius: 999px; background: rgba(255, 255, 255, .08); color: var(--muted); white-space: nowrap; }
+.badge.pass { background: var(--signal); color: var(--signal-ink); }
+.badge.minor { background: rgba(255, 159, 10, .15); color: #ffb340; }
+.map-card { position: relative; border-radius: 26px; overflow: hidden; aspect-ratio: 1 / .82; max-width: 100%; background: var(--elev); }
+.map-card canvas { width: 100%; height: 100%; display: block; }
+.map-card .float { position: absolute; left: 14px; right: 14px; bottom: 14px; display: flex; gap: 10px; }
+.map-card .chip { background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-radius: 999px; padding: 9px 14px; font: 500 13px/1 var(--sans); display: inline-flex; align-items: center; gap: 8px; }
+.livedot { width: 8px; height: 8px; border-radius: 50%; background: var(--run); box-shadow: 0 0 0 4px rgba(50, 215, 75, .2); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); background: var(--elev); border-radius: var(--r-lg); padding: 16px 6px; }
+.stat { text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.stat + .stat { border-left: 1px solid var(--hair); }
+.stat b { font: 700 24px/1 var(--sans); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); }
+.menu { display: flex; flex-direction: column; background: var(--elev); border-radius: var(--r-lg); overflow: hidden; }
+.menu button { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; padding: 13px 16px; background: transparent; border: 0; cursor: pointer; text-align: left; transition: background .15s; }
+.menu button + button { border-top: 1px solid var(--hair); }
+.menu button:hover { background: rgba(255, 255, 255, .03); }
+.menu .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; }
+.menu .ic svg { width: 19px; height: 19px; }
+.menu b { font-weight: 600; font-size: 16px; display: block; }
+.menu small { color: var(--muted); font-size: 13px; }
+.menu .chev { color: var(--dim); }
 
 /* create */
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.mode { position: relative; text-align: left; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.mode b { font: 900 20px/1 var(--display); text-transform: uppercase; letter-spacing: .03em; }
-.mode small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
-.mode[aria-pressed="true"] { border-color: var(--tape); box-shadow: inset 0 0 0 1px var(--tape); }
-.mode .lock { position: absolute; top: 10px; right: 10px; font: 700 10px/1 var(--mono); color: var(--tape); }
-.mode:disabled { cursor: not-allowed; opacity: .55; }
-.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.seg button { flex: 1; min-height: 42px; background: var(--panel); border: 0; border-left: 1px solid var(--line); cursor: pointer; font: 700 13px/1 var(--mono); min-width: 0; }
-.seg button:first-child { border-left: 0; }
-.seg button[aria-pressed="true"] { background: var(--tape); color: var(--tape-ink); }
-.seg button:disabled { opacity: .4; cursor: not-allowed; }
-.zone-prev { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 1; max-width: 100%; }
+.mode { position: relative; text-align: left; padding: 14px; border-radius: 18px; border: 0; background: var(--elev); cursor: pointer; display: flex; flex-direction: column; gap: 6px; min-width: 0; box-shadow: inset 0 0 0 1.5px transparent; transition: box-shadow .2s, transform .15s, background .2s; }
+.mode:active { transform: scale(.98); }
+.mode .mi { width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center; background: rgba(255, 255, 255, .07); margin-bottom: 4px; }
+.mode .mi svg { width: 19px; height: 19px; }
+.mode b { font: 700 17px/1.1 var(--sans); letter-spacing: -.02em; }
+.mode small { color: var(--muted); font-size: 13px; line-height: 1.35; }
+.mode[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--signal); background: #1a1a14; }
+.mode[aria-pressed="true"] .mi { background: var(--signal); color: var(--signal-ink); }
+.mode .lock { position: absolute; top: 12px; right: 12px; font: 600 10.5px/1 var(--sans); letter-spacing: .04em; padding: 5px 7px; border-radius: 999px; background: rgba(255, 214, 10, .14); color: var(--signal); }
+.mode:disabled { cursor: not-allowed; opacity: .45; }
+.seg { display: flex; padding: 3px; gap: 2px; border-radius: 12px; background: rgba(118, 118, 128, .2); }
+.seg button { flex: 1; min-height: 36px; background: transparent; border: 0; border-radius: 9px; cursor: pointer; font: 600 14px/1 var(--sans); min-width: 0; color: var(--fg); transition: background .2s, box-shadow .2s; }
+.seg button[aria-pressed="true"] { background: #636366; box-shadow: 0 3px 8px rgba(0, 0, 0, .3); }
+.seg button[data-lock] { color: var(--dim); }
+.setting { display: flex; flex-direction: column; gap: 10px; }
+.setting > span { font-size: 14px; color: var(--muted); font-weight: 500; }
+.zone-prev { border-radius: var(--r-lg); overflow: hidden; aspect-ratio: 1; max-width: 100%; background: var(--elev); }
 .zone-prev canvas { width: 100%; height: 100%; display: block; }
-.blocked-list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
-.blocked-list div { display: flex; gap: 8px; align-items: center; }
-.blocked-list i { width: 12px; height: 12px; border-radius: 3px; background: repeating-linear-gradient(-45deg, var(--hunt) 0 3px, transparent 3px 6px); border: 1px solid var(--hunt); flex: none; }
+.blocked-list { display: flex; flex-direction: column; gap: 8px; font-size: 14px; color: #c9cad0; }
+.blocked-list div { display: flex; gap: 10px; align-items: center; }
+.blocked-list i { width: 10px; height: 10px; border-radius: 3px; background: var(--hunt); flex: none; }
 
 /* lobby */
-.code { font: 700 40px/1 var(--mono); letter-spacing: .2em; text-align: center; color: var(--tape); }
-.plist { display: flex; flex-direction: column; gap: 8px; }
-.pl { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); }
-.pl .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pl .ok { font: 700 11px/1 var(--mono); color: var(--run); }
-.pl .wait { font: 700 11px/1 var(--mono); color: var(--muted); }
+.code { font: 700 44px/1 var(--mono); letter-spacing: .14em; text-align: center; }
+.code-card { align-items: center; padding: 22px 16px; gap: 10px; text-align: center; }
+.plist { display: flex; flex-direction: column; background: var(--elev); border-radius: var(--r-lg); overflow: hidden; }
+.pl { display: flex; align-items: center; gap: 12px; padding: 12px 16px; animation: enter .3s ease-out; }
+.pl + .pl { border-top: 1px solid var(--hair); }
+.pl .avatar { width: 34px; height: 34px; font-size: 14px; }
+.pl .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 500; }
+.pl .ok { font: 600 12px/1 var(--sans); color: var(--run); }
+.pl .wait { font: 600 12px/1 var(--sans); color: var(--muted); }
+.play-mode { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pm { text-align: left; border: 0; border-radius: 18px; padding: 14px; background: var(--elev); cursor: pointer; display: flex; flex-direction: column; gap: 4px; box-shadow: inset 0 0 0 1.5px transparent; transition: box-shadow .2s; min-width: 0; }
+.pm b { font-weight: 700; font-size: 16px; }
+.pm small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.pm[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--signal); }
 
 /* role */
-.rolecard { border-radius: 18px; padding: 28px 20px; text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; border: 2px solid var(--line); background: var(--panel); }
-.rolecard .big { font: 900 64px/.9 var(--display); text-transform: uppercase; }
-.rolecard.hunter { border-color: var(--hunt); }
-.rolecard.hunter .big { color: var(--hunt); }
-.rolecard.runner { border-color: var(--run); }
-.rolecard.runner .big { color: var(--run); }
-.rolecard.traitor { border-color: var(--tape); background: repeating-linear-gradient(-45deg, var(--panel) 0 18px, color-mix(in srgb, var(--tape) 8%, var(--panel)) 18px 36px); }
-.rolecard.traitor .big { color: var(--tape); }
-@keyframes flip { from { transform: rotateY(90deg) scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
-.rolecard.show { animation: flip .6s cubic-bezier(.2,.8,.2,1); }
+.rolecard { border-radius: 30px; padding: 40px 22px 30px; text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; background: var(--elev); position: relative; overflow: hidden; }
+.rolecard::before { content: ""; position: absolute; inset: -40% -20% auto; height: 80%; background: radial-gradient(closest-side, var(--rc, var(--signal)), transparent); opacity: .22; }
+.rolecard > * { position: relative; }
+.rolecard .glyph { width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; background: var(--rc); color: #0b0b0b; }
+.rolecard .glyph svg { width: 40px; height: 40px; stroke-width: 2.2; }
+.rolecard .big { font: 900 54px/.95 var(--sans); letter-spacing: -.05em; }
+.rolecard.hunter { --rc: var(--hunt); }
+.rolecard.runner { --rc: var(--run); }
+.rolecard.traitor { --rc: var(--signal); }
+.rolecard p { max-width: 34ch; color: #c9cad0; }
+@keyframes reveal { from { transform: scale(.92) translateY(14px); opacity: 0; filter: blur(8px); } to { transform: none; opacity: 1; filter: none; } }
+.rolecard.show { animation: reveal .6s cubic-bezier(.2, .8, .2, 1); }
 
 /* game */
-.game { position: fixed; inset: 0; background: #0f1115; z-index: 20; display: flex; flex-direction: column; }
+.game { position: fixed; inset: 0; background: #0b0c0f; z-index: 20; overflow: hidden; }
+.game #gameMap { position: absolute; inset: 0; }
 .game canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
-.hud-top { position: relative; z-index: 2; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.hud-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(12,13,16,.86); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; gap: 10px; }
-.hud-bar .brand { font: 700 13px/1.1 var(--mono); letter-spacing: .06em; }
-.hud-bar .brand em { font-style: normal; display: block; color: var(--tape); }
-.hud-bar .clock { font: 700 30px/1 var(--mono); font-variant-numeric: tabular-nums; }
-.hud-banner { background: var(--tape); color: var(--tape-ink); text-align: center; font: 900 28px/1 var(--display); letter-spacing: .1em; padding: 10px; border-radius: 3px; text-transform: uppercase; }
-.hud-banner.red { background: var(--hunt); color: #fff; }
-.hud-banner.green { background: var(--run); color: #062014; }
-@keyframes slam { 0% { transform: scale(1.4); opacity: 0; } 40% { transform: scale(.97); opacity: 1; } 100% { transform: none; } }
-.hud-banner.anim { animation: slam .45s ease-out; }
-.hud-info { align-self: flex-start; background: rgba(12,13,16,.86); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: 500 12px/1.4 var(--mono); }
-.hud-bottom { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 12px) max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 8px; }
-.hud-panel { background: rgba(12,13,16,.9); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
-.hud-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 700 15px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
-.hud-line .big { font-size: 22px; }
-.hud-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-.hud-actions button { flex: 1 1 auto; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font: 700 13px/1.1 var(--mono); padding: 6px 10px; min-width: 0; }
-.hud-actions button.hot { background: var(--tape); color: var(--tape-ink); border-color: var(--tape); }
-.hud-actions button.catch { background: var(--hunt); color: #fff; border-color: var(--hunt); font-size: 18px; }
-.hud-actions button:disabled { opacity: .4; }
-.sos { position: relative; overflow: hidden; background: transparent !important; border-color: var(--hunt) !important; color: var(--hunt); flex: 0 0 auto !important; }
-.sos i { position: absolute; inset: 0; background: var(--hunt); transform-origin: left; transform: scaleX(0); opacity: .45; }
-.compass { display: flex; align-items: center; gap: 10px; }
-.compass svg { width: 34px; height: 34px; flex: none; }
-.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(8,9,11,.82); display: grid; place-items: center; padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
-.overlay .card { max-width: 420px; width: 100%; max-height: 90vh; overflow: auto; }
-.overlay h3 { margin: 0; font: 900 30px/1 var(--display); text-transform: uppercase; }
-.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); z-index: 50; background: var(--fg); color: var(--asphalt); padding: 10px 14px; border-radius: 10px; font-weight: 700; max-width: calc(100% - 32px); text-align: center; }
+.game.gmap canvas { pointer-events: none; }
+.glass { background: var(--glass); backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4); box-shadow: 0 10px 30px rgba(0, 0, 0, .35), inset 0 0 0 1px rgba(255, 255, 255, .06); }
+.hud-top { position: absolute; z-index: 2; left: 0; right: 0; top: 0; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+.hud-bar { width: 100%; max-width: 460px; display: flex; justify-content: space-between; align-items: center; border-radius: 22px; padding: 10px 12px 10px 14px; gap: 10px; }
+.hud-bar .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.hud-bar .rdot { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+.hud-bar .brand b { font: 700 15px/1.1 var(--sans); display: block; letter-spacing: -.01em; }
+.hud-bar .brand small { font: 500 12px/1.1 var(--sans); color: var(--muted); display: block; }
+.hud-bar .clock { font: 600 28px/1 var(--mono); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.island { display: inline-flex; align-items: center; gap: 10px; background: #000; color: var(--signal); border-radius: 999px; padding: 12px 20px 12px 14px; font: 800 17px/1 var(--sans); letter-spacing: .02em; text-transform: uppercase; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.island::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 25%, transparent); }
+.island.red { color: var(--hunt); }
+.island.green { color: var(--run); }
+@keyframes drop { 0% { transform: translateY(-30px) scale(.7); opacity: 0; } 60% { transform: translateY(2px) scale(1.04); opacity: 1; } 100% { transform: none; } }
+.island.anim { animation: drop .5s cubic-bezier(.2, .9, .3, 1.2); }
+.hud-info { font: 500 13px/1.3 var(--sans); padding: 8px 14px; border-radius: 999px; }
+.hud-bottom { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; padding: 0 max(10px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 10px) max(10px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; align-items: center; gap: 10px; pointer-events: none; }
+.hud-bottom > * { pointer-events: auto; }
+.catch-btn { min-height: 64px; padding: 0 34px; border-radius: 999px; border: 0; background: var(--hunt); color: #fff; font: 800 20px/1 var(--sans); letter-spacing: .04em; cursor: pointer; box-shadow: 0 12px 30px rgba(255, 69, 58, .45); animation: drop .4s ease-out; }
+.sheet { width: 100%; max-width: 460px; border-radius: 28px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.sheet-main { display: flex; align-items: center; gap: 14px; }
+.ring { position: relative; width: 58px; height: 58px; flex: none; }
+.ring svg { width: 58px; height: 58px; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 5; }
+.ring .bgc { stroke: rgba(255, 255, 255, .1); }
+.ring .fgc { stroke: var(--signal); stroke-linecap: round; transition: stroke-dashoffset .3s linear; }
+.ring .ic { position: absolute; inset: 0; display: grid; place-items: center; color: var(--signal); }
+.ring .ic svg { width: 22px; height: 22px; transform: none; }
+.sheet-txt { flex: 1; min-width: 0; }
+.sheet-txt small { display: block; font: 500 13px/1.2 var(--sans); color: var(--muted); }
+.sheet-txt b { display: block; font: 700 30px/1.05 var(--mono); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.compass { display: flex; align-items: center; gap: 8px; padding: 8px 12px 8px 8px; border-radius: 999px; background: rgba(255, 255, 255, .06); flex: none; }
+.compass svg { width: 30px; height: 30px; flex: none; }
+.compass span { font: 600 12.5px/1.2 var(--sans); }
+.items { display: flex; gap: 8px; flex-wrap: wrap; }
+.items:empty { display: none; }
+.items button { min-height: 40px; border-radius: 999px; border: 0; background: rgba(255, 214, 10, .14); color: var(--signal); cursor: pointer; font: 600 14px/1 var(--sans); padding: 0 16px; }
+.items button:disabled { opacity: .4; }
+.actions { display: flex; gap: 8px; }
+.actions button { flex: 1; min-height: 46px; border-radius: 16px; border: 0; background: rgba(255, 255, 255, .07); cursor: pointer; font: 600 14px/1 var(--sans); display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 0; color: var(--fg); }
+.actions button svg.i { width: 18px; height: 18px; }
+.sos { position: relative; overflow: hidden; color: var(--hunt) !important; background: rgba(255, 69, 58, .12) !important; }
+.sos i { position: absolute; inset: 0; background: var(--hunt); transform-origin: left; transform: scaleX(0); opacity: .5; }
+.sos span { position: relative; }
+
+/* overlay sheet */
+.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, .55); display: flex; align-items: flex-end; justify-content: center; padding: 10px max(10px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 10px) max(10px, env(safe-area-inset-left, 0px)); animation: fade .2s ease-out; }
+@keyframes fade { from { opacity: 0; } }
+@keyframes up { from { transform: translateY(40px); opacity: 0; } }
+.overlay .card { max-width: 460px; width: 100%; max-height: 88vh; overflow: auto; border-radius: 28px; padding: 22px 18px 18px; background: var(--elev-2); animation: up .3s cubic-bezier(.2, .8, .2, 1); }
+.overlay h3 { font: 800 26px/1.1 var(--sans); letter-spacing: -.03em; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); top: calc(env(safe-area-inset-top, 0px) + 14px); z-index: 60; background: #f4f4f6; color: #0b0b0b; padding: 12px 18px; border-radius: 999px; font: 600 14.5px/1.3 var(--sans); max-width: calc(100% - 32px); text-align: center; box-shadow: 0 10px 30px rgba(0, 0, 0, .4); animation: drop .35s ease-out; }
 
 /* end */
-.result { text-align: center; display: flex; flex-direction: column; gap: 8px; padding-top: 10px; }
-.result .big { font: 900 54px/.9 var(--display); text-transform: uppercase; }
-.reveal { border: 2px dashed var(--tape); border-radius: 14px; padding: 14px; text-align: center; }
-.reveal b { font: 900 30px/1 var(--display); color: var(--tape); text-transform: uppercase; }
-.table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.table th, .table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
-.table th { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
-.table td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+.result { text-align: center; display: flex; flex-direction: column; gap: 10px; padding-top: 24px; align-items: center; }
+.result .big { font: 900 64px/.9 var(--sans); letter-spacing: -.06em; }
+.reveal { border-radius: var(--r-lg); padding: 18px; text-align: center; background: rgba(255, 214, 10, .08); display: flex; flex-direction: column; gap: 6px; }
+.reveal b { font: 900 34px/1 var(--sans); color: var(--signal); letter-spacing: -.04em; }
+.table-wrap { background: var(--elev); border-radius: var(--r-lg); overflow-x: auto; }
+.table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+.table th, .table td { text-align: left; padding: 12px 7px; }
+.table tr + tr td { border-top: 1px solid var(--hair); }
+.table th { font: 600 12px/1 var(--sans); color: var(--muted); padding-top: 14px; }
+.table td.num, .table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.table td:first-child, .table th:first-child { padding-left: 16px; }
+.table td:last-child, .table th:last-child { padding-right: 16px; }
+.pdot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: middle; margin-right: 8px; }
 
 /* trailer */
-.trailer-wrap { position: relative; border-radius: 14px; overflow: hidden; background: #000; aspect-ratio: 9/16; max-width: 100%; max-height: 70vh; margin: 0 auto; width: 100%; }
+.trailer-wrap { position: relative; border-radius: 26px; overflow: hidden; background: #000; aspect-ratio: 9 / 16; max-width: 100%; max-height: 68vh; margin: 0 auto; width: 100%; }
 .trailer-wrap canvas { width: 100%; height: 100%; display: block; }
 
 /* pass */
-.pass-hero { border-radius: 18px; padding: 22px 18px; background: var(--tape); color: var(--tape-ink); display: flex; flex-direction: column; gap: 6px; }
-.pass-hero .t { font: 900 46px/.9 var(--display); text-transform: uppercase; }
-.pass-hero .p { font: 900 34px/1 var(--display); }
-.pass-hero .p small { font: 700 13px/1 var(--mono); }
-.feat { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
-.feat b { font: 900 18px/1.2 var(--display); text-transform: uppercase; letter-spacing: .03em; grid-column: 2; }
-.feat p { grid-column: 2; color: var(--muted); font-size: 13.5px; }
-.feat i { grid-row: span 2; font: 700 12px/1.6 var(--mono); color: var(--tape); font-style: normal; }
-.cmp { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.cmp th, .cmp td { padding: 9px 6px; border-bottom: 1px solid var(--line); text-align: left; }
-.cmp th { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
-.cmp td:nth-child(n+2) { text-align: center; white-space: nowrap; }
+.pass-hero { border-radius: 28px; padding: 26px 22px; background: radial-gradient(120% 120% at 100% 0%, #fff3a3 0%, var(--signal) 40%, #ff9f0a 100%); color: var(--signal-ink); display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+.pass-hero .t { font: 900 40px/.95 var(--sans); letter-spacing: -.05em; }
+.pass-hero .p { font: 800 30px/1 var(--sans); letter-spacing: -.03em; }
+.pass-hero .p small { font: 600 13px/1 var(--sans); opacity: .7; letter-spacing: 0; }
+.feat { display: grid; grid-template-columns: 38px 1fr; gap: 2px 14px; align-items: start; }
+.feat .fi { grid-row: span 2; width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: rgba(255, 214, 10, .12); color: var(--signal); }
+.feat .fi svg { width: 19px; height: 19px; }
+.feat b { font-weight: 700; font-size: 16px; }
+.feat p { color: var(--muted); font-size: 14px; }
+.cmp { width: 100%; border-collapse: collapse; font-size: 14px; }
+.cmp th, .cmp td { padding: 11px 6px; text-align: left; }
+.cmp tr + tr td { border-top: 1px solid var(--hair); }
+.cmp th { font: 600 12px/1 var(--sans); color: var(--muted); }
+.cmp td:nth-child(n+2), .cmp th:nth-child(n+2) { text-align: center; white-space: nowrap; }
+.cmp td:last-child { color: var(--signal); font-weight: 600; }
 
 /* legal doc */
-.doc { display: flex; flex-direction: column; gap: 10px; }
-.doc h1 { font: 900 34px/1 var(--display); text-transform: uppercase; margin: 0; }
-.doc h2 { font: 900 22px/1.1 var(--display); text-transform: uppercase; margin: 14px 0 0; letter-spacing: .02em; }
-.doc h3 { font: 700 15px/1.3 var(--body); margin: 8px 0 0; }
-.doc p, .doc li { color: color-mix(in srgb, var(--fg) 88%, var(--muted)); max-width: 65ch; }
+.doc { display: flex; flex-direction: column; gap: 12px; }
+.doc h1 { font: 800 30px/1.1 var(--sans); letter-spacing: -.03em; }
+.doc h2 { font: 700 20px/1.2 var(--sans); letter-spacing: -.02em; margin-top: 14px; }
+.doc h3 { font: 600 16px/1.3 var(--sans); margin-top: 6px; }
+.doc p, .doc li { color: #c9cad0; max-width: 65ch; font-size: 15.5px; }
 .doc ul, .doc ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
-.doc mark { background: color-mix(in srgb, var(--warn) 25%, transparent); color: var(--warn); border-radius: 3px; padding: 0 2px; }
-.doc .draft { font: 500 12px/1.4 var(--mono); color: var(--warn); }
+.doc mark { background: rgba(255, 159, 10, .16); color: #ffb340; border-radius: 4px; padding: 0 3px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -257,38 +338,33 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 <div class="app" id="app">
 
 <!-- WELCOME -->
-<section class="screen" id="scr-welcome" hidden>
-  <div class="hero">
-    <span class="eyebrow">Manhunt in echt · ab 14</span>
-    <h1 class="logo">PING<span>ED</span></h1>
-    <p class="lead">Jäger gegen Läufer, draußen in deiner Stadt. Die Jäger sehen dich nur, wenn du gepingt wirst. Dazwischen gehört die Straße dir.</p>
-  </div>
-  <div class="hero-map"><canvas id="heroCanvas" width="600" height="450"></canvas><div class="banner">Ping detected</div></div>
-  <div class="demo-note">Prototyp: Die Runde wird mit computergesteuerten Mitspielern auf einer Beispielkarte simuliert. Käufe und E-Mails sind nur angedeutet.</div>
-  <button class="btn" id="welcomeGo">Konto erstellen</button>
-  <p class="note">Mit dem Erstellen eines Kontos bestätigst du im nächsten Schritt AGB, Datenschutz und Sicherheitsregeln.</p>
+<section class="screen welcome" id="scr-welcome" hidden>
+  <div class="welcome-map"><canvas id="heroCanvas"></canvas></div>
+  <span class="eyebrow">Manhunt in echt · ab 14</span>
+  <h1 class="logo">PINGED<span class="dot"></span></h1>
+  <p class="lead">Jäger gegen Läufer, draußen in deiner Stadt. Die Jäger sehen dich nur, wenn du gepingt wirst.</p>
+  <button class="btn" id="welcomeGo">Loslegen</button>
+  <p class="note" style="text-align:center">Im nächsten Schritt bestätigst du AGB, Datenschutz und Sicherheitsregeln.</p>
 </section>
 
 <!-- AGE -->
 <section class="screen" id="scr-age" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Dein Alter</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 1 von 4</span><span style="width:40px"></span></div><h2>Wie alt bist du?</h2></div>
   <p class="lead">PINGED ist ab 14. Unter 18 brauchst du das Okay deiner Eltern und spielst nur private Runden bis 22 Uhr.</p>
-  <div class="card">
-    <label class="field" for="dob">Geburtsdatum<input class="input" type="date" id="dob" max="2026-10-24"></label>
-    <p class="note" id="ageMsg">Wir speichern dein Geburtsdatum nur, um Altersgrenzen einzuhalten.</p>
-  </div>
+  <label class="field" for="dob">Geburtsdatum<input class="input" type="date" id="dob" max="2026-10-24"></label>
+  <p class="note" id="ageMsg">Wir speichern dein Geburtsdatum nur, um Altersgrenzen einzuhalten.</p>
   <button class="btn" id="ageGo" disabled>Weiter</button>
 </section>
 
 <!-- PARENT -->
 <section class="screen" id="scr-parent" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Okay der Eltern</h2></div>
-  <p class="lead">Du bist unter 18. Ein Erziehungsberechtigter muss zustimmen, bevor du spielen kannst.</p>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 2 von 4</span><span style="width:40px"></span></div><h2>Okay der Eltern</h2></div>
+  <p class="lead">Ein Erziehungsberechtigter muss zustimmen, bevor du spielen kannst.</p>
   <div class="card">
     <label class="field" for="parentMail">E-Mail eines Erziehungsberechtigten<input class="input" type="email" id="parentMail" placeholder="mama@beispiel.de" autocomplete="off"></label>
     <p class="note">Wir schicken die <a href="#" data-doc="eltern">Einverständniserklärung</a> an diese Adresse. Sie wird auch dein Notfallkontakt für den SOS-Knopf.</p>
     <button class="btn dark small" id="parentSend" disabled>Bestätigung anfordern</button>
-    <div id="parentSent" hidden class="demo-note">Demo: Hier würde jetzt eine E-Mail mit Bestätigungslink rausgehen. Tippe unten, um die Bestätigung durch die Eltern zu simulieren.</div>
+    <div id="parentSent" hidden class="demo-note">Demo: Hier geht jetzt eine E-Mail mit Bestätigungslink raus. Tippe unten, um die Bestätigung zu simulieren.</div>
     <button class="btn ghost small" id="parentConfirm" hidden>Eltern haben bestätigt (Demo)</button>
   </div>
   <button class="btn" id="parentGo" disabled>Weiter</button>
@@ -296,35 +372,34 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 
 <!-- CONSENT -->
 <section class="screen" id="scr-consent" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Einwilligungen</h2></div>
-  <p class="lead">Du entscheidest. Alles außer dem Standort ist freiwillig und lässt sich später im Datenschutz-Center ändern.</p>
-  <div class="card">
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 3 von 4</span><span style="width:40px"></span></div><h2>Deine Einwilligungen</h2></div>
+  <p class="lead">Alles außer dem Standort ist freiwillig und jederzeit im Datenschutz-Center änderbar.</p>
+  <div class="group">
     <label class="check" for="cAgb"><input type="checkbox" id="cAgb"><span class="t">Ich akzeptiere die <a href="#" data-doc="agb">AGB</a>.<span class="req">PFLICHT</span></span></label>
     <label class="check" for="cDs"><input type="checkbox" id="cDs"><span class="t">Ich habe die <a href="#" data-doc="datenschutz">Datenschutzerklärung</a> gelesen.<span class="req">PFLICHT</span></span></label>
-    <label class="check" for="cSafe"><input type="checkbox" id="cSafe"><span class="t">Ich halte mich an die <a href="#" data-doc="sicherheit">10 Sicherheitsregeln</a>: Verkehr geht vor, nur öffentliche Orte, kein Körperkontakt. Ich spiele auf eigene Verantwortung.<span class="req">PFLICHT</span></span></label>
+    <label class="check" for="cSafe"><input type="checkbox" id="cSafe"><span class="t">Ich halte mich an die <a href="#" data-doc="sicherheit">10 Sicherheitsregeln</a> und spiele auf eigene Verantwortung.<span class="req">PFLICHT</span><small>Verkehr geht vor, nur öffentliche Orte, kein Körperkontakt.</small></span></label>
   </div>
-  <div class="card" id="permList"></div>
+  <span class="section-title">Berechtigungen</span>
+  <div class="group" id="permList"></div>
   <button class="btn" id="consentGo" disabled>Weiter</button>
 </section>
 
 <!-- PROFILE -->
 <section class="screen" id="scr-profile" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Dein Profil</h2></div>
-  <div class="card">
-    <label class="field" for="pName">Spielername<input class="input" id="pName" maxlength="14" placeholder="z. B. Cyrus" autocomplete="off"></label>
-    <div class="field">Deine Ping-Farbe<div class="colors" id="colorPick"></div></div>
-    <label class="field" for="pEmergency" id="emergencyField">Notfallkontakt für SOS (Telefon oder E-Mail, optional)<input class="input" id="pEmergency" placeholder="+49 …" autocomplete="off"></label>
-  </div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 4 von 4</span><span style="width:40px"></span></div><h2>Dein Profil</h2></div>
+  <label class="field" for="pName">Spielername<input class="input" id="pName" maxlength="14" placeholder="z. B. Cyrus" autocomplete="off"></label>
+  <div class="field">Deine Farbe auf der Karte<div class="colors" id="colorPick"></div></div>
+  <label class="field" for="pEmergency" id="emergencyField">Notfallkontakt für SOS (optional)<input class="input" id="pEmergency" placeholder="Telefon oder E-Mail" autocomplete="off"></label>
   <button class="btn" id="profileGo" disabled>Fertig</button>
 </section>
 
 <!-- HOME -->
 <section class="screen" id="scr-home" hidden>
-  <div class="topbar">
-    <div class="player-chip" style="flex:1;min-width:0"><span class="dot" id="homeDot"></span><b id="homeName" style="font:900 26px/1 var(--display);text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b></div>
+  <div class="home-head">
+    <div class="who"><span class="avatar" id="homeDot"></span><div style="min-width:0"><small>Bereit für die Jagd</small><b id="homeName"></b></div></div>
     <span class="badge" id="homeBadge">Free</span>
   </div>
-  <div class="hero-map" style="aspect-ratio:16/10"><canvas id="homeCanvas" width="640" height="400"></canvas><div class="banner" style="font-size:18px">Bereit für die Jagd</div></div>
+  <div class="map-card"><canvas id="homeCanvas"></canvas><div class="float"><span class="chip"><span class="livedot"></span>4 Läufer gepingt</span></div></div>
   <div class="row">
     <button class="btn" id="goCreate">Runde erstellen</button>
   </div>
@@ -336,156 +411,160 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
     <div class="stat"><b id="stKm">0,0</b><span>km</span></div>
   </div>
   <div class="menu">
-    <button id="goPass"><span><b>PINGED Pass</b><br><small id="passMenuSub">19,99 € einmalig, kein Abo</small></span><span>→</span></button>
-    <button id="goPrivacy"><span><b>Datenschutz-Center</b><br><small>Einwilligungen, Datenexport, Konto löschen</small></span><span>→</span></button>
-    <button id="goLegal"><span><b>Rechtliches</b><br><small>AGB, Datenschutz, Impressum, Widerruf</small></span><span>→</span></button>
+    <button id="goPass"><span class="ic" style="background:var(--signal);color:var(--signal-ink)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg></span><span><b>PINGED Pass</b><small id="passMenuSub">19,99 € einmalig, kein Abo</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button id="goPrivacy"><span class="ic" style="background:var(--info)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></span><span><b>Datenschutz-Center</b><small>Einwilligungen, Datenexport, Konto löschen</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button id="goLegal"><span class="ic" style="background:#5e5ce6"><svg class="i" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg></span><span><b>Rechtliches</b><small>AGB, Datenschutz, Impressum, Widerruf</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>
 </section>
 
 <!-- CREATE -->
 <section class="screen" id="scr-create" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Neue Runde</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Neue Runde</h2></div>
   <div id="nightBlock" class="demo-note" hidden></div>
-  <div class="field"><span class="eyebrow">Modus</span><div class="modes" id="modes"></div></div>
+  <div class="modes" id="modes"></div>
   <div class="card">
-    <div class="field"><span class="eyebrow">Spieler (inkl. dir)</span><div class="seg" id="segPlayers"></div></div>
-    <div class="field"><span class="eyebrow">Dauer</span><div class="seg" id="segDur"></div></div>
-    <div class="field"><span class="eyebrow">Ping alle</span><div class="seg" id="segPing"></div></div>
-    <div class="field"><span class="eyebrow">Vorsprung Läufer</span><div class="seg" id="segHead"></div></div>
-    <div class="field"><span class="eyebrow">Deine Rolle</span><div class="seg" id="segRole"></div></div>
+    <div class="setting"><span>Spieler inklusive dir</span><div class="seg" id="segPlayers"></div></div>
+    <div class="setting"><span>Dauer</span><div class="seg" id="segDur"></div></div>
+    <div class="setting"><span>Ping alle</span><div class="seg" id="segPing"></div></div>
+    <div class="setting"><span>Vorsprung für Läufer</span><div class="seg" id="segHead"></div></div>
+    <div class="setting"><span>Deine Rolle</span><div class="seg" id="segRole"></div></div>
   </div>
-  <div class="card">
-    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z"/></svg></span><span><b>Loot auf der Karte</b><small>Kisten mit Fake-Ping, Unsichtbar, Scan und Drohne</small></span><label class="switch"><input type="checkbox" id="optLoot" aria-label="Loot"><span></span></label></div>
-    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1"/><rect x="17" y="14" width="4" height="6" rx="1"/></svg></span><span><b>KI-Spielleitung im Ohr</b><small>Live-Ansagen und Herzschlag, wenn ein Jäger nah ist</small></span><label class="switch"><input type="checkbox" id="optVoice" aria-label="KI-Spielleitung"><span></span></label></div>
-    <p class="note" id="passHint"></p>
+  <div class="group">
+    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 8l8-5 8 5v8l-8 5-8-5z"/><path d="M4 8l8 5 8-5M12 13v8"/></svg></span><span><b>Loot auf der Karte</b><small>Fake-Ping, Unsichtbar, Scan und Drohne</small></span><label class="switch"><input type="checkbox" id="optLoot" aria-label="Loot"><span></span></label></div>
+    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></span><span><b>KI-Spielleitung im Ohr</b><small>Live-Ansagen und Herzschlag, wenn Jäger nah sind</small></span><label class="switch"><input type="checkbox" id="optVoice" aria-label="KI-Spielleitung"><span></span></label></div>
   </div>
-  <div class="field">
-    <span class="eyebrow">Spielzone · Radius 320 m · automatisch geprüft</span>
-    <div class="zone-prev"><canvas id="zoneCanvas" width="600" height="600"></canvas></div>
-    <div class="blocked-list" id="blockedList"></div>
-  </div>
+  <p class="note" id="passHint" style="margin-top:-8px;padding:0 6px"></p>
+  <span class="section-title">Spielzone · 320 m Radius</span>
+  <div class="zone-prev"><canvas id="zoneCanvas"></canvas></div>
+  <div class="blocked-list" id="blockedList"></div>
   <button class="btn" id="createGo">Lobby öffnen</button>
 </section>
 
 <!-- JOIN -->
 <section class="screen" id="scr-join" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Beitreten</h2></div>
-  <div class="card">
-    <label class="field" for="joinCode">Runden-Code<input class="input" id="joinCode" maxlength="6" placeholder="z. B. 7K4QX2" autocomplete="off" style="font:700 24px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase"></label>
-    <p class="note">Demo: Jeder 6-stellige Code bringt dich in die Lobby von Dominick. Dominick hat den Pass, also bekommst du in seiner Runde alle Pass-Funktionen.</p>
-  </div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Beitreten</h2></div>
+  <label class="field" for="joinCode">Runden-Code<input class="input" id="joinCode" maxlength="6" placeholder="7K4QX2" autocomplete="off" style="font:600 28px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;text-align:center;min-height:68px"></label>
+  <p class="note">Demo: Jeder 6-stellige Code bringt dich in die Lobby von Dominick. Er hat den Pass, also bekommst du in seiner Runde alle Pass-Funktionen.</p>
   <button class="btn" id="joinGo" disabled>Beitreten</button>
 </section>
 
 <!-- LOBBY -->
 <section class="screen" id="scr-lobby" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Lobby</h2></div>
-  <div class="card" style="align-items:center">
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Lobby</h2></div>
+  <div class="card code-card">
     <span class="eyebrow">Runden-Code</span>
     <div class="code" id="lobbyCode"></div>
-    <p class="note" id="lobbyMeta" style="text-align:center"></p>
+    <p class="note" id="lobbyMeta"></p>
   </div>
   <div class="plist" id="lobbyPlayers"></div>
-  <div class="card">
-    <span class="eyebrow">Zustimmung für diese Runde</span>
+  <span class="section-title">Wo spielst du?</span>
+  <div class="play-mode" id="playMode">
+    <button class="pm" data-v="gps"><b>Echt draußen</b><small>Dein GPS-Standort, echte Zeit</small></button>
+    <button class="pm" data-v="demo"><b>Demo</b><small>Auf der Karte tippen, 10-fache Zeit</small></button>
+  </div>
+  <p class="note" id="gpsStatus" style="padding:0 6px;margin-top:-8px"></p>
+  <span class="section-title">Zustimmung für diese Runde</span>
+  <div class="group">
     <label class="check" for="rcLoc"><input type="checkbox" id="rcLoc"><span class="t">Ich teile meinen Standort mit den <span id="rcN"></span> Spielern dieser Runde, bis die Runde endet.<span class="req">PFLICHT</span><small>Danach wird er gelöscht.</small></span></label>
-    <label class="check" for="rcFilm"><input type="checkbox" id="rcFilm"><span class="t">Mitspieler dürfen mich filmen, Clips von mir dürfen im Trailer erscheinen.<small>Freiwillig. Ohne Haken wirst du im Trailer nur als Punkt gezeigt.</small></span></label>
+    <label class="check" for="rcFilm"><input type="checkbox" id="rcFilm"><span class="t">Mitspieler dürfen mich filmen und Clips von mir im Trailer zeigen.<small>Freiwillig. Ohne Haken bist du im Trailer nur ein Punkt.</small></span></label>
   </div>
   <button class="btn" id="lobbyGo" disabled>Warte auf Spieler …</button>
 </section>
 
 <!-- ROLE -->
 <section class="screen" id="scr-role" hidden>
+  <div style="height:4vh"></div>
   <div class="rolecard" id="roleCard"></div>
-  <button class="btn" id="roleGo">Los</button>
+  <button class="btn" id="roleGo">Los geht's</button>
 </section>
 
 <!-- END -->
 <section class="screen" id="scr-end" hidden>
   <div class="result" id="endResult"></div>
   <div id="endReveal"></div>
-  <div class="card" style="overflow-x:auto"><table class="table" id="endTable"></table></div>
+  <div class="table-wrap"><table class="table" id="endTable"></table></div>
   <button class="btn" id="endTrailer">Trailer ansehen</button>
-  <div class="row"><button class="btn ghost small" id="endAgain">Revanche</button><button class="btn ghost small" id="endHome">Zur Startseite</button></div>
+  <div class="row"><button class="btn ghost small" id="endAgain">Revanche</button><button class="btn ghost small" id="endHome">Startseite</button></div>
   <button class="btn dark small" id="endReport">Spieler melden</button>
-  <p class="note">Dein Standortverlauf dieser Runde wird jetzt gelöscht. Für den Trailer bleibt nur eine vereinfachte Laufspur, 30 Tage lang.</p>
+  <p class="note" style="text-align:center">Dein Standortverlauf dieser Runde wird jetzt gelöscht. Für den Trailer bleibt nur eine vereinfachte Laufspur, 30 Tage lang.</p>
 </section>
 
 <!-- TRAILER -->
 <section class="screen" id="scr-trailer" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Trailer</h2><button class="iconbtn" id="trSound" aria-label="Ton an oder aus">♪</button></div>
-  <div class="trailer-wrap"><canvas id="trCanvas" width="540" height="960"></canvas></div>
-  <div class="row"><button class="btn" id="trPlay">Nochmal abspielen</button></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Trailer</span><button class="circle" id="trSound" aria-label="Ton an oder aus"><svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button></div></div>
+  <div class="trailer-wrap"><canvas id="trCanvas"></canvas></div>
+  <button class="btn" id="trPlay">Nochmal abspielen</button>
   <p class="note" id="trNote"></p>
 </section>
 
 <!-- PASS -->
 <section class="screen" id="scr-pass" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>PINGED Pass</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div></div>
   <div class="pass-hero">
+    <span style="font:700 13px/1 var(--sans);letter-spacing:.06em;opacity:.7">PINGED PASS</span>
     <span class="t">Einmal zahlen.<br>Für immer drin.</span>
     <span class="p">19,99 € <small>einmalig · kein Abo · inkl. MwSt.</small></span>
   </div>
   <div class="card">
-    <div class="feat"><i>01</i><b>Der Verräter</b><p>Ein Läufer arbeitet heimlich für die Jäger. Am Ende wird aufgedeckt, wer es war.</p></div>
-    <div class="feat"><i>02</i><b>KI-Spielleitung im Ohr</b><p>Live-Ansagen zu Pings, Entfernungen und Catches, dazu ein Herzschlag, wenn Jäger nah sind.</p></div>
-    <div class="feat"><i>03</i><b>Voller Trailer</b><p>Doppelte Länge, ohne Wasserzeichen, mit Musik. Fertig für TikTok und Reels.</p></div>
-    <div class="feat"><i>04</i><b>Loot auf der Karte</b><p>Fake-Ping, Unsichtbar, Scan für Läufer. Drohne und Extra-Ping für Jäger.</p></div>
-    <div class="feat"><i>05</i><b>Alle Modi</b><p>Verräter, Infektion, Schrumpfende Zone, Mister X.</p></div>
-    <div class="feat"><i>06</i><b>Bis 100 Spieler</b><p>Und deine ganze Lobby spielt mit deinen Pass-Funktionen, auch ohne eigenen Pass.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/><path d="M17 4l3 3"/></svg></span><b>Der Verräter</b><p>Ein Läufer spielt heimlich für die Jäger. Am Ende wird er enttarnt.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg></span><b>KI-Spielleitung im Ohr</b><p>Live-Ansagen zu Pings und Entfernungen, Herzschlag wenn Jäger nah sind.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M10 9l5 3-5 3z"/></svg></span><b>Voller Trailer</b><p>20 Sekunden, mit Musik, ohne Wasserzeichen. Fertig für TikTok.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><path d="M4 8l8-5 8 5v8l-8 5-8-5z"/><path d="M4 8l8 5 8-5M12 13v8"/></svg></span><b>Loot auf der Karte</b><p>Fake-Ping, Unsichtbar, Scan. Drohne und Extra-Ping für Jäger.</p></div>
+    <div class="feat"><span class="fi"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/></svg></span><b>Alle Modi, bis 100 Spieler</b><p>Verräter, Infektion, Zone, Mister X. Deine ganze Lobby spielt mit.</p></div>
   </div>
-  <div class="card" style="overflow-x:auto">
+  <div class="card" style="overflow-x:auto;padding-block:6px">
     <table class="cmp"><thead><tr><th>Funktion</th><th>Free</th><th>Pass</th></tr></thead><tbody>
       <tr><td>Spieler pro Runde</td><td>6</td><td>100</td></tr>
-      <tr><td>Klassischer Manhunt</td><td>Ja</td><td>Ja</td></tr>
-      <tr><td>Weitere Modi</td><td>Nein</td><td>4</td></tr>
-      <tr><td>Loot und KI-Stimme</td><td>Nein</td><td>Ja</td></tr>
-      <tr><td>Trailer</td><td>10 s, Wasserzeichen</td><td>20 s, mit Musik</td></tr>
+      <tr><td>Spielmodi</td><td>1</td><td>5</td></tr>
+      <tr><td>Loot und KI-Stimme</td><td>–</td><td>Ja</td></tr>
+      <tr><td>Trailer</td><td>10 s</td><td>20 s</td></tr>
     </tbody></table>
   </div>
-  <div id="passBuyBox" class="card">
-    <label class="check" for="pbExec"><input type="checkbox" id="pbExec"><span class="t">Ich stimme ausdrücklich zu, dass der Pass sofort freigeschaltet wird, also vor Ablauf der 14-tägigen Widerrufsfrist.</span></label>
+  <div id="passBuyBox" class="group">
+    <label class="check" for="pbExec"><input type="checkbox" id="pbExec"><span class="t">Ich stimme zu, dass der Pass sofort freigeschaltet wird, also vor Ablauf der 14-tägigen Widerrufsfrist.</span></label>
     <label class="check" for="pbLose"><input type="checkbox" id="pbLose"><span class="t">Mir ist bekannt, dass ich dadurch mein <a href="#" data-doc="widerruf">Widerrufsrecht</a> verliere.</span></label>
-    <label class="check" for="pbParent" id="pbParentRow" hidden><input type="checkbox" id="pbParent"><span class="t">Meine Eltern sind mit dem Kauf einverstanden. Sie bekommen eine Kopie der Kaufbestätigung.</span></label>
-    <p class="note">Es gelten die <a href="#" data-doc="agb">AGB</a>. Bezahlt wird über den App Store bzw. Google Play. Die Kaufbestätigung kommt per E-Mail.</p>
-    <button class="btn" id="passBuy" disabled>Zahlungspflichtig kaufen · 19,99 €</button>
-    <button class="btn ghost small" id="passRestore">Käufe wiederherstellen</button>
+    <label class="check" for="pbParent" id="pbParentRow" hidden><input type="checkbox" id="pbParent"><span class="t">Meine Eltern sind mit dem Kauf einverstanden.</span></label>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn" id="passBuy" disabled>Zahlungspflichtig kaufen</button>
+      <button class="btn ghost small" id="passRestore">Käufe wiederherstellen</button>
+      <p class="note">Es gelten die <a href="#" data-doc="agb">AGB</a>. Bezahlt wird über App Store bzw. Google Play.</p>
+    </div>
   </div>
   <div id="passOwned" class="card" hidden>
-    <b style="font:900 26px/1 var(--display);text-transform:uppercase;color:var(--tape)">Pass aktiv</b>
+    <b style="font:800 24px/1 var(--sans);letter-spacing:-.03em;color:var(--signal)">Pass aktiv</b>
     <p class="note" id="passOwnedTxt"></p>
   </div>
 </section>
 
 <!-- PRIVACY -->
 <section class="screen" id="scr-privacy" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Datenschutz</h2></div>
-  <p class="lead">Hier kannst du jede freiwillige Einwilligung widerrufen. Das gilt ab sofort für alle künftigen Runden.</p>
-  <div class="card" id="privPerms"></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Datenschutz</h2></div>
+  <p class="lead">Jede freiwillige Einwilligung kannst du hier widerrufen. Das gilt sofort für alle künftigen Runden.</p>
+  <div class="group" id="privPerms"></div>
+  <span class="section-title">Gespeicherte Daten</span>
   <div class="card">
-    <span class="eyebrow">Gespeicherte Daten</span>
-    <p class="note">Das ist alles, was die App über dich speichert. Standortdaten vergangener Runden sind nicht dabei, weil sie nach der Runde gelöscht werden.</p>
+    <p class="note">Das ist alles, was die App über dich speichert. Standortverläufe sind nicht dabei, weil sie nach jeder Runde gelöscht werden.</p>
     <textarea class="input" id="privData" readonly aria-label="Gespeicherte Daten"></textarea>
     <button class="btn dark small" id="privCopy">Daten kopieren</button>
   </div>
+  <span class="section-title">Konto</span>
   <div class="card">
-    <span class="eyebrow">Konto löschen</span>
-    <p class="note">Löscht Profil, Statistiken und Einwilligungen. Ein gekaufter Pass kann über „Käufe wiederherstellen“ zurückgeholt werden.</p>
+    <p class="note">Löscht Profil, Statistiken und Einwilligungen. Ein gekaufter Pass lässt sich über „Käufe wiederherstellen“ zurückholen.</p>
     <button class="btn red small" id="privDelete">Konto löschen</button>
-    <div id="privDeleteConfirm" hidden class="row"><button class="btn red small" id="privDeleteYes">Ja, endgültig löschen</button><button class="btn ghost small" id="privDeleteNo">Abbrechen</button></div>
+    <div id="privDeleteConfirm" hidden class="row"><button class="btn red small" id="privDeleteYes">Endgültig löschen</button><button class="btn ghost small" id="privDeleteNo">Abbrechen</button></div>
   </div>
 </section>
 
 <!-- LEGAL -->
 <section class="screen" id="scr-legal" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Rechtliches</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div><h2>Rechtliches</h2></div>
   <div class="demo-note">Alle Texte sind Entwürfe. Vor dem Launch müssen sie von einem Anwalt geprüft und die Angaben in eckigen Klammern ausgefüllt werden.</div>
   <div class="menu" id="legalMenu"></div>
 </section>
 
 <!-- DOC -->
 <section class="screen" id="scr-doc" hidden>
-  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2 id="docTitle">Dokument</h2></div>
+  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow" id="docTitle">Dokument</span><span style="width:40px"></span></div></div>
   <article class="doc" id="docBody"></article>
 </section>
 
@@ -493,20 +572,26 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 
 <!-- GAME -->
 <div class="game" id="game" hidden>
+  <div id="gameMap"></div>
   <canvas id="gameCanvas"></canvas>
   <div class="hud-top">
-    <div class="hud-bar"><div class="brand">PINGED.<span id="hudMode">KLASSIK</span><em id="hudRole">HUNTER</em></div><div class="clock" id="hudClock">60:00</div></div>
-    <div class="hud-banner" id="hudBanner" hidden></div>
-    <div class="hud-info" id="hudInfo"></div>
+    <div class="hud-bar glass"><div class="brand"><span class="rdot" id="hudDot"></span><div><b id="hudRole">Jäger</b><small id="hudMode">Klassik</small></div></div><div class="clock" id="hudClock">60:00</div></div>
+    <div class="island" id="hudBanner" hidden></div>
+    <div class="hud-info glass" id="hudInfo"></div>
   </div>
   <div class="hud-bottom">
-    <div class="hud-panel">
-      <div class="hud-line"><span id="hudNextLbl">NÄCHSTER PING</span><span class="big" id="hudNext">02:00</span></div>
-      <div class="compass" id="hudCompass" hidden><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="currentColor" stroke-opacity=".35"/><path id="compArrow" d="M17 5 L22 20 L17 17 L12 20 Z" fill="var(--hunt)"/></svg><span id="compTxt" style="font:700 13px/1.3 var(--mono)"></span></div>
-      <div class="hud-actions" id="hudItems"></div>
-      <div class="hud-actions">
-        <button class="sos" id="btnSos" aria-label="SOS, 2 Sekunden halten"><i id="sosFill"></i><span style="position:relative">SOS halten</span></button>
-        <button id="btnSpeed">Tempo ×1</button>
+    <button class="catch-btn" id="btnCatch" hidden>FANGEN</button>
+    <div class="sheet glass">
+      <div class="sheet-main">
+        <div class="ring"><svg viewBox="0 0 58 58"><circle class="bgc" cx="29" cy="29" r="24"/><circle class="fgc" id="pingRing" cx="29" cy="29" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/></svg><span class="ic"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4M5 5a10 10 0 000 14M19 5a10 10 0 010 14"/></svg></span></div>
+        <div class="sheet-txt"><small id="hudNextLbl">Nächster Ping</small><b id="hudNext">02:00</b></div>
+        <div class="compass" id="hudCompass" hidden><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="2"/><path id="compArrow" d="M17 5 L22 20 L17 17 L12 20 Z" fill="var(--hunt)"/></svg><span id="compTxt"></span></div>
+      </div>
+      <div class="items" id="hudItems"></div>
+      <div class="actions">
+        <button class="sos" id="btnSos" aria-label="SOS, 2 Sekunden halten"><i id="sosFill"></i><span>SOS</span></button>
+        <button id="btnCenter" aria-label="Karte zentrieren"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg></button>
+        <button id="btnSpeed">×1</button>
         <button id="btnLeave">Verlassen</button>
       </div>
     </div>
@@ -518,13 +603,16 @@ textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mo
 
 <script>
 const LEGAL = {"agb":"# Allgemeine Geschäftsbedingungen (AGB)\n\nStand: 24.10.2026 · Entwurf, vor dem Launch anwaltlich prüfen lassen\n\n## 1. Geltungsbereich und Anbieter\n\n1. Diese AGB gelten für die Nutzung der App „PINGED“ (im Folgenden „App“) und aller darin angebotenen Leistungen.\n2. Anbieter ist [Vorname Nachname / Firma], [Straße Nr.], [PLZ Ort], E-Mail: [kontakt@pinged.app] (im Folgenden „wir“). Die vollständigen Angaben stehen im Impressum.\n3. Abweichende Bedingungen der Nutzer gelten nicht, auch wenn wir ihnen nicht ausdrücklich widersprechen.\n\n## 2. Was PINGED ist\n\n1. PINGED ist ein Outdoor-Spiel für Smartphones. Spieler bewegen sich zu Fuß in einer selbst festgelegten Spielzone. Jäger sehen die Standorte der Läufer in festen Abständen („Pings“).\n2. Die App stellt nur die technische Plattform bereit. Wir veranstalten keine Runden, beaufsichtigen keine Spieler und haben keinen Einfluss darauf, wo, wann und mit wem gespielt wird. Ausgenommen sind von uns ausdrücklich als „Offizielles Event“ gekennzeichnete Veranstaltungen, für die eigene Teilnahmebedingungen gelten.\n3. Ein Anspruch auf ständige Verfügbarkeit der App besteht nicht. Wir bemühen uns um einen störungsfreien Betrieb, können aber Wartungen, GPS-Ungenauigkeiten und Netzausfälle nicht ausschließen.\n\n## 3. Mindestalter und Minderjährige\n\n1. Die Nutzung ist ab 14 Jahren erlaubt.\n2. Nutzer zwischen 14 und 17 Jahren brauchen die Einwilligung eines Erziehungsberechtigten. Die Einwilligung wird in der App eingeholt und an die angegebene E-Mail-Adresse des Erziehungsberechtigten bestätigt.\n3. Minderjährige können nur private Runden spielen, nicht an Offiziellen Events oder öffentlichen Runden teilnehmen und zwischen 22:00 und 6:00 Uhr keine Runden starten oder beitreten.\n4. Käufe durch Minderjährige erfordern zusätzlich die Zustimmung eines Erziehungsberechtigten.\n\n## 4. Konto\n\n1. Für die Nutzung ist ein Konto mit Spielername und Geburtsdatum nötig. Die Angaben müssen wahr sein.\n2. Jede Person darf nur ein Konto haben. Das Konto ist nicht übertragbar.\n3. Du kannst dein Konto jederzeit in der App unter „Datenschutz-Center“ löschen.\n\n## 5. Kostenlose Nutzung und PINGED Pass\n\n1. Die Grundfunktionen (klassischer Modus, private Runden bis 6 Spieler) sind kostenlos.\n2. Der „PINGED Pass“ ist ein einmaliger Kauf zum Preis von 19,99 € inkl. gesetzlicher Umsatzsteuer. Es handelt sich nicht um ein Abonnement. Es entstehen keine wiederkehrenden Kosten.\n3. Der Pass schaltet dauerhaft die in der App beschriebenen Zusatzfunktionen für das Konto frei, mit dem er gekauft wurde. Hat der Host einer Runde den Pass, können alle Mitspieler dieser Runde die Pass-Funktionen in dieser Runde nutzen.\n4. „Dauerhaft“ bedeutet: für die gesamte Zeit, in der wir die App betreiben. Sollten wir den Betrieb einstellen, kündigen wir das mindestens 12 Monate vorher an. Wurde der Pass weniger als 12 Monate vor der Einstellung gekauft, erstatten wir den Kaufpreis anteilig.\n5. Der Pass verschafft keine spielerischen Vorteile gegenüber Mitspielern, die ihn nicht haben, außer den beschriebenen Spielmodi und Spielelementen, die für alle Spieler der Runde gleichermaßen gelten.\n6. Der Kauf wird über den App Store von Apple oder Google Play abgewickelt. Es gelten zusätzlich deren Zahlungsbedingungen. Erstattungen werden über den jeweiligen Store beantragt.\n7. Der Vertrag kommt zustande, wenn du auf die Schaltfläche „Zahlungspflichtig kaufen“ tippst und den Kauf im Store bestätigst.\n\n## 6. Widerrufsrecht\n\nVerbrauchern steht ein Widerrufsrecht nach Maßgabe der Widerrufsbelehrung zu. Bei digitalen Inhalten erlischt es vorzeitig, wenn du ausdrücklich zustimmst, dass wir vor Ablauf der Widerrufsfrist mit der Ausführung beginnen, und du bestätigst, dass du dadurch dein Widerrufsrecht verlierst.\n\n## 7. Regeln für das Spielen\n\n1. Die Teilnahme an Runden erfolgt freiwillig und in eigener Verantwortung. Du bist selbst dafür verantwortlich, dass du körperlich in der Lage bist, mitzuspielen.\n2. Die Sicherheitsregeln und Community-Richtlinien sind Teil dieser AGB. Insbesondere gilt: Die Straßenverkehrsordnung hat immer Vorrang vor dem Spiel. Privatgrundstücke, Bahnanlagen, Baustellen, Gewässer und gesperrte Bereiche dürfen nicht betreten werden. Gefangen wird ohne Körperkontakt.\n3. Wer eine Runde erstellt (Host), legt die Spielzone fest und muss dabei auf sichere, öffentlich zugängliche Gebiete achten. Die automatische Sperrung von Gefahrenbereichen in der App ist eine Hilfe, keine Garantie.\n4. Alle Mitspieler einer Runde müssen der Teilnahme selbst in der App zugestimmt haben. Es ist verboten, Personen ohne ihr Wissen zu „jagen“, zu verfolgen oder zu filmen.\n5. Standortdaten anderer Spieler dürfen ausschließlich für das laufende Spiel genutzt werden. Speichern, Weitergeben oder Nutzen außerhalb des Spiels ist verboten.\n\n## 8. Inhalte der Nutzer (Clips und Trailer)\n\n1. Du behältst alle Rechte an Clips, die du aufnimmst. Du räumst uns ein einfaches, auf die Bereitstellung der App beschränktes Recht ein, sie zu verarbeiten, um daraus den Trailer der Runde zu erstellen.\n2. Du darfst nur Personen filmen, die zugestimmt haben. Mitspieler können in der App einstellen, dass sie nicht gefilmt werden möchten. Unbeteiligte Passanten dürfen nicht erkennbar gefilmt oder veröffentlicht werden.\n3. Wenn du einen Trailer auf anderen Plattformen veröffentlichst, bist du dafür verantwortlich, dass alle Gezeigten einverstanden sind.\n\n## 9. Sperrung\n\nWir können Konten vorübergehend oder dauerhaft sperren, wenn Nutzer gegen diese AGB, die Sicherheitsregeln oder Gesetze verstoßen, insbesondere bei Belästigung, Stalking, Gewalt oder Missbrauch von Standortdaten. Ein bereits bezahlter Pass wird bei einer berechtigten Sperrung nicht erstattet.\n\n## 10. Haftung\n\n1. Wir haften unbeschränkt bei Vorsatz und grober Fahrlässigkeit, bei Verletzung von Leben, Körper oder Gesundheit sowie nach dem Produkthaftungsgesetz.\n2. Bei leichter Fahrlässigkeit haften wir nur bei Verletzung einer wesentlichen Vertragspflicht (Kardinalpflicht), und zwar begrenzt auf den vertragstypischen, vorhersehbaren Schaden.\n3. Wir haften nicht für das Verhalten anderer Spieler, für Schäden, die durch Missachtung der Sicherheitsregeln oder der Straßenverkehrsordnung entstehen, oder für Ungenauigkeiten von GPS-Daten, soweit uns kein Verschulden nach Absatz 1 oder 2 trifft.\n\n## 11. Änderungen\n\nWir können diese AGB mit Wirkung für die Zukunft ändern, wenn dafür ein triftiger Grund besteht (z. B. neue Gesetze oder neue Funktionen). Wir informieren dich mindestens 6 Wochen vorher in der App. Widersprichst du nicht innerhalb dieser Frist, gelten die Änderungen als angenommen. Auf diese Folge weisen wir in der Mitteilung gesondert hin. Der Kaufgegenstand des Passes wird durch Änderungen nicht zu deinem Nachteil eingeschränkt.\n\n## 12. Schlussbestimmungen\n\n1. Es gilt das Recht der Bundesrepublik Deutschland. Bei Verbrauchern gilt diese Rechtswahl nur, soweit nicht zwingende Vorschriften des Staates, in dem der Verbraucher seinen gewöhnlichen Aufenthalt hat, entgegenstehen.\n2. Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.\n3. Sollte eine Bestimmung unwirksam sein, bleiben die übrigen Bestimmungen wirksam.\n","community":"# Community-Richtlinien\n\nStand: 24.10.2026 · Entwurf\n\nPINGED soll sich anfühlen wie ein Actionfilm mit deinen Freunden, nicht wie Verfolgung. Darum gilt:\n\n## Erlaubt und erwünscht\n\n- Taktik, Täuschung im Spiel, Fake-Pings, Verräter-Rollen: alles, was die App als Spielmechanik anbietet.\n- Trailer posten, wenn alle Gezeigten einverstanden sind.\n- Fair verlieren und danach eine Revanche fordern.\n\n## Verboten\n\n- Belästigung, Beleidigung, Drohungen, Diskriminierung.\n- Standortdaten außerhalb des Spiels nutzen, z. B. um jemanden nach der Runde aufzusuchen.\n- Leute zu einer Runde drängen oder einladen, die das nicht wollen.\n- Cheating mit GPS-Fälschungs-Apps (Fake-GPS). Das zerstört das Spiel für alle und führt zur Sperre.\n- Clips von Mitspielern veröffentlichen, die das nicht möchten, oder von unbeteiligten Passanten.\n- Accounts für Personen unter 14 Jahren.\n\n## Melden\n\nNach jeder Runde kannst du Mitspieler melden. Im Notfall während der Runde: SOS-Knopf. Wir prüfen jede Meldung und sperren bei schweren Verstößen sofort.\n","datenschutz":"# Datenschutzerklärung\n\nStand: 24.10.2026 · Entwurf, vor dem Launch anwaltlich prüfen lassen\n\nPINGED ist ein Spiel, das mit Standortdaten arbeitet. Deshalb sagen wir dir hier genau, welche Daten wir wann nutzen, wer sie sieht und wann sie gelöscht werden. Kurz gesagt: Dein Standort wird nur während einer laufenden Runde geteilt, nur mit den Mitspielern dieser Runde, und nach dem Ende der Runde gelöscht.\n\n## 1. Verantwortlicher\n\n[Vorname Nachname / Firma]\n[Straße Nr.], [PLZ Ort]\nE-Mail: [datenschutz@pinged.app]\n\nDatenschutzbeauftragter: [falls benannt, Name und Kontakt; sonst diesen Absatz streichen]\n\n## 2. Welche Daten wir verarbeiten\n\n### 2.1 Konto\n\nSpielername, Geburtsdatum, Avatar-Farbe, bei Minderjährigen die E-Mail-Adresse eines Erziehungsberechtigten. Zweck: Konto führen, Altersgrenzen und Jugendschutz einhalten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO (Vertrag) und lit. c (rechtliche Pflicht, Jugendschutz). Speicherdauer: bis zur Löschung des Kontos.\n\n### 2.2 Standort\n\nDein genauer Standort (GPS) wird nur verarbeitet, solange du in einer laufenden Runde bist. Vor und nach einer Runde greift die App nicht auf deinen Standort zu.\n\n- Wer sieht ihn: Nur die Mitspieler der laufenden Runde, und zwar je nach Rolle nur zu den Ping-Zeitpunkten oder als Richtungsanzeige.\n- Speicherung: Während der Runde auf unserem Server in der EU, damit Pings an die Mitspieler verteilt werden können. Nach dem Ende der Runde werden die Rohdaten innerhalb von 24 Stunden gelöscht.\n- Trailer: Für den Trailer wird aus deinen Standortdaten eine vereinfachte Laufspur erstellt. Diese wird nur gespeichert, wenn du der Trailer-Funktion zugestimmt hast, und nach 30 Tagen gelöscht, außer du speicherst den Trailer selbst.\n- Rechtsgrundlage: Einwilligung nach Art. 6 Abs. 1 lit. a DSGVO und § 25 Abs. 1 TDDDG für den Zugriff auf das Gerät. Ohne Standort kann man PINGED nicht spielen.\n\n### 2.3 Kamera und Mikrofon (freiwillig)\n\nWenn du zustimmst, kann die App während einer Runde kurze Clips aufnehmen (z. B. den Moment eines Catches) und daraus den Trailer erstellen. Clips bleiben auf deinem Gerät und werden nur für die Erstellung des Trailers verarbeitet. Das Mikrofon nimmt nur den Ton dieser Clips auf. Rechtsgrundlage: Einwilligung, Art. 6 Abs. 1 lit. a DSGVO, § 25 Abs. 1 TDDDG.\n\n### 2.4 Mitteilungen (freiwillig)\n\nPush-Mitteilungen für Einladungen und Rundenstart. Rechtsgrundlage: Einwilligung. Abschaltbar in der App und in den Systemeinstellungen.\n\n### 2.5 Kauf des PINGED Pass\n\nDer Kauf läuft über Apple oder Google. Wir erhalten nur eine Kaufbestätigung (Transaktionsnummer, Produkt, Datum), keine Zahlungsdaten. Rechtsgrundlage: Art. 6 Abs. 1 lit. b DSGVO. Aufbewahrung: 10 Jahre wegen steuerrechtlicher Pflichten (Art. 6 Abs. 1 lit. c DSGVO, § 147 AO).\n\n### 2.6 Sicherheit und Meldungen\n\nWenn du den SOS-Knopf auslöst, wird dein aktueller Standort an deinen Notfallkontakt und alle Mitspieler der Runde gesendet. Meldungen über andere Spieler speichern wir mit dem Rundenverlauf für 90 Tage, um Missbrauch zu prüfen. Rechtsgrundlage: Art. 6 Abs. 1 lit. d DSGVO (lebenswichtige Interessen) und lit. f (berechtigtes Interesse an einer sicheren Plattform).\n\n### 2.7 Nutzungsstatistik (freiwillig)\n\nNur mit deiner Einwilligung erfassen wir anonymisierte Nutzungsdaten (z. B. welche Spielmodi beliebt sind). Ohne Einwilligung gibt es kein Tracking und keine Werbung. Wir verkaufen keine Daten.\n\n### 2.8 Technische Daten\n\nBeim Verbindungsaufbau verarbeitet unser Server IP-Adresse, Zeitpunkt und Gerätetyp, um die App auszuliefern und vor Angriffen zu schützen. Löschung nach 7 Tagen. Rechtsgrundlage: Art. 6 Abs. 1 lit. f DSGVO.\n\n## 3. KI-Spielleitung\n\nDie Sprachansagen der KI-Spielleitung werden auf deinem Gerät erzeugt. Dabei werden nur Spielereignisse (z. B. „Ping in 30 Sekunden“) verarbeitet, keine Gespräche. [Falls ein Cloud-Dienst genutzt wird: Anbieter, Sitz, Rechtsgrundlage und Garantien ergänzen.]\n\n## 4. Empfänger\n\n- Mitspieler der jeweiligen Runde (Standort zu Pings, Spielername, Rolle am Ende)\n- Hosting-Dienstleister in der EU: [Anbieter, Sitz], als Auftragsverarbeiter nach Art. 28 DSGVO\n- Apple Inc. bzw. Google Ireland Ltd. für Käufe und Push-Mitteilungen\n- Behörden nur, wenn wir gesetzlich dazu verpflichtet sind\n\nEine Übermittlung in Länder außerhalb der EU findet nur statt, wenn ein Angemessenheitsbeschluss (z. B. EU-US Data Privacy Framework) oder Standardvertragsklauseln vorliegen.\n\n## 5. Kinder und Jugendliche\n\nPINGED ist ab 14 Jahren. Für Nutzer unter 16 Jahren ist nach Art. 8 DSGVO die Einwilligung eines Erziehungsberechtigten nötig. Wir holen sie für alle Nutzer unter 18 ein, weil das Spiel draußen stattfindet. Erziehungsberechtigte können die Einwilligung jederzeit per E-Mail widerrufen und die Löschung des Kontos verlangen.\n\n## 6. Deine Rechte\n\nDu hast das Recht auf Auskunft (Art. 15), Berichtigung (Art. 16), Löschung (Art. 17), Einschränkung (Art. 18), Datenübertragbarkeit (Art. 20) und Widerspruch (Art. 21 DSGVO). Einwilligungen kannst du jederzeit mit Wirkung für die Zukunft widerrufen, direkt in der App im Datenschutz-Center. Dort kannst du auch deine Daten exportieren und dein Konto löschen.\n\nDu kannst dich bei einer Datenschutz-Aufsichtsbehörde beschweren, zum Beispiel bei der Behörde deines Bundeslandes.\n\n## 7. Sicherheit\n\nVerbindungen sind verschlüsselt (TLS). Standortdaten werden nur an Geräte in derselben Runde verteilt. Runden-Codes sind zufällig und laufen nach Rundenende ab.\n\n## 8. Änderungen\n\nWir passen diese Erklärung an, wenn sich die App oder die Rechtslage ändert. Die aktuelle Fassung steht immer in der App.\n","eltern":"# Einverständniserklärung für Erziehungsberechtigte\n\nStand: 24.10.2026 · Entwurf, vor dem Launch anwaltlich prüfen lassen\n\nIhr Kind möchte die App PINGED nutzen. PINGED ist ein Fangspiel für draußen: Die Spieler laufen zu Fuß in einem festgelegten Gebiet, und die App zeigt den „Jägern“ in festen Abständen, wo die „Läufer“ sind. Weil Ihr Kind unter 18 Jahre alt ist, brauchen wir Ihr Einverständnis.\n\n## Was für Minderjährige gilt\n\n- Mindestalter 14 Jahre.\n- Nur private Runden mit Personen, die Ihr Kind über einen Einladungscode hinzufügt. Keine öffentlichen Runden und keine Offiziellen Events mit Fremden.\n- Keine Runden zwischen 22:00 und 6:00 Uhr.\n- Der Standort wird nur während einer laufenden Runde und nur an die Mitspieler dieser Runde übertragen und danach gelöscht.\n- Es gibt einen SOS-Knopf, der die Runde sofort für alle beendet und den Standort an den Notfallkontakt sendet. Als Notfallkontakt wird Ihre E-Mail-Adresse oder Telefonnummer eingetragen.\n- Käufe (PINGED Pass, 19,99 € einmalig) sind nur mit Ihrer gesonderten Zustimmung möglich. Wir empfehlen zusätzlich die Kaufsperre im App Store bzw. bei Google Play.\n\n## Was wir von Ihnen bestätigt haben möchten\n\nMit Ihrer Bestätigung erklären Sie:\n\n1. Ich bin erziehungsberechtigt für das angegebene Kind.\n2. Ich bin einverstanden, dass mein Kind PINGED nach den AGB und Sicherheitsregeln nutzt.\n3. Ich willige ein, dass die in der Datenschutzerklärung beschriebenen Daten meines Kindes verarbeitet werden, insbesondere der Standort während laufender Runden (Art. 6 Abs. 1 lit. a, Art. 8 DSGVO).\n4. Ich habe die Sicherheitsregeln gelesen und mit meinem Kind besprochen.\n5. Optional: Ich bin einverstanden, dass mein Kind Kamera-Clips aufnimmt und in Trailern von Mitspielern erscheinen darf.\n\n## Widerruf\n\nSie können Ihr Einverständnis jederzeit per E-Mail an [datenschutz@pinged.app] widerrufen. Wir sperren dann das Konto und löschen die Daten Ihres Kindes, soweit wir sie nicht aus gesetzlichen Gründen aufbewahren müssen.\n\n## So läuft die Bestätigung\n\nIhr Kind gibt in der App Ihre E-Mail-Adresse an. Sie erhalten eine E-Mail mit diesem Text und einem Bestätigungslink. Erst nach Ihrer Bestätigung kann Ihr Kind Runden spielen.\n","impressum":"# Impressum\n\nEntwurf, alle Angaben in eckigen Klammern vor dem Launch ausfüllen\n\n## Angaben gemäß § 5 DDG\n\n[Vorname Nachname] oder [Firmenname, Rechtsform]\n[Straße Nr.]\n[PLZ Ort]\nDeutschland\n\nVertreten durch: [nur bei Firma: Geschäftsführer]\n\n## Kontakt\n\nE-Mail: [kontakt@pinged.app]\nTelefon: [Nummer, oder ein anderer schneller elektronischer Kontaktweg]\n\n## Register und Umsatzsteuer\n\nRegistergericht und Registernummer: [nur bei eingetragener Firma]\nUmsatzsteuer-ID nach § 27a UStG: [falls vorhanden]\n\n## Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV\n\n[Vorname Nachname], Anschrift wie oben\n\n## Verbraucherstreitbeilegung\n\nWir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.\n","sicherheit":"# Sicherheitsregeln und Haftungshinweis\n\nStand: 24.10.2026 · Entwurf, vor dem Launch anwaltlich prüfen lassen\n\nDiese Regeln sind Teil der AGB. Wer sie bricht, kann gesperrt werden. Die Teilnahme erfolgt auf eigene Verantwortung.\n\n## Die 10 Regeln\n\n1. **Verkehr geht vor.** Die Straßenverkehrsordnung gilt immer. Rote Ampel heißt warten, auch wenn ein Jäger hinter dir ist. Keine Straße ohne Blick nach links und rechts.\n2. **Nur öffentliche Orte.** Keine Privatgrundstücke, Gärten, Hinterhöfe, Bahnanlagen, Baustellen, Dächer, Gewässer oder abgesperrte Bereiche. Das gilt auch zum Verstecken.\n3. **Kein Körperkontakt.** Gefangen wird, indem die Handys aneinandergehalten oder der Fangcode eingegeben wird. Festhalten, Schubsen und Tackeln sind verboten.\n4. **Keine Verkleidung als Polizei, Security oder Rettungsdienst.** Keine echten oder echt aussehenden Waffen, auch keine Spielzeugwaffen.\n5. **Nur mit Leuten, die mitspielen wollen.** Jeder in der Runde hat selbst in der App zugestimmt. Fremde Personen werden nie verfolgt, beobachtet oder gefilmt.\n6. **Rücksicht auf Unbeteiligte.** Nicht durch Menschengruppen rennen, nicht laut sein in Wohngebieten nach 22 Uhr, niemanden erschrecken.\n7. **Wenn Polizei oder Ordnungsamt fragt:** stehen bleiben, freundlich erklären, dass ihr ein Fangspiel spielt, und den Anweisungen folgen. Die Runde lässt sich jederzeit pausieren.\n8. **Kenne deine Grenzen.** Pausen machen, trinken, bei Schmerzen oder Schwindel sofort aufhören. Bei Dunkelheit helle Kleidung oder Reflektoren tragen.\n9. **SOS im Notfall.** Den SOS-Knopf 2 Sekunden halten: Die Runde stoppt für alle, alle sehen deinen Standort, und dein Notfallkontakt wird benachrichtigt. Bei Lebensgefahr immer zuerst den Notruf 112 wählen.\n10. **Standorte bleiben im Spiel.** Was du über Mitspieler siehst, wird nach der Runde nicht weiterverwendet, nicht gespeichert und nicht geteilt.\n\n## Für Hosts\n\n- Die Spielzone sollte gut beleuchtet, öffentlich und überschaubar sein. Die App sperrt große Straßen, Gleise und Gewässer automatisch, prüfe die Zone trotzdem selbst.\n- Lege vorher einen Treffpunkt für das Ende fest und prüfe, dass alle wieder da sind.\n- Bei Minderjährigen in der Runde: nur tagsüber bis 22 Uhr spielen.\n\n## Haftung\n\nDie App ist ein Werkzeug für das Spiel. Wir veranstalten private Runden nicht und beaufsichtigen sie nicht. Für Schäden, die durch Missachtung dieser Regeln oder der Straßenverkehrsordnung entstehen, haften die Verursacher. Unsere eigene Haftung richtet sich nach Ziffer 10 der AGB. Die gesetzliche Haftung für Vorsatz, grobe Fahrlässigkeit sowie für Schäden an Leben, Körper und Gesundheit bleibt unberührt.\n","widerruf":"# Widerrufsbelehrung\n\nStand: 24.10.2026 · Entwurf, vor dem Launch anwaltlich prüfen lassen\n\n## Widerrufsrecht\n\nDu hast das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag des Vertragsabschlusses.\n\nUm dein Widerrufsrecht auszuüben, musst du uns ([Vorname Nachname / Firma], [Straße Nr.], [PLZ Ort], E-Mail: [kontakt@pinged.app]) mittels einer eindeutigen Erklärung (z. B. eine E-Mail) über deinen Entschluss, diesen Vertrag zu widerrufen, informieren. Du kannst dafür das beigefügte Muster-Widerrufsformular verwenden, das jedoch nicht vorgeschrieben ist.\n\nZur Wahrung der Widerrufsfrist reicht es aus, dass du die Mitteilung über die Ausübung des Widerrufsrechts vor Ablauf der Widerrufsfrist absendest.\n\n## Folgen des Widerrufs\n\nWenn du diesen Vertrag widerrufst, haben wir dir alle Zahlungen, die wir von dir erhalten haben, unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurückzuzahlen, an dem die Mitteilung über deinen Widerruf bei uns eingegangen ist. Für diese Rückzahlung verwenden wir dasselbe Zahlungsmittel, das du bei der ursprünglichen Transaktion eingesetzt hast, es sei denn, mit dir wurde ausdrücklich etwas anderes vereinbart. In keinem Fall werden dir wegen dieser Rückzahlung Entgelte berechnet.\n\n## Vorzeitiges Erlöschen des Widerrufsrechts\n\nDas Widerrufsrecht erlischt bei einem Vertrag über nicht auf einem körperlichen Datenträger befindliche digitale Inhalte (hier: der PINGED Pass), wenn wir mit der Ausführung des Vertrags begonnen haben, nachdem du\n\n1. ausdrücklich zugestimmt hast, dass wir mit der Ausführung des Vertrags vor Ablauf der Widerrufsfrist beginnen,\n2. deine Kenntnis davon bestätigt hast, dass du durch deine Zustimmung mit Beginn der Ausführung des Vertrags dein Widerrufsrecht verlierst, und\n3. wir dir eine Bestätigung des Vertrags auf einem dauerhaften Datenträger (z. B. per E-Mail) zur Verfügung gestellt haben.\n\nHinweis: Käufe über den Apple App Store oder Google Play werden von diesen Anbietern abgewickelt. Erstattungen können zusätzlich direkt beim jeweiligen Store beantragt werden.\n\n## Muster-Widerrufsformular\n\nWenn du den Vertrag widerrufen willst, fülle bitte dieses Formular aus und sende es zurück.\n\nAn [Vorname Nachname / Firma], [Straße Nr.], [PLZ Ort], E-Mail: [kontakt@pinged.app]:\n\nHiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über den Kauf der folgenden digitalen Inhalte: PINGED Pass\n\n- Bestellt am (*):\n- Name des/der Verbraucher(s):\n- Anschrift des/der Verbraucher(s):\n- Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier):\n- Datum:\n\n(*) Unzutreffendes streichen.\n"};
+window.PINGED_CONFIG = {"mapsKey":""};
 'use strict';
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const KEY = 'pinged.v1', BUYKEY = 'pinged.purchase';
-const COLORS = ['#4fd88f', '#5cc8ff', '#c38bff', '#ff7ab6', '#ffb547', '#7ee0d6'];
+const COLORS = ['#32d74b', '#64d2ff', '#bf5af2', '#ff375f', '#ff9f0a', '#66d4cf'];
 const BOT_NAMES = ['Dominick', 'Noah', 'Cyrus', 'Lina', 'Mara', 'Jonas', 'Elif', 'Ben', 'Aylin', 'Theo', 'Sofia'];
-const HUNT = '#ff4f3e', TAPE = '#f3d433', RUN = '#4fd88f';
+const HUNT = '#ff453a', TAPE = '#ffd60a', RUN = '#32d74b';
+const CFG = window.PINGED_CONFIG || {};
+const DEFAULT_ORIGIN = { lat: 52.5219, lng: 13.4132 }; // Alexanderplatz, Berlin
 
 /* ---------- storage ---------- */
 function load() { try { return JSON.parse(localStorage.getItem(KEY)) || null; } catch (e) { return null; } }
@@ -645,7 +733,7 @@ function makeWorld(seed = 11) {
   return { blocks, blocked, labels };
 }
 const WORLD = makeWorld();
-function inBlocked(p, m = 2) { return WORLD.blocked.find(b => p.x > b.x - m && p.x < b.x + b.w + m && p.y > b.y - m && p.y < b.y + b.h + m); }
+function inBlocked(p, m = 2) { if (G && G.useMap) return null; return WORLD.blocked.find(b => p.x > b.x - m && p.x < b.x + b.w + m && p.y > b.y - m && p.y < b.y + b.h + m); }
 
 function hatch(ctx, x, y, w, h, color, gap = 7) {
   ctx.save(); ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
@@ -657,27 +745,27 @@ function hatch(ctx, x, y, w, h, color, gap = 7) {
 }
 /* draws the static map into ctx; view = {cx, cy, s} */
 function drawWorld(ctx, v, W, H, opts = {}) {
-  ctx.fillStyle = '#2b2f38'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#1b1d22'; ctx.fillRect(0, 0, W, H);
   const T = (x, y) => [v.cx + x * v.s, v.cy + y * v.s];
   for (const b of WORLD.blocks) {
     const [x, y] = T(b.x, b.y);
-    ctx.fillStyle = b.park ? '#1d2c25' : '#1a1d23';
+    ctx.fillStyle = b.park ? '#0f1f17' : '#0f1013';
     ctx.fillRect(x, y, b.w * v.s, b.h * v.s);
     if (b.park) {
-      ctx.fillStyle = '#244232';
+      ctx.fillStyle = '#163024';
       for (let i = 0; i < 5; i++) { const px = x + (b.w * v.s) * ((i * 37 % 100) / 100), py = y + (b.h * v.s) * ((i * 61 % 100) / 100); ctx.beginPath(); ctx.arc(px, py, Math.max(1.5, 4 * v.s), 0, 7); ctx.fill(); }
     }
-    ctx.fillStyle = '#23272f';
+    ctx.fillStyle = '#15161a';
     for (const r of b.bld) { const [bx, by] = T(r[0], r[1]); ctx.fillRect(bx, by, r[2] * v.s, r[3] * v.s); }
   }
   if (opts.labels !== false && v.s > .55) {
-    ctx.fillStyle = 'rgba(236,235,230,.32)'; ctx.font = `600 ${Math.round(9 * Math.min(1.4, v.s))}px "JetBrains Mono", monospace`; ctx.textAlign = 'center';
+    ctx.fillStyle = 'rgba(236,235,230,.32)'; ctx.font = `600 ${Math.round(9 * Math.min(1.4, v.s))}px "Geist Mono", monospace`; ctx.textAlign = 'center';
     for (const l of WORLD.labels) { const [x, y] = T(l.x, l.y); ctx.save(); ctx.translate(x, y); ctx.rotate(l.rot); ctx.fillText(l.t, 0, 3); ctx.restore(); }
   }
   for (const b of WORLD.blocked) {
     const [x, y] = T(b.x, b.y); hatch(ctx, x, y, b.w * v.s, b.h * v.s, HUNT);
     if (opts.blockedLabels !== false) {
-      ctx.fillStyle = '#ffb3aa'; ctx.font = `700 ${Math.round(Math.max(8, 9 * Math.min(1.3, v.s)))}px "JetBrains Mono", monospace`; ctx.textAlign = 'center';
+      ctx.fillStyle = '#ffb3aa'; ctx.font = `700 ${Math.round(Math.max(8, 9 * Math.min(1.3, v.s)))}px "Geist Mono", monospace`; ctx.textAlign = 'center';
       ctx.fillText(b.name.toUpperCase(), x + b.w * v.s / 2, y + b.h * v.s / 2 + 3);
     }
   }
@@ -706,13 +794,11 @@ function drawMini(c, dots, t, zoom = 1.25) {
   drawZone(ctx, v, W, H, R0);
   dots.forEach((d, i) => {
     const x = v.cx + (d.x + Math.sin(t / 1600 + d.ph) * 30) * v.s, y = v.cy + (d.y + Math.cos(t / 1900 + d.ph) * 30) * v.s;
-    const pulse = ((t / 1000 + d.ph) % 2.4) / 2.4;
-    if (i > 0) { ctx.beginPath(); ctx.arc(x, y, 6 + pulse * 22, 0, 7); ctx.strokeStyle = `rgba(79,216,143,${1 - pulse})`; ctx.lineWidth = 2; ctx.stroke(); }
-    ctx.beginPath(); ctx.arc(x, y, i === 0 ? 7 : 8, 0, 7); ctx.fillStyle = i === 0 ? HUNT : 'rgba(79,216,143,.85)'; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = '#0f1115'; ctx.stroke();
-    ctx.fillStyle = '#ecebe6'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
-    ctx.fillText(i === 0 ? 'DU' : BOT_NAMES[i].toUpperCase(), x, y - 14);
-    if (i > 0) { ctx.fillStyle = 'rgba(236,235,230,.6)'; ctx.font = '500 9px "JetBrains Mono", monospace'; ctx.fillText('LIVE PING', x, y + 22); }
+    const col = i === 0 ? HUNT : RUN;
+    if (i > 0) for (let k = 0; k < 2; k++) { const pulse = ((t / 1000 + d.ph + k * .8) % 1.6) / 1.6; ctx.beginPath(); ctx.arc(x, y, 8 + pulse * 24, 0, 7); ctx.strokeStyle = `rgba(50,215,75,${.9 * (1 - pulse)})`; ctx.lineWidth = 2; ctx.stroke(); }
+    ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(x, y, 8, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, 3, 0, 7); ctx.fillStyle = '#0b0c0f'; ctx.fill();
+    label(ctx, i === 0 ? 'Du' : BOT_NAMES[i], x, y - 22);
   });
 }
 function drawZonePreview() {
@@ -720,7 +806,7 @@ function drawZonePreview() {
   const v = { cx: W / 2, cy: H / 2, s: Math.min(W, H) / (2 * R0 * 1.08) };
   drawWorld(ctx, v, W, H); drawZone(ctx, v, W, H, R0);
   ctx.beginPath(); ctx.arc(v.cx, v.cy, 9, 0, 7); ctx.fillStyle = TAPE; ctx.fill();
-  ctx.fillStyle = '#ecebe6'; ctx.font = '700 11px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('START', v.cx, v.cy - 16);
+  ctx.fillStyle = '#ecebe6'; ctx.font = '700 11px "Geist Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('START', v.cx, v.cy - 16);
 }
 function miniLoop(t) {
   if (!$('#scr-welcome').hidden) drawMini($('#heroCanvas'), heroDots, t);
@@ -768,7 +854,7 @@ function permRows(prefix) {
   return PERMS.map(p => `<div class="perm"><span class="ic"><svg viewBox="0 0 24 24">${ICONS[p.k]}</svg></span><span><b>${p.t}${p.req ? '<span class="req">PFLICHT</span>' : ''}</b><small>${p.d}</small></span><label class="switch"><input type="checkbox" id="${prefix}${p.k}" aria-label="${p.t}"${S.consents[p.k] ? ' checked' : ''}><span></span></label></div>`).join('');
 }
 onShow['scr-consent'] = () => {
-  $('#permList').innerHTML = '<span class="eyebrow">Berechtigungen</span>' + permRows('perm_') + '<p class="note">Dein Handy fragt danach noch einmal selbst nach. Du kannst alles jederzeit im Datenschutz-Center ändern.</p>';
+  $('#permList').innerHTML = permRows('perm_') + '<p class="note">Dein Handy fragt danach noch einmal selbst nach. Du kannst alles jederzeit im Datenschutz-Center ändern.</p>';
   const check = () => { $('#consentGo').disabled = !($('#cAgb').checked && $('#cDs').checked && $('#cSafe').checked && $('#perm_loc').checked); };
   $$('#scr-consent input').forEach(i => i.onchange = check); check();
 };
@@ -792,7 +878,7 @@ $('#profileGo').onclick = () => {
 
 /* ---------- home ---------- */
 onShow['scr-home'] = () => {
-  $('#homeName').textContent = S.profile.name; $('#homeDot').style.background = S.profile.color; $('#homeDot').style.color = S.profile.color;
+  $('#homeName').textContent = S.profile.name; $('#homeDot').style.background = S.profile.color; $('#homeDot').textContent = S.profile.name.charAt(0).toUpperCase();
   const b = $('#homeBadge'); b.className = 'badge' + (S.pass ? ' pass' : S.minor ? ' minor' : '');
   b.textContent = S.pass ? 'Pass' : S.minor ? 'U18 · Free' : 'Free';
   $('#stRounds').textContent = S.stats.rounds; $('#stCatches').textContent = S.stats.catches; $('#stEscapes').textContent = S.stats.escapes;
@@ -810,6 +896,14 @@ function needLoc() {
 }
 
 /* ---------- create ---------- */
+const MODE_ICON = {
+  classic: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+  traitor: '<path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.5"/>',
+  infect: '<circle cx="12" cy="12" r="4"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M5 19l3-3M16 8l3-3"/>',
+  zone: '<circle cx="12" cy="12" r="9" stroke-dasharray="3 3"/><circle cx="12" cy="12" r="4"/>',
+  mrx: '<path d="M12 3l9 18H3z"/><path d="M12 10v5M12 18v.01"/>',
+  bounty: '<path d="M12 2v20M17 6H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>'
+};
 const MODES = [
   { k: 'classic', t: 'Klassik', d: 'Jäger gegen Läufer, Pings in festen Abständen.', pass: false },
   { k: 'traitor', t: 'Verräter', d: 'Ein Läufer spielt heimlich für die Jäger.', pass: true },
@@ -830,7 +924,7 @@ function seg(el, opts, cur, onPick) {
 }
 function renderCreate() {
   const P = C.hostPass;
-  $('#modes').innerHTML = MODES.map(m => `<button class="mode" aria-pressed="${C.mode === m.k}" data-k="${m.k}"${m.soon ? ' disabled' : ''}>${m.pass && !P ? '<span class="lock">PASS</span>' : ''}${m.soon ? '<span class="lock">BALD</span>' : ''}<b>${m.t}</b><small>${m.d}</small></button>`).join('');
+  $('#modes').innerHTML = MODES.map(m => `<button class="mode" aria-pressed="${C.mode === m.k}" data-k="${m.k}"${m.soon ? ' disabled' : ''}>${m.pass && !P ? '<span class="lock">PASS</span>' : ''}${m.soon ? '<span class="lock">BALD</span>' : ''}<span class="mi"><svg class="i" viewBox="0 0 24 24">${MODE_ICON[m.k]}</svg></span><b>${m.t}</b><small>${m.d}</small></button>`).join('');
   $$('#modes .mode').forEach(b => b.onclick = () => { const m = MODES.find(x => x.k === b.dataset.k); if (m.pass && !P) return upsell('Der Modus „' + m.t + '“'); C.mode = m.k; renderCreate(); });
   seg($('#segPlayers'), [4, 6, 8, 12].map(n => ({ v: n, l: n, lock: n > 6 && !P })), C.players, v => { C.players = v; renderCreate(); });
   seg($('#segDur'), [30, 45, 60].map(n => ({ v: n, l: n + ' min' })), C.dur, v => { C.dur = v; renderCreate(); });
@@ -869,8 +963,10 @@ function openLobby() {
   C.roster = [{ name: S.profile.name, me: true, color: S.profile.color, ready: false }];
   if (C.joined) C.roster.unshift({ name: C.host, color: COLORS[1], ready: true, host: true });
   names.forEach((n, i) => C.roster.push({ name: n, color: COLORS[(i + 2) % COLORS.length], ready: false, pending: true }));
+  C.play = C.play || 'demo';
   show('scr-lobby');
   $('#rcLoc').checked = false; $('#rcFilm').checked = S.consents.cam;
+  renderPlayMode();
   const pend = C.roster.filter(p => p.pending);
   pend.forEach((p, i) => lobbyTimers.push(setTimeout(() => { p.pending = false; p.ready = true; renderLobby(); }, 500 + i * 380)));
   renderLobby();
@@ -880,14 +976,34 @@ function renderLobby() {
   $('#lobbyCode').textContent = C.code;
   $('#lobbyMeta').textContent = `${m.t} · ${C.dur} min · Ping alle ${C.ping} min · Host: ${C.host}${C.hostPass ? ' (Pass)' : ''}`;
   $('#rcN').textContent = C.roster.length - 1;
-  $('#lobbyPlayers').innerHTML = C.roster.map(p => `<div class="pl"><span class="dot" style="background:${p.color};color:${p.color}"></span><span class="n">${esc(p.name)}${p.me ? ' (du)' : ''}${p.host ? ' · Host' : ''}</span>${p.pending ? '<span class="wait">TRITT BEI …</span>' : p.me ? (p.ready ? '<span class="ok">BEREIT ✓</span>' : '<span class="wait">ZUSTIMMUNG FEHLT</span>') : '<span class="ok">ZUGESTIMMT ✓</span>'}</div>`).join('');
+  $('#lobbyPlayers').innerHTML = C.roster.map(p => `<div class="pl"><span class="avatar" style="background:${p.color}">${esc(p.name.charAt(0).toUpperCase())}</span><span class="n">${esc(p.name)}${p.me ? ' (du)' : ''}${p.host ? ' · Host' : ''}</span>${p.pending ? '<span class="wait">tritt bei …</span>' : p.me ? (p.ready ? '<span class="ok">Bereit</span>' : '<span class="wait">Zustimmung fehlt</span>') : '<span class="ok">Zugestimmt</span>'}</div>`).join('');
   const all = C.roster.every(p => !p.pending);
   const me = C.roster.find(p => p.me); me.ready = $('#rcLoc').checked;
   const b = $('#lobbyGo');
-  b.disabled = !(all && me.ready);
+  b.disabled = !(all && me.ready) || C.locating;
   b.textContent = !all ? 'Warte auf Spieler …' : !me.ready ? 'Erst zustimmen' : C.joined ? 'Bereit' : 'Runde starten';
 }
 $('#rcLoc').onchange = renderLobby;
+function renderPlayMode() {
+  $$('#playMode .pm').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === C.play)));
+  const st = $('#gpsStatus');
+  if (C.play === 'gps') st.textContent = C.locating ? 'Suche deinen Standort …' : C.origin ? `Standort gefunden (± ${Math.round(C.accuracy || 0)} m). Die Spielzone liegt um dich herum.` : '';
+  else st.textContent = mapsReady() ? 'Demo auf echter Karte rund um den Alexanderplatz. Tippe auf die Karte, um zu laufen.' : 'Demo auf der Beispielkarte. Tippe auf die Karte, um zu laufen.';
+}
+$$('#playMode .pm').forEach(b => b.onclick = () => {
+  if (b.dataset.v === 'demo') { C.play = 'demo'; renderPlayMode(); renderLobby(); return; }
+  if (!('geolocation' in navigator)) { toast('Dein Gerät kann keinen Standort liefern.'); return; }
+  C.play = 'gps'; C.locating = true; renderPlayMode(); renderLobby();
+  try {
+    navigator.geolocation.getCurrentPosition(pos => {
+      C.locating = false; C.origin = { lat: pos.coords.latitude, lng: pos.coords.longitude }; C.accuracy = pos.coords.accuracy;
+      renderPlayMode(); renderLobby();
+    }, err => {
+      C.locating = false; C.play = 'demo'; C.origin = null; renderPlayMode(); renderLobby();
+      toast(err && err.code === 1 ? 'Standort nicht erlaubt. Erlaube ihn in den Browser-Einstellungen.' : 'Standort nicht verfügbar. Hier geht nur die Demo.');
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 });
+  } catch (e) { C.locating = false; C.play = 'demo'; renderPlayMode(); renderLobby(); toast('Standort nicht verfügbar. Hier geht nur die Demo.'); }
+});
 $('#lobbyGo').onclick = () => {
   audio();
   if (C.joined) { $('#lobbyGo').disabled = true; $('#lobbyGo').textContent = 'Dominick startet …'; setTimeout(startRound, 1100); }
@@ -921,7 +1037,8 @@ function startRound() {
     nextPing: C.head * 60 + C.ping * 60, pass: C.hostPass, voice: C.hostPass && C.voice, loot: C.hostPass && C.loot,
     markers: [], crates: [], items: [], effects: { scan: 0, drone: 0, invis: false, fake: null }, betrayCd: 0,
     banner: null, events: [], rec: [], recT: 0, speed: 1, lastSay: 0, heartT: 0, warned30: false, said5: false, result: null,
-    zoneR: R0, started: performance.now(), view: null
+    zoneR: R0, started: performance.now(), view: null,
+    useMap: mapsReady(), gps: C.play === 'gps' && !!C.origin, origin: (C.play === 'gps' && C.origin) || DEFAULT_ORIGIN, watch: null
   };
   if (G.loot) { const r = rng(Math.floor(Math.random() * 1e9)); while (G.crates.length < 7) { const a = r() * 6.283, d = 60 + r() * 230, p = { x: Math.cos(a) * d, y: Math.sin(a) * d }; if (!inBlocked(p, 8)) G.crates.push(p); } }
   showRole();
@@ -937,7 +1054,9 @@ function showRole() {
   const r = G.me.mrx ? 'mrx' : roleOf(G.me), info = ROLE_TXT[r];
   const card = $('#roleCard');
   card.className = 'rolecard ' + (r === 'mrx' ? 'runner' : r);
-  card.innerHTML = `<span class="eyebrow">Deine Rolle · ${MODES.find(m => m.k === G.mode).t}</span><span class="big">${info.t}</span><p>${info.d}</p><p class="note">${r === 'hunter' ? `Die Läufer haben ${C.head} Minuten Vorsprung. Du wartest am Start.` : `Du hast ${C.head} Minuten Vorsprung. Tippe auf die Karte, um dorthin zu laufen.`}</p>`;
+  const glyph = { hunter: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>', runner: '<circle cx="14" cy="4.5" r="2"/><path d="M8 21l3-6 3 2v5M6 12l3-4 4 1 3 4 3 1"/>', traitor: '<path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.5"/><path d="M4 4l16 16"/>', mrx: '<path d="M12 3l9 18H3z"/><path d="M12 10v5M12 18v.01"/>' }[r];
+  const howMove = G.gps ? 'Lauf los, dein GPS bewegt dich auf der Karte.' : 'Tippe auf die Karte, um dorthin zu laufen.';
+  card.innerHTML = `<span class="glyph"><svg class="i" viewBox="0 0 24 24">${glyph}</svg></span><span class="eyebrow">Modus ${MODES.find(m => m.k === G.mode).t}</span><span class="big">${info.t}</span><p>${info.d}</p><p class="note">${r === 'hunter' ? `Die Läufer haben ${C.head} Minuten Vorsprung. Du wartest am Start.` : `Du hast ${C.head} Minuten Vorsprung. ${howMove}`}</p>`;
   card.classList.remove('show'); void card.offsetWidth; card.classList.add('show');
   show('scr-role');
   if (G.voice) say(`Du bist ${info.t}.`);
@@ -948,7 +1067,12 @@ function beginGame() {
   $('#game').hidden = false; document.body.style.overflow = 'hidden';
   G.running = true; G.last = performance.now();
   const m = MODES.find(x => x.k === G.mode);
-  $('#hudMode').textContent = m.t.toUpperCase();
+  $('#hudMode').textContent = m.t + (G.gps ? ' · GPS' : ' · Demo');
+  $('#btnSpeed').textContent = '×1'; $('#btnSpeed').disabled = G.gps;
+  $('#game').classList.toggle('gmap', G.useMap);
+  if (G.useMap) setupMap();
+  if (G.gps) startGps();
+  try { navigator.wakeLock && navigator.wakeLock.request('screen').then(l => G.wake = l, () => {}); } catch (e) {}
   setBanner(roleOf(G.me) === 'hunter' ? 'Vorsprung läuft' : 'Lauf!', roleOf(G.me) === 'hunter' ? '' : 'green');
   say(roleOf(G.me) === 'hunter' ? `Runde gestartet. Die Läufer haben ${C.head} Minuten Vorsprung.` : `Runde gestartet. Du hast ${C.head} Minuten Vorsprung. Lauf.`);
   sfx.ping();
@@ -956,8 +1080,9 @@ function beginGame() {
   requestAnimationFrame(loop);
 }
 function setBanner(text, kind = '') {
-  const b = $('#hudBanner'); b.textContent = text; b.className = 'hud-banner anim ' + kind; b.hidden = false;
+  const b = $('#hudBanner'); b.textContent = text; b.className = 'island anim ' + kind; b.hidden = false;
   void b.offsetWidth; G.bannerUntil = performance.now() + 2600;
+  try { navigator.vibrate && navigator.vibrate(kind === 'red' ? [80, 60, 80] : 40); } catch (e) {}
 }
 
 /* ---------- game view ---------- */
@@ -965,6 +1090,7 @@ const GC = $('#gameCanvas');
 let worldLayer = null;
 function resizeGame() {
   const { W, H } = fitCanvas(GC);
+  if (G.useMap) { G.view = { W, H, cx: W / 2, cy: H / 2, s: 1 }; worldLayer = null; return; }
   const top = 150, bottom = 190, avail = Math.max(180, Math.min(W - 16, H - top - bottom));
   const s = avail / (2 * R0);
   G.view = { cx: W / 2, cy: top + (H - top - bottom) / 2, s, W, H };
@@ -974,15 +1100,91 @@ function resizeGame() {
 }
 window.addEventListener('resize', () => { if (G.running) resizeGame(); });
 function toWorld(px, py) { const v = G.view; return { x: (px - v.cx) / v.s, y: (py - v.cy) / v.s }; }
-GC.addEventListener('pointerdown', e => {
+function tryMoveTo(p) {
   if (!G.running || G.paused) return;
   const me = G.me; if (me.caught && G.mode !== 'infect') return;
+  if (G.gps) { toast('Im echten Spiel bewegst du dich, indem du läufst.'); return; }
   if (me.team === 'hunter' && G.t < G.head) { toast('Warte, bis der Vorsprung vorbei ist.'); return; }
-  const r = GC.getBoundingClientRect(), p = toWorld(e.clientX - r.left, e.clientY - r.top);
   const b = inBlocked(p);
   if (b) { toast(b.name + ' ist gesperrt.'); return; }
   me.tx = p.x; me.ty = p.y;
+}
+GC.addEventListener('pointerdown', e => {
+  if (G.useMap) return;
+  const r = GC.getBoundingClientRect(); tryMoveTo(toWorld(e.clientX - r.left, e.clientY - r.top));
 });
+
+/* ---------- Google Maps + GPS ---------- */
+const GM = { map: null, ov: null, loading: null };
+function mapsReady() { return !!(window.google && google.maps && google.maps.Map); }
+function loadGoogleMaps() {
+  if (mapsReady()) return Promise.resolve();
+  if (!CFG.mapsKey) return Promise.reject(new Error('nokey'));
+  if (GM.loading) return GM.loading;
+  GM.loading = new Promise((res, rej) => {
+    window.__pingedMaps = () => res();
+    const sc = document.createElement('script');
+    sc.src = 'https://maps.googleapis.com/maps/api/js?key=' + encodeURIComponent(CFG.mapsKey) + '&callback=__pingedMaps&loading=async&v=weekly';
+    sc.async = true; sc.onerror = () => rej(new Error('load'));
+    document.head.appendChild(sc);
+    setTimeout(() => rej(new Error('timeout')), 10000);
+  }).catch(e => { GM.loading = null; throw e; });
+  return GM.loading;
+}
+const MAP_STYLE = [
+  { elementType: 'geometry', stylers: [{ color: '#111216' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#6b6d75' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0b0c0f' }] },
+  { elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'poi.park', stylers: [{ visibility: 'on' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0f1d16' }] },
+  { featureType: 'poi.park', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#22252b' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#111216' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#3a2a26' }] },
+  { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#2a2d34' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit.line', elementType: 'geometry', stylers: [{ visibility: 'on' }, { color: '#3d2622' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ visibility: 'off' }] },
+  { featureType: 'landscape.man_made', elementType: 'geometry', stylers: [{ color: '#16171c' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0a1620' }] },
+  { featureType: 'water', elementType: 'labels', stylers: [{ visibility: 'off' }] }
+];
+const M_LAT = 111320;
+function toLL(p) { const o = G.origin; return { lat: o.lat - p.y / M_LAT, lng: o.lng + p.x / (M_LAT * Math.cos(o.lat * Math.PI / 180)) }; }
+function fromLL(ll) { const o = G.origin, lat = typeof ll.lat === 'function' ? ll.lat() : ll.lat, lng = typeof ll.lng === 'function' ? ll.lng() : ll.lng; return { x: (lng - o.lng) * M_LAT * Math.cos(o.lat * Math.PI / 180), y: (o.lat - lat) * M_LAT }; }
+function setupMap() {
+  const el = $('#gameMap');
+  if (!GM.map) {
+    GM.map = new google.maps.Map(el, { center: G.origin, zoom: 16, disableDefaultUI: true, gestureHandling: 'greedy', clickableIcons: false, keyboardShortcuts: false, backgroundColor: '#0b0c0f', styles: MAP_STYLE });
+    GM.ov = new google.maps.OverlayView(); GM.ov.onAdd = () => {}; GM.ov.draw = () => {}; GM.ov.onRemove = () => {};
+    GM.ov.setMap(GM.map);
+    GM.map.addListener('click', ev => { if (G.running) tryMoveTo(fromLL(ev.latLng)); });
+  }
+  GM.map.setCenter(G.origin);
+  const b = new google.maps.LatLngBounds(toLL({ x: -R0, y: -R0 }), toLL({ x: R0, y: R0 }));
+  b.extend(toLL({ x: R0, y: R0 })); b.extend(toLL({ x: -R0, y: -R0 }));
+  setTimeout(() => GM.map.fitBounds(b, { top: 150, bottom: 210, left: 10, right: 10 }), 50);
+}
+function mapView() {
+  const pr = GM.ov && GM.ov.getProjection(); if (!pr) return null;
+  const T = p => { const pt = pr.fromLatLngToContainerPixel(new google.maps.LatLng(toLL(p))); return [pt.x, pt.y]; };
+  const a = T({ x: 0, y: 0 }), b = T({ x: 100, y: 0 });
+  return { T, cx: a[0], cy: a[1], s: Math.hypot(b[0] - a[0], b[1] - a[1]) / 100, W: G.view.W, H: G.view.H };
+}
+function startGps() {
+  const me = G.me; let last = null;
+  me.x = 0; me.y = 0;
+  try {
+    G.watch = navigator.geolocation.watchPosition(pos => {
+      const p = fromLL({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      if (last) { const d = Math.hypot(p.x - last.x, p.y - last.y); if (d > 2 && d < 80) me.meters += d; }
+      last = p; me.x = p.x; me.y = p.y; me.acc = pos.coords.accuracy; G.gpsAt = performance.now();
+    }, () => toast('GPS-Signal verloren. Bleib kurz stehen.'), { enableHighAccuracy: true, maximumAge: 2000, timeout: 15000 });
+  } catch (e) { toast('GPS nicht verfügbar.'); }
+}
+function stopGps() { if (G.watch != null) { try { navigator.geolocation.clearWatch(G.watch); } catch (e) {} G.watch = null; } }
 
 /* ---------- simulation ---------- */
 function zoneR() {
@@ -1063,9 +1265,9 @@ function doPing(extra = false) {
   if (G.effects.invis && !extra) { G.effects.invis = false; if (me.team === 'runner') toast('Du warst bei diesem Ping unsichtbar.'); }
   if (G.effects.fake && !extra) { G.effects.fake = null; if (me.team === 'runner') toast('Fake-Ping gesendet. Die Jäger suchen an der falschen Stelle.'); }
   G.events.push({ t: G.t, type: 'ping', n });
-  if (me.team === 'hunter' || me.traitor) { setBanner('Ping detected'); sfx.ping(); say(n === 1 ? 'Ping. Ein Läufer geortet.' : `Ping. ${n} Läufer geortet.`); }
+  if (me.team === 'hunter' || me.traitor) { setBanner('Ping erkannt'); sfx.ping(); say(n === 1 ? 'Ping. Ein Läufer geortet.' : `Ping. ${n} Läufer geortet.`); }
   else if (!me.caught) { setBanner(me.mrx ? 'Umkreis gesendet' : 'Du wurdest gepingt', 'red'); sfx.pinged(); say('Du wurdest gepingt. Bleib in Bewegung.'); }
-  else { setBanner('Ping detected'); sfx.ping(); }
+  else { setBanner('Ping erkannt'); sfx.ping(); }
   // bot traitor leaks
   const tr = G.ents.find(e => e.traitor && !e.me && !e.caught);
   if (tr && Math.random() < .55) {
@@ -1163,7 +1365,6 @@ function renderItems() {
   const me = G.me, box = $('#hudItems'); if (!box) return;
   let html = G.items.map((it, i) => `<button class="hot" data-i="${i}">${ITEM[it].t}</button>`).join('');
   if (me.traitor && !me.caught) html += `<button class="hot" id="btnBetray"${G.betrayCd > 0 || G.t < G.head ? ' disabled' : ''}>Verraten</button>`;
-  html += `<button class="catch" id="btnCatch" hidden>FANGEN</button>`;
   if ((me.caught && G.mode !== 'infect')) html += `<button id="btnSkip">Vorspulen ×8</button>`;
   box.innerHTML = html;
   box.querySelectorAll('[data-i]').forEach(b => b.onclick = () => useItem(+b.dataset.i));
@@ -1171,8 +1372,7 @@ function renderItems() {
     const victims = activeRunners().filter(r => r !== me); const [v] = nearest(me, victims);
     if (v) { leak(v, true); G.betrayCd = G.ping; renderItems(); }
   };
-  const bc = $('#btnCatch'); bc.onclick = () => { const t = catchable(); if (t) { catchRunner(me, t); } };
-  const sk = $('#btnSkip'); if (sk) sk.onclick = () => { G.speed = 8; $('#btnSpeed').textContent = 'Tempo ×8'; };
+  const sk = $('#btnSkip'); if (sk) sk.onclick = () => { G.speed = 8; $('#btnSpeed').textContent = '×8'; };
 }
 function catchable() {
   const me = G.me; if (me.team !== 'hunter' || G.t < G.head || me.caught) return null;
@@ -1188,72 +1388,90 @@ function visibleTo(me, e) {
   if (e.team === 'runner') return true;
   return dist(me, e) < 30 || G.effects.scan > 0;
 }
+function label(ctx, text, x, y, fg = '#f4f4f6', bg = 'rgba(10,11,14,.78)', font = '600 11px "Geist", system-ui, sans-serif') {
+  ctx.font = font; const w = ctx.measureText(text).width + 14, h = 20;
+  ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, 10) : ctx.rect(x - w / 2, y - h / 2, w, h); ctx.fill();
+  ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, x, y + .5); ctx.textBaseline = 'alphabetic';
+}
 function drawGame() {
-  const v = G.view, { W, H } = v, ctx = GC.getContext('2d');
+  let v = G.view; const { W, H } = v, ctx = GC.getContext('2d');
   const dpr = Math.min(2, window.devicePixelRatio || 1); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
-  ctx.drawImage(worldLayer, 0, 0, W, H);
+  let T;
+  if (G.useMap) { const mv = mapView(); if (!mv) return; v = mv; T = mv.T; }
+  else { ctx.drawImage(worldLayer, 0, 0, W, H); T = p => [v.cx + p.x * v.s, v.cy + p.y * v.s]; }
   drawZone(ctx, v, W, H, G.zoneR);
-  const T = p => [v.cx + p.x * v.s, v.cy + p.y * v.s];
   const me = G.me, now = performance.now();
   // start marker
-  { const [x, y] = T({ x: 0, y: 0 }); ctx.strokeStyle = 'rgba(243,212,51,.5)'; ctx.lineWidth = 1.5; ctx.strokeRect(x - 5, y - 5, 10, 10); }
+  { const [x, y] = T({ x: 0, y: 0 }); ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.strokeStyle = 'rgba(255,214,10,.6)'; ctx.lineWidth = 2; ctx.stroke(); }
   // crates
-  for (const c of G.crates) { const [x, y] = T(c); ctx.fillStyle = TAPE; ctx.fillRect(x - 6, y - 6, 12, 12); ctx.fillStyle = '#1a1700'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText('?', x, y + 4); }
+  for (const c of G.crates) {
+    const [x, y] = T(c), bob = Math.sin(now / 400 + c.x) * 2;
+    ctx.save(); ctx.shadowColor = TAPE; ctx.shadowBlur = 14; ctx.fillStyle = TAPE;
+    ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - 8, y - 8 + bob, 16, 16, 5) : ctx.rect(x - 8, y - 8 + bob, 16, 16); ctx.fill(); ctx.restore();
+    ctx.fillStyle = '#141100'; ctx.font = '800 11px "Geist", sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('?', x, y + bob + .5); ctx.textBaseline = 'alphabetic';
+  }
   // markers (only for hunter-side viewers)
   const hunterView = me.team === 'hunter' || me.traitor || (me.caught && G.mode !== 'infect');
   if (hunterView) for (const m of G.markers) {
     const age = G.t - m.t; if (age > G.ping * 1.3) continue;
-    const a = clamp(1 - age / (G.ping * 1.3), .25, 1), [x, y] = T(m);
+    const a = clamp(1 - age / (G.ping * 1.3), .3, 1), [x, y] = T(m);
     const col = m.kind === 'tip' ? TAPE : m.kind === 'out' ? HUNT : RUN;
-    if (m.fuzzy) { ctx.beginPath(); ctx.arc(x, y, 60 * v.s, 0, 7); ctx.fillStyle = `rgba(79,216,143,${.15 * a})`; ctx.fill(); ctx.strokeStyle = `rgba(79,216,143,${.6 * a})`; ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]); }
-    const pulse = ((now / 1000) % 1.6) / 1.6;
-    ctx.globalAlpha = a;
-    ctx.beginPath(); ctx.arc(x, y, 10 + pulse * 18, 0, 7); ctx.strokeStyle = col; ctx.globalAlpha = a * (1 - pulse); ctx.lineWidth = 2; ctx.stroke();
-    ctx.globalAlpha = a; ctx.beginPath(); ctx.arc(x, y, 10, 0, 7); ctx.fillStyle = col; ctx.fill();
-    ctx.fillStyle = '#ecebe6'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
-    ctx.fillText(m.name.toUpperCase(), x, y - 16);
-    ctx.fillStyle = 'rgba(236,235,230,.75)'; ctx.font = '500 9px "JetBrains Mono", monospace';
-    const lbl = m.kind === 'tip' ? 'TIPP' : m.kind === 'out' ? 'AUSSERHALB' : 'LIVE PING';
-    ctx.fillText(`${lbl} · ${age < 30 ? 'jetzt' : 'vor ' + Math.max(1, Math.round(age / 60)) + ' min'}`, x, y + 22);
+    if (m.fuzzy) { ctx.beginPath(); ctx.arc(x, y, 60 * v.s, 0, 7); ctx.fillStyle = `rgba(50,215,75,${.12 * a})`; ctx.fill(); ctx.strokeStyle = `rgba(50,215,75,${.5 * a})`; ctx.setLineDash([4, 5]); ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]); }
+    for (let k = 0; k < 2; k++) {
+      const pulse = ((now / 1000 + k * .8) % 1.6) / 1.6;
+      ctx.globalAlpha = a * (1 - pulse); ctx.beginPath(); ctx.arc(x, y, 9 + pulse * 26, 0, 7); ctx.strokeStyle = col; ctx.lineWidth = 2; ctx.stroke();
+    }
+    ctx.globalAlpha = a; ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = 16;
+    ctx.beginPath(); ctx.arc(x, y, 9, 0, 7); ctx.fillStyle = col; ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, 3.5, 0, 7); ctx.fillStyle = '#0b0c0f'; ctx.fill();
+    const lbl = m.kind === 'tip' ? 'Tipp' : m.kind === 'out' ? 'Außerhalb' : 'Ping';
+    label(ctx, m.name, x, y - 22);
+    label(ctx, `${lbl} · ${age < 30 ? 'jetzt' : 'vor ' + Math.max(1, Math.round(age / 60)) + ' min'}`, x, y + 22, col, 'rgba(10,11,14,.78)', '500 10px "Geist", sans-serif');
     ctx.globalAlpha = 1;
   }
   // my target line
-  if (me.tx != null) { const [a, b] = T(me), [c, d] = T({ x: me.tx, y: me.ty }); ctx.setLineDash([5, 5]); ctx.strokeStyle = 'rgba(236,235,230,.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.arc(c, d, 4, 0, 7); ctx.fillStyle = 'rgba(236,235,230,.7)'; ctx.fill(); }
+  if (me.tx != null) { const [a, b] = T(me), [c, d] = T({ x: me.tx, y: me.ty }); ctx.setLineDash([2, 6]); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(244,244,246,.7)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(a, b); ctx.lineTo(c, d); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.arc(c, d, 5, 0, 7); ctx.strokeStyle = '#f4f4f6'; ctx.lineWidth = 2; ctx.stroke(); }
   // entities
   for (const e of G.ents) {
     if (!visibleTo(me, e)) continue;
     const [x, y] = T(e);
-    if (e.caught) { ctx.globalAlpha = .35; }
+    if (e.caught) ctx.globalAlpha = .35;
     const col = e.team === 'hunter' ? HUNT : e.color;
-    if (e === me) { ctx.beginPath(); ctx.arc(x, y, 15, 0, 7); ctx.fillStyle = 'rgba(236,235,230,.12)'; ctx.fill(); }
-    ctx.beginPath(); ctx.arc(x, y, e === me ? 8 : 6.5, 0, 7); ctx.fillStyle = col; ctx.fill();
-    ctx.lineWidth = e === me ? 3 : 2; ctx.strokeStyle = e === me ? '#ecebe6' : '#0f1115'; ctx.stroke();
-    ctx.fillStyle = '#ecebe6'; ctx.font = '700 10px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
-    let tag = e === me ? 'DU' : e.name.toUpperCase();
-    if ((me.traitor || (me.caught && G.mode !== 'infect')) && e.traitor && e !== me) tag += ' · V';
-    ctx.fillText(tag + (e.caught ? ' ✕' : ''), x, y - 13);
+    if (e === me) {
+      if (G.gps && me.acc) { ctx.beginPath(); ctx.arc(x, y, Math.min(120, me.acc * v.s), 0, 7); ctx.fillStyle = 'rgba(10,132,255,.12)'; ctx.fill(); }
+      const pr = (now % 2000) / 2000; ctx.beginPath(); ctx.arc(x, y, 12 + pr * 16, 0, 7); ctx.fillStyle = `rgba(244,244,246,${.18 * (1 - pr)})`; ctx.fill();
+    }
+    ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.6)'; ctx.shadowBlur = 8;
+    ctx.beginPath(); ctx.arc(x, y, e === me ? 10 : 8, 0, 7); ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore();
+    ctx.beginPath(); ctx.arc(x, y, e === me ? 7 : 5.5, 0, 7); ctx.fillStyle = col; ctx.fill();
+    let tag = e === me ? 'Du' : e.name;
+    if ((me.traitor || (me.caught && G.mode !== 'infect')) && e.traitor && e !== me) tag += ' · Verräter';
+    if (e.caught) tag += ' · gefangen';
+    label(ctx, tag, x, y - 20, e === me ? '#0b0c0f' : '#f4f4f6', e === me ? '#f4f4f6' : 'rgba(10,11,14,.78)');
     ctx.globalAlpha = 1;
   }
-  // scan/drone tint
-  if (G.effects.scan > 0 || G.effects.drone > 0) { ctx.fillStyle = 'rgba(243,212,51,.05)'; ctx.fillRect(0, 0, W, H); }
+  if (G.effects.scan > 0 || G.effects.drone > 0) { ctx.fillStyle = 'rgba(255,214,10,.05)'; ctx.fillRect(0, 0, W, H); }
 }
 function updateHud() {
   const me = G.me;
-  const r = me.caught && G.mode !== 'infect' ? 'ZUSCHAUER' : me.team === 'hunter' ? (me.infected ? 'INFIZIERT' : 'JÄGER') : me.mrx ? 'MISTER X' : me.traitor ? 'VERRÄTER' : 'LÄUFER';
-  const role = $('#hudRole'); role.textContent = r; role.style.color = me.team === 'hunter' ? HUNT : me.traitor ? TAPE : r === 'ZUSCHAUER' ? '#9097a5' : RUN;
+  const r = me.caught && G.mode !== 'infect' ? 'Zuschauer' : me.team === 'hunter' ? (me.infected ? 'Infiziert' : 'Jäger') : me.mrx ? 'Mister X' : me.traitor ? 'Verräter' : 'Läufer';
+  $('#hudRole').textContent = r;
+  $('#hudDot').style.background = me.team === 'hunter' ? HUNT : me.traitor ? TAPE : r === 'Zuschauer' ? '#8d8e96' : RUN;
   $('#hudClock').textContent = fmt(G.dur - G.t);
-  if (G.t < G.head) { $('#hudNextLbl').textContent = 'JAGD STARTET IN'; $('#hudNext').textContent = fmt(G.head - G.t); }
-  else { $('#hudNextLbl').textContent = 'NÄCHSTER PING'; $('#hudNext').textContent = fmt(G.nextPing - G.t); }
+  let frac;
+  if (G.t < G.head) { $('#hudNextLbl').textContent = 'Jagd startet in'; $('#hudNext').textContent = fmt(G.head - G.t); frac = 1 - G.t / G.head; }
+  else { $('#hudNextLbl').textContent = 'Nächster Ping'; $('#hudNext').textContent = fmt(G.nextPing - G.t); frac = (G.nextPing - G.t) / G.ping; }
+  $('#pingRing').style.strokeDashoffset = String(150.8 * (1 - clamp(frac, 0, 1)));
   const rs = G.ents.filter(e => e.team === 'runner'), alive = rs.filter(e => !e.caught).length;
-  let info = `Läufer ${alive}/${rs.length} · Jäger ${G.ents.filter(e => e.team === 'hunter').length}`;
+  let info = `${alive} von ${rs.length} Läufern frei · ${G.ents.filter(e => e.team === 'hunter').length} Jäger`;
   if (G.mode === 'zone' && G.t > G.head) info += ` · Zone ${Math.round(G.zoneR)} m`;
   if (G.effects.scan > 0) info += ` · Scan ${Math.ceil(G.effects.scan)} s`;
   if (G.effects.drone > 0) info += ` · Drohne ${Math.ceil(G.effects.drone)} s`;
-  if (me.team === 'runner' && !me.caught && me.outT > 0) info = `<b style="color:var(--hunt)">AUSSERHALB DER ZONE · live sichtbar in ${Math.max(0, Math.ceil(30 - me.outT))} s</b>`;
+  if (G.gps && G.gpsAt && performance.now() - G.gpsAt > 20000) info = '<span style="color:#ffb340">Warte auf GPS-Signal …</span>';
+  if (me.team === 'runner' && !me.caught && me.outT > 0) info = `<span style="color:var(--hunt);font-weight:600">Außerhalb der Zone · live sichtbar in ${Math.max(0, Math.ceil(30 - me.outT))} s</span>`;
   $('#hudInfo').innerHTML = info;
   if (performance.now() > (G.bannerUntil || 0)) $('#hudBanner').hidden = true;
-  // compass for runners
   const comp = $('#hudCompass');
   if (me.team === 'runner' && !me.caught && G.t >= G.head) {
     const [h, d] = nearest(me, hunters());
@@ -1261,9 +1479,8 @@ function updateHud() {
     if (h) {
       const ang = Math.atan2(h.y - me.y, h.x - me.x) + Math.PI / 2;
       $('#compArrow').setAttribute('transform', `rotate(${ang * 180 / Math.PI} 17 17)`);
-      const band = d < 40 ? 'SEHR NAH' : d < 90 ? 'NAH' : d < 180 ? 'MITTEL' : 'WEIT';
-      $('#compTxt').innerHTML = `Nächster Jäger: <b style="color:${d < 90 ? 'var(--hunt)' : 'inherit'}">${band}</b>${G.pass ? ` · ${Math.round(d / 10) * 10} m` : ''}`;
-      // voice + heartbeat (pass)
+      const band = d < 40 ? 'Sehr nah' : d < 90 ? 'Nah' : d < 180 ? 'Mittel' : 'Weit';
+      $('#compTxt').innerHTML = `<span style="color:${d < 90 ? 'var(--hunt)' : 'inherit'}">${band}</span>${G.pass ? `<br><span style="color:var(--muted);font-weight:500">${Math.round(d / 10) * 10} m</span>` : ''}`;
       if (G.voice) {
         const now = performance.now();
         if (d < 60 && now - G.lastSay > 9000) { G.lastSay = now; say(`Jäger in ${Math.round(d / 10) * 10} Metern.`); }
@@ -1272,14 +1489,14 @@ function updateHud() {
       }
     }
   } else comp.hidden = true;
-  const bc = $('#btnCatch'); if (bc) bc.hidden = !catchable();
+  $('#btnCatch').hidden = !catchable();
   const bt = $('#btnBetray'); if (bt) bt.disabled = G.betrayCd > 0 || G.t < G.head;
 }
 function loop(now) {
   if (!G.running) return;
   const dtReal = Math.min(.1, (now - G.last) / 1000); G.last = now;
   if (!G.paused) {
-    let dt = dtReal * SPEED_BASE * G.speed;
+    let dt = dtReal * (G.gps ? 1 : SPEED_BASE) * G.speed;
     while (dt > 0 && G.running) { const d = Math.min(dt, 1); step(d); dt -= d; }
   }
   if (!G.running) return;
@@ -1288,7 +1505,9 @@ function loop(now) {
 }
 
 /* ---------- HUD controls ---------- */
-$('#btnSpeed').onclick = () => { G.speed = G.speed === 1 ? 2 : G.speed === 2 ? 4 : 1; $('#btnSpeed').textContent = 'Tempo ×' + G.speed; };
+$('#btnSpeed').onclick = () => { if (G.gps) { toast('Im echten Spiel läuft die Zeit normal.'); return; } G.speed = G.speed === 1 ? 2 : G.speed === 2 ? 4 : 1; $('#btnSpeed').textContent = '×' + G.speed; };
+$('#btnCatch').onclick = () => { const t = catchable(); if (t) catchRunner(G.me, t); };
+$('#btnCenter').onclick = () => { if (G.useMap && GM.map) { GM.map.panTo(toLL(G.me)); GM.map.setZoom(Math.max(GM.map.getZoom(), 17)); } else toast('Die ganze Zone ist im Bild.'); };
 $('#btnLeave').onclick = () => {
   G.paused = true;
   overlay(`<h3>Runde verlassen?</h3><p>Dein Standort wird ab sofort nicht mehr geteilt. Die anderen spielen ohne dich weiter.</p><button class="btn red" id="ovA">Verlassen</button><button class="btn ghost small" id="ovB">Weiterspielen</button>`,
@@ -1310,7 +1529,7 @@ function sos() {
   overlay(`<div class="tape"></div><h3>SOS ausgelöst</h3><p>Die Runde ist für alle gestoppt. Alle Mitspieler sehen jetzt deinen Standort. Dein Notfallkontakt (${contact}) wurde benachrichtigt.</p><p><b>Bei Lebensgefahr: Notruf 112</b></p><p class="demo-note">Demo: Es wurde nichts gesendet.</p><button class="btn ghost" id="ovA">Entwarnung, weiterspielen</button><button class="btn red" id="ovB">Runde für alle beenden</button>`,
     c => { c.querySelector('#ovA').onclick = () => { closeOverlay(); G.paused = false; toast('Entwarnung gesendet. Weiter geht’s.'); }; c.querySelector('#ovB').onclick = () => { closeOverlay(); endRound('sos'); }; });
 }
-function quitGame() { G.running = false; $('#game').hidden = true; document.body.style.overflow = ''; try { speechSynthesis.cancel(); } catch (e) {} }
+function quitGame() { G.running = false; stopGps(); try { G.wake && G.wake.release(); } catch (e) {} $('#game').hidden = true; document.body.style.overflow = ''; try { speechSynthesis.cancel(); } catch (e) {} }
 
 /* ---------- end ---------- */
 function endRound(winner) {
@@ -1359,7 +1578,12 @@ function playTrailer() {
   const s = (W * .92) / (2 * R0), v = { cx: W / 2, cy: H * .47, s };
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const layer = document.createElement('canvas'); layer.width = W * dpr; layer.height = H * dpr;
-  const lc = layer.getContext('2d'); lc.setTransform(dpr, 0, 0, dpr, 0, 0); drawWorld(lc, v, W, H, { labels: false, blockedLabels: false });
+  const lc = layer.getContext('2d'); lc.setTransform(dpr, 0, 0, dpr, 0, 0);
+  if (G.useMap) {
+    lc.fillStyle = '#0b0c0f'; lc.fillRect(0, 0, W, H); lc.strokeStyle = 'rgba(255,255,255,.05)'; lc.lineWidth = 1;
+    for (let gx = -R0 * 1.4; gx <= R0 * 1.4; gx += 40) { lc.beginPath(); lc.moveTo(v.cx + gx * s, 0); lc.lineTo(v.cx + gx * s, H); lc.stroke(); }
+    for (let gy = -R0 * 2.4; gy <= R0 * 2.4; gy += 40) { lc.beginPath(); lc.moveTo(0, v.cy + gy * s); lc.lineTo(W, v.cy + gy * s); lc.stroke(); }
+  } else drawWorld(lc, v, W, H, { labels: false, blockedLabels: false });
   drawZone(lc, v, W, H, R0);
   const rec = G.rec, evs = G.events, ents = G.ents, gEnd = G.t;
   const intro = 1.8, outro = 3, mid = total - intro - outro;
@@ -1368,7 +1592,7 @@ function playTrailer() {
   const capOf = e => e.type === 'ping' ? 'PING.' : e.type === 'catch' ? `${e.name.toUpperCase()} GEFANGEN` : e.type === 'tip' ? 'VERRATEN.' : e.type === 'hunt' ? 'DIE JAGD BEGINNT' : null;
   const endTitle = G.result === 'sos' ? 'ABGEBROCHEN' : G.result === 'hunters' ? 'JÄGER GEWINNEN' : 'LÄUFER ENTKOMMEN';
   function caption(text, alpha = 1, size = 64, y = H * .8) {
-    ctx.save(); ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.font = `900 ${size}px "Big Shoulders Display", Impact, sans-serif`;
+    ctx.save(); ctx.globalAlpha = alpha; ctx.textAlign = 'center'; ctx.font = `900 ${size}px "Geist", system-ui, sans-serif`;
     ctx.lineWidth = 8; ctx.strokeStyle = 'rgba(0,0,0,.85)'; ctx.lineJoin = 'round';
     const words = text.split(' '), lines = []; let cur = '';
     for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > W * .86 && cur) { lines.push(cur); cur = w; } else cur = t; }
@@ -1403,7 +1627,7 @@ function playTrailer() {
         ctx.stroke(); ctx.restore();
         const q = rec[fi].p[k], x = v.cx + q[0] * s, y = v.cy + q[1] * s;
         ctx.beginPath(); ctx.arc(x, y, 7, 0, 7); ctx.fillStyle = q[3] ? '#555' : col; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#000'; ctx.stroke();
-        if (e.film) { ctx.fillStyle = '#fff'; ctx.font = '700 12px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText(e.name.toUpperCase(), x, y - 12); }
+        if (e.film) { ctx.fillStyle = '#fff'; ctx.font = '700 12px "Geist Mono", monospace'; ctx.textAlign = 'center'; ctx.fillText(e.name.toUpperCase(), x, y - 12); }
       });
       // event fx
       let cap = null;
@@ -1424,7 +1648,7 @@ function playTrailer() {
       }
       ctx.restore();
       // timer
-      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(16, 16, 112, 34); ctx.fillStyle = TAPE; ctx.font = '700 20px "JetBrains Mono", monospace'; ctx.textAlign = 'left'; ctx.fillText(fmt(gEnd - gt), 26, 40);
+      ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(16, 16, 112, 34); ctx.fillStyle = TAPE; ctx.font = '700 20px "Geist Mono", monospace'; ctx.textAlign = 'left'; ctx.fillText(fmt(gEnd - gt), 26, 40);
       if (cap) caption(cap.t, clamp(cap.a, 0, 1), cap.t.length > 12 ? 54 : 78);
     } else {
       const k = el - intro - mid;
@@ -1434,7 +1658,7 @@ function playTrailer() {
       if (k > 1.4) {
         ctx.save(); ctx.globalAlpha = clamp((k - 1.4) * 3, 0, 1);
         ctx.fillStyle = TAPE; ctx.fillRect(0, H * .66, W, 70);
-        ctx.fillStyle = '#14161b'; ctx.font = '900 56px "Big Shoulders Display", Impact, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('PINGED', W / 2, H * .66 + 54);
+        ctx.fillStyle = '#14161b'; ctx.font = '900 56px "Geist", system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('PINGED', W / 2, H * .66 + 54);
         ctx.restore();
       }
     }
@@ -1442,9 +1666,9 @@ function playTrailer() {
     if (!pass) {
       ctx.save(); ctx.translate(W / 2, H * .93); ctx.rotate(-.04);
       ctx.fillStyle = 'rgba(243,212,51,.92)'; ctx.fillRect(-W, -16, W * 2, 32);
-      ctx.fillStyle = '#14161b'; ctx.font = '900 20px "Big Shoulders Display", Impact, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#14161b'; ctx.font = '900 20px "Geist", system-ui, sans-serif'; ctx.textAlign = 'center';
       ctx.fillText('MADE WITH PINGED · FREE VERSION · MADE WITH PINGED', 0, 7); ctx.restore();
-    } else { ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '900 18px "Big Shoulders Display", Impact, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('PINGED', W - 16, 38); }
+    } else { ctx.fillStyle = 'rgba(255,255,255,.7)'; ctx.font = '900 18px "Geist", system-ui, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('PINGED', W - 16, 38); }
     if (el < total) TR.raf = requestAnimationFrame(draw);
   }
   TR.raf = requestAnimationFrame(draw);
@@ -1479,7 +1703,7 @@ $('#passRestore').onclick = () => {
 
 /* ---------- privacy center ---------- */
 onShow['scr-privacy'] = () => {
-  $('#privPerms').innerHTML = '<span class="eyebrow">Einwilligungen</span>' + permRows('priv_') + `<p class="note">Erteilt am ${S.consents.at ? new Date(S.consents.at).toLocaleString('de-DE') : '–'}${S.minor ? ` · Einwilligung der Eltern (${esc(S.parent.mail)}) am ${S.parent.confirmedAt ? new Date(S.parent.confirmedAt).toLocaleDateString('de-DE') : '–'}` : ''}</p>`;
+  $('#privPerms').innerHTML = permRows('priv_') + `<p class="note">Erteilt am ${S.consents.at ? new Date(S.consents.at).toLocaleString('de-DE') : '–'}${S.minor ? ` · Einwilligung der Eltern (${esc(S.parent.mail)}) am ${S.parent.confirmedAt ? new Date(S.parent.confirmedAt).toLocaleDateString('de-DE') : '–'}` : ''}</p>`;
   PERMS.forEach(p => $('#priv_' + p.k).onchange = e => {
     S.consents[p.k] = e.target.checked; save(); renderData();
     toast(e.target.checked ? `${p.t}: erlaubt` : `${p.t}: widerrufen`);
@@ -1540,6 +1764,7 @@ function openDoc(k) {
 function boot() {
   if (S.profile && S.consents.agb) goHome(); else { S = fresh(); show('scr-welcome', false); }
   requestAnimationFrame(miniLoop);
+  loadGoogleMaps().catch(() => {});
 }
 boot();
 
