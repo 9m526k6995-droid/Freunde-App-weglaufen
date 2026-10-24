@@ -211,3 +211,14 @@ do $$ begin
   alter publication supabase_realtime add table public.pinged_rounds;
   alter publication supabase_realtime add table public.pinged_round_players;
 exception when others then null; end $$;
+
+-- Spieler dürfen an ihrer Teilnahme nur Zustimmungen ändern, nicht Team, Verräter-Rolle oder Fang-Status
+revoke update on public.pinged_round_players from anon, authenticated;
+grant update (film_consent, location_consent_at) on public.pinged_round_players to authenticated;
+
+-- Funktionen nur für angemeldete Nutzer bzw. den Server
+revoke execute on function public.pinged_emit_pings(uuid) from public, anon;
+grant execute on function public.pinged_emit_pings(uuid) to authenticated;
+revoke execute on function public.pinged_cleanup_positions() from public, anon, authenticated;
+revoke execute on function public.pinged_has_pass(uuid) from public, anon;
+grant execute on function public.pinged_has_pass(uuid) to authenticated;
