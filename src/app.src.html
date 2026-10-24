@@ -1,0 +1,514 @@
+<title>PINGED</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700&family=Big+Shoulders+Display:wght@700;900&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one phone-width column, screens swap in place; the hunt is a full-bleed map with a HUD like a police scanner. */
+:root {
+  --asphalt: #14161b;
+  --panel: #1d2028;
+  --panel-2: #262a34;
+  --line: #343a47;
+  --fg: #ecebe6;
+  --muted: #9097a5;
+  --tape: #f3d433;
+  --tape-ink: #1a1700;
+  --hunt: #ff4f3e;
+  --run: #4fd88f;
+  --warn: #ff9d2e;
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--asphalt); color: var(--fg);
+  font: 15px/1.5 var(--body);
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior: none;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+button, input, select, textarea { font: inherit; color: inherit; }
+a { color: var(--tape); }
+:focus-visible { outline: 2px solid var(--tape); outline-offset: 2px; }
+
+.app {
+  max-width: 480px; margin: 0 auto; min-height: 100%;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 32px;
+}
+.screen { display: flex; flex-direction: column; gap: 18px; }
+.topbar { display: flex; align-items: center; gap: 10px; min-height: 44px; }
+.topbar h2 { margin: 0; flex: 1; font: 900 26px/1 var(--display); letter-spacing: .02em; text-transform: uppercase; }
+.iconbtn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); display: grid; place-items: center; cursor: pointer; font-size: 18px; }
+
+h1, h2, h3 { text-wrap: balance; }
+.eyebrow { font: 700 11px/1 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.lead { color: var(--muted); margin: 0; }
+p { margin: 0; }
+
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 52px; padding: 0 18px; border-radius: 12px; border: 0; cursor: pointer;
+  font: 900 20px/1 var(--display); letter-spacing: .04em; text-transform: uppercase;
+  background: var(--tape); color: var(--tape-ink); width: 100%;
+}
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn.ghost { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btn.dark { background: var(--panel-2); color: var(--fg); }
+.btn.red { background: var(--hunt); color: #fff; }
+.btn.small { min-height: 40px; font-size: 16px; }
+.row { display: flex; gap: 10px; }
+.row > * { flex: 1; min-width: 0; }
+
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.note { font-size: 13px; color: var(--muted); }
+.demo-note { font: 500 12px/1.4 var(--mono); color: var(--warn); border: 1px dashed color-mix(in srgb, var(--warn) 55%, transparent); border-radius: 10px; padding: 8px 10px; }
+
+/* caution tape */
+.tape {
+  background: repeating-linear-gradient(-45deg, var(--tape) 0 14px, var(--tape-ink) 14px 28px);
+  height: 10px; border-radius: 2px;
+}
+
+/* welcome */
+.hero { display: flex; flex-direction: column; gap: 14px; padding-top: 24px; }
+.logo { font: 900 clamp(64px, 22vw, 104px)/.82 var(--display); letter-spacing: -.01em; margin: 0; }
+.logo span { color: var(--tape); }
+.hero-map { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 4/3; max-width: 100%; background: var(--panel); }
+.hero-map canvas { width: 100%; height: 100%; display: block; }
+.banner {
+  background: var(--tape); color: var(--tape-ink); text-align: center;
+  font: 900 24px/1 var(--display); letter-spacing: .08em; padding: 10px 8px; text-transform: uppercase;
+}
+.hero-map .banner { position: absolute; left: 12px; right: 12px; top: 12px; border-radius: 4px; }
+
+/* forms */
+label.field { display: flex; flex-direction: column; gap: 6px; font-weight: 500; }
+.input, select.input {
+  min-height: 48px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel-2);
+  padding: 0 12px; width: 100%;
+}
+textarea.input { padding: 10px 12px; min-height: 160px; font: 12px/1.45 var(--mono); }
+.check { display: flex; gap: 12px; align-items: flex-start; cursor: pointer; }
+.check input { width: 22px; height: 22px; accent-color: var(--tape); flex: none; margin: 1px 0 0; }
+.check .t { min-width: 0; }
+.check small { display: block; color: var(--muted); font-size: 13px; }
+.req { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--tape); margin-left: 4px; }
+.perm { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 12px 0; border-top: 1px solid var(--line); }
+.perm:first-child { border-top: 0; padding-top: 0; }
+.perm .ic { width: 36px; height: 36px; border-radius: 9px; background: var(--panel-2); display: grid; place-items: center; }
+.perm .ic svg { width: 20px; height: 20px; stroke: var(--fg); fill: none; stroke-width: 1.8; }
+.perm b { display: block; }
+.perm small { color: var(--muted); font-size: 13px; display: block; }
+.switch { position: relative; width: 50px; height: 30px; flex: none; }
+.switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
+.switch span { position: absolute; inset: 0; border-radius: 99px; background: var(--line); transition: background .2s; }
+.switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--fg); transition: transform .2s; }
+.switch input:checked + span { background: var(--run); }
+.switch input:checked + span::after { transform: translateX(20px); }
+.switch input:disabled + span { opacity: .5; }
+.switch input:focus-visible + span { outline: 2px solid var(--tape); outline-offset: 2px; }
+.colors { display: flex; gap: 10px; flex-wrap: wrap; }
+.colors button { width: 40px; height: 40px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; }
+.colors button[aria-pressed="true"] { border-color: var(--fg); }
+
+/* home */
+.player-chip { display: flex; align-items: center; gap: 10px; }
+.dot { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: 0 0 0 3px color-mix(in srgb, currentColor 25%, transparent); }
+.badge { font: 700 11px/1 var(--mono); letter-spacing: .1em; padding: 6px 8px; border-radius: 6px; background: var(--panel-2); color: var(--muted); text-transform: uppercase; white-space: nowrap; }
+.badge.pass { background: var(--tape); color: var(--tape-ink); }
+.badge.minor { background: color-mix(in srgb, var(--warn) 20%, var(--panel)); color: var(--warn); }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 8px; text-align: center; }
+.stat b { display: block; font: 900 28px/1 var(--display); font-variant-numeric: tabular-nums; }
+.stat span { font: 500 10px/1.2 var(--mono); letter-spacing: .06em; color: var(--muted); text-transform: uppercase; }
+.menu { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.menu button { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px 16px; background: var(--panel); border: 0; border-top: 1px solid var(--line); cursor: pointer; text-align: left; }
+.menu button:first-child { border-top: 0; }
+.menu button small { color: var(--muted); }
+
+/* create */
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mode { position: relative; text-align: left; padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); cursor: pointer; display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.mode b { font: 900 20px/1 var(--display); text-transform: uppercase; letter-spacing: .03em; }
+.mode small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.mode[aria-pressed="true"] { border-color: var(--tape); box-shadow: inset 0 0 0 1px var(--tape); }
+.mode .lock { position: absolute; top: 10px; right: 10px; font: 700 10px/1 var(--mono); color: var(--tape); }
+.mode:disabled { cursor: not-allowed; opacity: .55; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.seg button { flex: 1; min-height: 42px; background: var(--panel); border: 0; border-left: 1px solid var(--line); cursor: pointer; font: 700 13px/1 var(--mono); min-width: 0; }
+.seg button:first-child { border-left: 0; }
+.seg button[aria-pressed="true"] { background: var(--tape); color: var(--tape-ink); }
+.seg button:disabled { opacity: .4; cursor: not-allowed; }
+.zone-prev { border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 1; max-width: 100%; }
+.zone-prev canvas { width: 100%; height: 100%; display: block; }
+.blocked-list { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+.blocked-list div { display: flex; gap: 8px; align-items: center; }
+.blocked-list i { width: 12px; height: 12px; border-radius: 3px; background: repeating-linear-gradient(-45deg, var(--hunt) 0 3px, transparent 3px 6px); border: 1px solid var(--hunt); flex: none; }
+
+/* lobby */
+.code { font: 700 40px/1 var(--mono); letter-spacing: .2em; text-align: center; color: var(--tape); }
+.plist { display: flex; flex-direction: column; gap: 8px; }
+.pl { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; background: var(--panel-2); }
+.pl .n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pl .ok { font: 700 11px/1 var(--mono); color: var(--run); }
+.pl .wait { font: 700 11px/1 var(--mono); color: var(--muted); }
+
+/* role */
+.rolecard { border-radius: 18px; padding: 28px 20px; text-align: center; display: flex; flex-direction: column; gap: 12px; align-items: center; border: 2px solid var(--line); background: var(--panel); }
+.rolecard .big { font: 900 64px/.9 var(--display); text-transform: uppercase; }
+.rolecard.hunter { border-color: var(--hunt); }
+.rolecard.hunter .big { color: var(--hunt); }
+.rolecard.runner { border-color: var(--run); }
+.rolecard.runner .big { color: var(--run); }
+.rolecard.traitor { border-color: var(--tape); background: repeating-linear-gradient(-45deg, var(--panel) 0 18px, color-mix(in srgb, var(--tape) 8%, var(--panel)) 18px 36px); }
+.rolecard.traitor .big { color: var(--tape); }
+@keyframes flip { from { transform: rotateY(90deg) scale(.9); opacity: 0; } to { transform: none; opacity: 1; } }
+.rolecard.show { animation: flip .6s cubic-bezier(.2,.8,.2,1); }
+
+/* game */
+.game { position: fixed; inset: 0; background: #0f1115; z-index: 20; display: flex; flex-direction: column; }
+.game canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; }
+.hud-top { position: relative; z-index: 2; padding: calc(env(safe-area-inset-top, 0px) + 10px) max(12px, env(safe-area-inset-right, 0px)) 0 max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+.hud-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(12,13,16,.86); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; gap: 10px; }
+.hud-bar .brand { font: 700 13px/1.1 var(--mono); letter-spacing: .06em; }
+.hud-bar .brand em { font-style: normal; display: block; color: var(--tape); }
+.hud-bar .clock { font: 700 30px/1 var(--mono); font-variant-numeric: tabular-nums; }
+.hud-banner { background: var(--tape); color: var(--tape-ink); text-align: center; font: 900 28px/1 var(--display); letter-spacing: .1em; padding: 10px; border-radius: 3px; text-transform: uppercase; }
+.hud-banner.red { background: var(--hunt); color: #fff; }
+.hud-banner.green { background: var(--run); color: #062014; }
+@keyframes slam { 0% { transform: scale(1.4); opacity: 0; } 40% { transform: scale(.97); opacity: 1; } 100% { transform: none; } }
+.hud-banner.anim { animation: slam .45s ease-out; }
+.hud-info { align-self: flex-start; background: rgba(12,13,16,.86); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font: 500 12px/1.4 var(--mono); }
+.hud-bottom { position: absolute; z-index: 2; left: 0; right: 0; bottom: 0; padding: 0 max(12px, env(safe-area-inset-right, 0px)) calc(env(safe-area-inset-bottom, 0px) + 12px) max(12px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 8px; }
+.hud-panel { background: rgba(12,13,16,.9); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.hud-line { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font: 700 15px/1.2 var(--mono); font-variant-numeric: tabular-nums; }
+.hud-line .big { font-size: 22px; }
+.hud-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.hud-actions button { flex: 1 1 auto; min-height: 44px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel-2); cursor: pointer; font: 700 13px/1.1 var(--mono); padding: 6px 10px; min-width: 0; }
+.hud-actions button.hot { background: var(--tape); color: var(--tape-ink); border-color: var(--tape); }
+.hud-actions button.catch { background: var(--hunt); color: #fff; border-color: var(--hunt); font-size: 18px; }
+.hud-actions button:disabled { opacity: .4; }
+.sos { position: relative; overflow: hidden; background: transparent !important; border-color: var(--hunt) !important; color: var(--hunt); flex: 0 0 auto !important; }
+.sos i { position: absolute; inset: 0; background: var(--hunt); transform-origin: left; transform: scaleX(0); opacity: .45; }
+.compass { display: flex; align-items: center; gap: 10px; }
+.compass svg { width: 34px; height: 34px; flex: none; }
+.overlay { position: fixed; inset: 0; z-index: 40; background: rgba(8,9,11,.82); display: grid; place-items: center; padding: 16px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
+.overlay .card { max-width: 420px; width: 100%; max-height: 90vh; overflow: auto; }
+.overlay h3 { margin: 0; font: 900 30px/1 var(--display); text-transform: uppercase; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 150px); z-index: 50; background: var(--fg); color: var(--asphalt); padding: 10px 14px; border-radius: 10px; font-weight: 700; max-width: calc(100% - 32px); text-align: center; }
+
+/* end */
+.result { text-align: center; display: flex; flex-direction: column; gap: 8px; padding-top: 10px; }
+.result .big { font: 900 54px/.9 var(--display); text-transform: uppercase; }
+.reveal { border: 2px dashed var(--tape); border-radius: 14px; padding: 14px; text-align: center; }
+.reveal b { font: 900 30px/1 var(--display); color: var(--tape); text-transform: uppercase; }
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th, .table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+.table th { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+.table td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); }
+
+/* trailer */
+.trailer-wrap { position: relative; border-radius: 14px; overflow: hidden; background: #000; aspect-ratio: 9/16; max-width: 100%; max-height: 70vh; margin: 0 auto; width: 100%; }
+.trailer-wrap canvas { width: 100%; height: 100%; display: block; }
+
+/* pass */
+.pass-hero { border-radius: 18px; padding: 22px 18px; background: var(--tape); color: var(--tape-ink); display: flex; flex-direction: column; gap: 6px; }
+.pass-hero .t { font: 900 46px/.9 var(--display); text-transform: uppercase; }
+.pass-hero .p { font: 900 34px/1 var(--display); }
+.pass-hero .p small { font: 700 13px/1 var(--mono); }
+.feat { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; }
+.feat b { font: 900 18px/1.2 var(--display); text-transform: uppercase; letter-spacing: .03em; grid-column: 2; }
+.feat p { grid-column: 2; color: var(--muted); font-size: 13.5px; }
+.feat i { grid-row: span 2; font: 700 12px/1.6 var(--mono); color: var(--tape); font-style: normal; }
+.cmp { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.cmp th, .cmp td { padding: 9px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+.cmp th { font: 700 10px/1 var(--mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; }
+.cmp td:nth-child(n+2) { text-align: center; white-space: nowrap; }
+
+/* legal doc */
+.doc { display: flex; flex-direction: column; gap: 10px; }
+.doc h1 { font: 900 34px/1 var(--display); text-transform: uppercase; margin: 0; }
+.doc h2 { font: 900 22px/1.1 var(--display); text-transform: uppercase; margin: 14px 0 0; letter-spacing: .02em; }
+.doc h3 { font: 700 15px/1.3 var(--body); margin: 8px 0 0; }
+.doc p, .doc li { color: color-mix(in srgb, var(--fg) 88%, var(--muted)); max-width: 65ch; }
+.doc ul, .doc ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
+.doc mark { background: color-mix(in srgb, var(--warn) 25%, transparent); color: var(--warn); border-radius: 3px; padding: 0 2px; }
+.doc .draft { font: 500 12px/1.4 var(--mono); color: var(--warn); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
+<div class="app" id="app">
+
+<!-- WELCOME -->
+<section class="screen" id="scr-welcome" hidden>
+  <div class="hero">
+    <span class="eyebrow">Manhunt in echt · ab 14</span>
+    <h1 class="logo">PING<span>ED</span></h1>
+    <p class="lead">Jäger gegen Läufer, draußen in deiner Stadt. Die Jäger sehen dich nur, wenn du gepingt wirst. Dazwischen gehört die Straße dir.</p>
+  </div>
+  <div class="hero-map"><canvas id="heroCanvas" width="600" height="450"></canvas><div class="banner">Ping detected</div></div>
+  <div class="demo-note">Prototyp: Die Runde wird mit computergesteuerten Mitspielern auf einer Beispielkarte simuliert. Käufe und E-Mails sind nur angedeutet.</div>
+  <button class="btn" id="welcomeGo">Konto erstellen</button>
+  <p class="note">Mit dem Erstellen eines Kontos bestätigst du im nächsten Schritt AGB, Datenschutz und Sicherheitsregeln.</p>
+</section>
+
+<!-- AGE -->
+<section class="screen" id="scr-age" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Dein Alter</h2></div>
+  <p class="lead">PINGED ist ab 14. Unter 18 brauchst du das Okay deiner Eltern und spielst nur private Runden bis 22 Uhr.</p>
+  <div class="card">
+    <label class="field" for="dob">Geburtsdatum<input class="input" type="date" id="dob" max="2026-10-24"></label>
+    <p class="note" id="ageMsg">Wir speichern dein Geburtsdatum nur, um Altersgrenzen einzuhalten.</p>
+  </div>
+  <button class="btn" id="ageGo" disabled>Weiter</button>
+</section>
+
+<!-- PARENT -->
+<section class="screen" id="scr-parent" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Okay der Eltern</h2></div>
+  <p class="lead">Du bist unter 18. Ein Erziehungsberechtigter muss zustimmen, bevor du spielen kannst.</p>
+  <div class="card">
+    <label class="field" for="parentMail">E-Mail eines Erziehungsberechtigten<input class="input" type="email" id="parentMail" placeholder="mama@beispiel.de" autocomplete="off"></label>
+    <p class="note">Wir schicken die <a href="#" data-doc="eltern">Einverständniserklärung</a> an diese Adresse. Sie wird auch dein Notfallkontakt für den SOS-Knopf.</p>
+    <button class="btn dark small" id="parentSend" disabled>Bestätigung anfordern</button>
+    <div id="parentSent" hidden class="demo-note">Demo: Hier würde jetzt eine E-Mail mit Bestätigungslink rausgehen. Tippe unten, um die Bestätigung durch die Eltern zu simulieren.</div>
+    <button class="btn ghost small" id="parentConfirm" hidden>Eltern haben bestätigt (Demo)</button>
+  </div>
+  <button class="btn" id="parentGo" disabled>Weiter</button>
+</section>
+
+<!-- CONSENT -->
+<section class="screen" id="scr-consent" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Einwilligungen</h2></div>
+  <p class="lead">Du entscheidest. Alles außer dem Standort ist freiwillig und lässt sich später im Datenschutz-Center ändern.</p>
+  <div class="card">
+    <label class="check" for="cAgb"><input type="checkbox" id="cAgb"><span class="t">Ich akzeptiere die <a href="#" data-doc="agb">AGB</a>.<span class="req">PFLICHT</span></span></label>
+    <label class="check" for="cDs"><input type="checkbox" id="cDs"><span class="t">Ich habe die <a href="#" data-doc="datenschutz">Datenschutzerklärung</a> gelesen.<span class="req">PFLICHT</span></span></label>
+    <label class="check" for="cSafe"><input type="checkbox" id="cSafe"><span class="t">Ich halte mich an die <a href="#" data-doc="sicherheit">10 Sicherheitsregeln</a>: Verkehr geht vor, nur öffentliche Orte, kein Körperkontakt. Ich spiele auf eigene Verantwortung.<span class="req">PFLICHT</span></span></label>
+  </div>
+  <div class="card" id="permList"></div>
+  <button class="btn" id="consentGo" disabled>Weiter</button>
+</section>
+
+<!-- PROFILE -->
+<section class="screen" id="scr-profile" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Dein Profil</h2></div>
+  <div class="card">
+    <label class="field" for="pName">Spielername<input class="input" id="pName" maxlength="14" placeholder="z. B. Cyrus" autocomplete="off"></label>
+    <div class="field">Deine Ping-Farbe<div class="colors" id="colorPick"></div></div>
+    <label class="field" for="pEmergency" id="emergencyField">Notfallkontakt für SOS (Telefon oder E-Mail, optional)<input class="input" id="pEmergency" placeholder="+49 …" autocomplete="off"></label>
+  </div>
+  <button class="btn" id="profileGo" disabled>Fertig</button>
+</section>
+
+<!-- HOME -->
+<section class="screen" id="scr-home" hidden>
+  <div class="topbar">
+    <div class="player-chip" style="flex:1;min-width:0"><span class="dot" id="homeDot"></span><b id="homeName" style="font:900 26px/1 var(--display);text-transform:uppercase;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></b></div>
+    <span class="badge" id="homeBadge">Free</span>
+  </div>
+  <div class="hero-map" style="aspect-ratio:16/10"><canvas id="homeCanvas" width="640" height="400"></canvas><div class="banner" style="font-size:18px">Bereit für die Jagd</div></div>
+  <div class="row">
+    <button class="btn" id="goCreate">Runde erstellen</button>
+  </div>
+  <button class="btn ghost" id="goJoin">Mit Code beitreten</button>
+  <div class="stats">
+    <div class="stat"><b id="stRounds">0</b><span>Runden</span></div>
+    <div class="stat"><b id="stCatches">0</b><span>Catches</span></div>
+    <div class="stat"><b id="stEscapes">0</b><span>Entkommen</span></div>
+    <div class="stat"><b id="stKm">0,0</b><span>km</span></div>
+  </div>
+  <div class="menu">
+    <button id="goPass"><span><b>PINGED Pass</b><br><small id="passMenuSub">19,99 € einmalig, kein Abo</small></span><span>→</span></button>
+    <button id="goPrivacy"><span><b>Datenschutz-Center</b><br><small>Einwilligungen, Datenexport, Konto löschen</small></span><span>→</span></button>
+    <button id="goLegal"><span><b>Rechtliches</b><br><small>AGB, Datenschutz, Impressum, Widerruf</small></span><span>→</span></button>
+  </div>
+</section>
+
+<!-- CREATE -->
+<section class="screen" id="scr-create" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Neue Runde</h2></div>
+  <div id="nightBlock" class="demo-note" hidden></div>
+  <div class="field"><span class="eyebrow">Modus</span><div class="modes" id="modes"></div></div>
+  <div class="card">
+    <div class="field"><span class="eyebrow">Spieler (inkl. dir)</span><div class="seg" id="segPlayers"></div></div>
+    <div class="field"><span class="eyebrow">Dauer</span><div class="seg" id="segDur"></div></div>
+    <div class="field"><span class="eyebrow">Ping alle</span><div class="seg" id="segPing"></div></div>
+    <div class="field"><span class="eyebrow">Vorsprung Läufer</span><div class="seg" id="segHead"></div></div>
+    <div class="field"><span class="eyebrow">Deine Rolle</span><div class="seg" id="segRole"></div></div>
+  </div>
+  <div class="card">
+    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 15.6 7.1 18.2 8 12.7 4 8.8 9.5 8z"/></svg></span><span><b>Loot auf der Karte</b><small>Kisten mit Fake-Ping, Unsichtbar, Scan und Drohne</small></span><label class="switch"><input type="checkbox" id="optLoot" aria-label="Loot"><span></span></label></div>
+    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 14v-3a8 8 0 0116 0v3"/><rect x="3" y="14" width="4" height="6" rx="1"/><rect x="17" y="14" width="4" height="6" rx="1"/></svg></span><span><b>KI-Spielleitung im Ohr</b><small>Live-Ansagen und Herzschlag, wenn ein Jäger nah ist</small></span><label class="switch"><input type="checkbox" id="optVoice" aria-label="KI-Spielleitung"><span></span></label></div>
+    <p class="note" id="passHint"></p>
+  </div>
+  <div class="field">
+    <span class="eyebrow">Spielzone · Radius 320 m · automatisch geprüft</span>
+    <div class="zone-prev"><canvas id="zoneCanvas" width="600" height="600"></canvas></div>
+    <div class="blocked-list" id="blockedList"></div>
+  </div>
+  <button class="btn" id="createGo">Lobby öffnen</button>
+</section>
+
+<!-- JOIN -->
+<section class="screen" id="scr-join" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Beitreten</h2></div>
+  <div class="card">
+    <label class="field" for="joinCode">Runden-Code<input class="input" id="joinCode" maxlength="6" placeholder="z. B. 7K4QX2" autocomplete="off" style="font:700 24px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase"></label>
+    <p class="note">Demo: Jeder 6-stellige Code bringt dich in die Lobby von Dominick. Dominick hat den Pass, also bekommst du in seiner Runde alle Pass-Funktionen.</p>
+  </div>
+  <button class="btn" id="joinGo" disabled>Beitreten</button>
+</section>
+
+<!-- LOBBY -->
+<section class="screen" id="scr-lobby" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Lobby</h2></div>
+  <div class="card" style="align-items:center">
+    <span class="eyebrow">Runden-Code</span>
+    <div class="code" id="lobbyCode"></div>
+    <p class="note" id="lobbyMeta" style="text-align:center"></p>
+  </div>
+  <div class="plist" id="lobbyPlayers"></div>
+  <div class="card">
+    <span class="eyebrow">Zustimmung für diese Runde</span>
+    <label class="check" for="rcLoc"><input type="checkbox" id="rcLoc"><span class="t">Ich teile meinen Standort mit den <span id="rcN"></span> Spielern dieser Runde, bis die Runde endet.<span class="req">PFLICHT</span><small>Danach wird er gelöscht.</small></span></label>
+    <label class="check" for="rcFilm"><input type="checkbox" id="rcFilm"><span class="t">Mitspieler dürfen mich filmen, Clips von mir dürfen im Trailer erscheinen.<small>Freiwillig. Ohne Haken wirst du im Trailer nur als Punkt gezeigt.</small></span></label>
+  </div>
+  <button class="btn" id="lobbyGo" disabled>Warte auf Spieler …</button>
+</section>
+
+<!-- ROLE -->
+<section class="screen" id="scr-role" hidden>
+  <div class="rolecard" id="roleCard"></div>
+  <button class="btn" id="roleGo">Los</button>
+</section>
+
+<!-- END -->
+<section class="screen" id="scr-end" hidden>
+  <div class="result" id="endResult"></div>
+  <div id="endReveal"></div>
+  <div class="card" style="overflow-x:auto"><table class="table" id="endTable"></table></div>
+  <button class="btn" id="endTrailer">Trailer ansehen</button>
+  <div class="row"><button class="btn ghost small" id="endAgain">Revanche</button><button class="btn ghost small" id="endHome">Zur Startseite</button></div>
+  <button class="btn dark small" id="endReport">Spieler melden</button>
+  <p class="note">Dein Standortverlauf dieser Runde wird jetzt gelöscht. Für den Trailer bleibt nur eine vereinfachte Laufspur, 30 Tage lang.</p>
+</section>
+
+<!-- TRAILER -->
+<section class="screen" id="scr-trailer" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Trailer</h2><button class="iconbtn" id="trSound" aria-label="Ton an oder aus">♪</button></div>
+  <div class="trailer-wrap"><canvas id="trCanvas" width="540" height="960"></canvas></div>
+  <div class="row"><button class="btn" id="trPlay">Nochmal abspielen</button></div>
+  <p class="note" id="trNote"></p>
+</section>
+
+<!-- PASS -->
+<section class="screen" id="scr-pass" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>PINGED Pass</h2></div>
+  <div class="pass-hero">
+    <span class="t">Einmal zahlen.<br>Für immer drin.</span>
+    <span class="p">19,99 € <small>einmalig · kein Abo · inkl. MwSt.</small></span>
+  </div>
+  <div class="card">
+    <div class="feat"><i>01</i><b>Der Verräter</b><p>Ein Läufer arbeitet heimlich für die Jäger. Am Ende wird aufgedeckt, wer es war.</p></div>
+    <div class="feat"><i>02</i><b>KI-Spielleitung im Ohr</b><p>Live-Ansagen zu Pings, Entfernungen und Catches, dazu ein Herzschlag, wenn Jäger nah sind.</p></div>
+    <div class="feat"><i>03</i><b>Voller Trailer</b><p>Doppelte Länge, ohne Wasserzeichen, mit Musik. Fertig für TikTok und Reels.</p></div>
+    <div class="feat"><i>04</i><b>Loot auf der Karte</b><p>Fake-Ping, Unsichtbar, Scan für Läufer. Drohne und Extra-Ping für Jäger.</p></div>
+    <div class="feat"><i>05</i><b>Alle Modi</b><p>Verräter, Infektion, Schrumpfende Zone, Mister X.</p></div>
+    <div class="feat"><i>06</i><b>Bis 100 Spieler</b><p>Und deine ganze Lobby spielt mit deinen Pass-Funktionen, auch ohne eigenen Pass.</p></div>
+  </div>
+  <div class="card" style="overflow-x:auto">
+    <table class="cmp"><thead><tr><th>Funktion</th><th>Free</th><th>Pass</th></tr></thead><tbody>
+      <tr><td>Spieler pro Runde</td><td>6</td><td>100</td></tr>
+      <tr><td>Klassischer Manhunt</td><td>Ja</td><td>Ja</td></tr>
+      <tr><td>Weitere Modi</td><td>Nein</td><td>4</td></tr>
+      <tr><td>Loot und KI-Stimme</td><td>Nein</td><td>Ja</td></tr>
+      <tr><td>Trailer</td><td>10 s, Wasserzeichen</td><td>20 s, mit Musik</td></tr>
+    </tbody></table>
+  </div>
+  <div id="passBuyBox" class="card">
+    <label class="check" for="pbExec"><input type="checkbox" id="pbExec"><span class="t">Ich stimme ausdrücklich zu, dass der Pass sofort freigeschaltet wird, also vor Ablauf der 14-tägigen Widerrufsfrist.</span></label>
+    <label class="check" for="pbLose"><input type="checkbox" id="pbLose"><span class="t">Mir ist bekannt, dass ich dadurch mein <a href="#" data-doc="widerruf">Widerrufsrecht</a> verliere.</span></label>
+    <label class="check" for="pbParent" id="pbParentRow" hidden><input type="checkbox" id="pbParent"><span class="t">Meine Eltern sind mit dem Kauf einverstanden. Sie bekommen eine Kopie der Kaufbestätigung.</span></label>
+    <p class="note">Es gelten die <a href="#" data-doc="agb">AGB</a>. Bezahlt wird über den App Store bzw. Google Play. Die Kaufbestätigung kommt per E-Mail.</p>
+    <button class="btn" id="passBuy" disabled>Zahlungspflichtig kaufen · 19,99 €</button>
+    <button class="btn ghost small" id="passRestore">Käufe wiederherstellen</button>
+  </div>
+  <div id="passOwned" class="card" hidden>
+    <b style="font:900 26px/1 var(--display);text-transform:uppercase;color:var(--tape)">Pass aktiv</b>
+    <p class="note" id="passOwnedTxt"></p>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section class="screen" id="scr-privacy" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Datenschutz</h2></div>
+  <p class="lead">Hier kannst du jede freiwillige Einwilligung widerrufen. Das gilt ab sofort für alle künftigen Runden.</p>
+  <div class="card" id="privPerms"></div>
+  <div class="card">
+    <span class="eyebrow">Gespeicherte Daten</span>
+    <p class="note">Das ist alles, was die App über dich speichert. Standortdaten vergangener Runden sind nicht dabei, weil sie nach der Runde gelöscht werden.</p>
+    <textarea class="input" id="privData" readonly aria-label="Gespeicherte Daten"></textarea>
+    <button class="btn dark small" id="privCopy">Daten kopieren</button>
+  </div>
+  <div class="card">
+    <span class="eyebrow">Konto löschen</span>
+    <p class="note">Löscht Profil, Statistiken und Einwilligungen. Ein gekaufter Pass kann über „Käufe wiederherstellen“ zurückgeholt werden.</p>
+    <button class="btn red small" id="privDelete">Konto löschen</button>
+    <div id="privDeleteConfirm" hidden class="row"><button class="btn red small" id="privDeleteYes">Ja, endgültig löschen</button><button class="btn ghost small" id="privDeleteNo">Abbrechen</button></div>
+  </div>
+</section>
+
+<!-- LEGAL -->
+<section class="screen" id="scr-legal" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2>Rechtliches</h2></div>
+  <div class="demo-note">Alle Texte sind Entwürfe. Vor dem Launch müssen sie von einem Anwalt geprüft und die Angaben in eckigen Klammern ausgefüllt werden.</div>
+  <div class="menu" id="legalMenu"></div>
+</section>
+
+<!-- DOC -->
+<section class="screen" id="scr-doc" hidden>
+  <div class="topbar"><button class="iconbtn" data-back aria-label="Zurück">←</button><h2 id="docTitle">Dokument</h2></div>
+  <article class="doc" id="docBody"></article>
+</section>
+
+</div>
+
+<!-- GAME -->
+<div class="game" id="game" hidden>
+  <canvas id="gameCanvas"></canvas>
+  <div class="hud-top">
+    <div class="hud-bar"><div class="brand">PINGED.<span id="hudMode">KLASSIK</span><em id="hudRole">HUNTER</em></div><div class="clock" id="hudClock">60:00</div></div>
+    <div class="hud-banner" id="hudBanner" hidden></div>
+    <div class="hud-info" id="hudInfo"></div>
+  </div>
+  <div class="hud-bottom">
+    <div class="hud-panel">
+      <div class="hud-line"><span id="hudNextLbl">NÄCHSTER PING</span><span class="big" id="hudNext">02:00</span></div>
+      <div class="compass" id="hudCompass" hidden><svg viewBox="0 0 34 34"><circle cx="17" cy="17" r="15" fill="none" stroke="currentColor" stroke-opacity=".35"/><path id="compArrow" d="M17 5 L22 20 L17 17 L12 20 Z" fill="var(--hunt)"/></svg><span id="compTxt" style="font:700 13px/1.3 var(--mono)"></span></div>
+      <div class="hud-actions" id="hudItems"></div>
+      <div class="hud-actions">
+        <button class="sos" id="btnSos" aria-label="SOS, 2 Sekunden halten"><i id="sosFill"></i><span style="position:relative">SOS halten</span></button>
+        <button id="btnSpeed">Tempo ×1</button>
+        <button id="btnLeave">Verlassen</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="overlay" hidden><div class="card" id="overlayCard"></div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const LEGAL = /*__LEGAL__*/{};
+/*__APPJS__*/
+</script>

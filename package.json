@@ -1,0 +1,10 @@
+{
+  "name": "pinged",
+  "version": "0.1.0",
+  "private": true,
+  "description": "PINGED: Manhunt in echt. Spielbarer Web-Prototyp mit Rechtstexten und Supabase-Schema.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "engines": { "node": ">=18" }
+}
