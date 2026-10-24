@@ -46,10 +46,21 @@ function show(id, push = true) {
   if (cur && cur.id !== id) { if (push) stack.push(cur.id); cur.hidden = true; }
   $('#' + id).hidden = false;
   window.scrollTo(0, 0);
+  const tabbed = $('#' + id).classList.contains('tab') && !stack.length;
+  document.body.classList.toggle('tabs', tabbed); $('#tabbar').hidden = !tabbed;
+  $$('#tabbar button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === id ? 'page' : 'false'));
   onShow[id] && onShow[id]();
 }
 function back() { const id = stack.pop(); if (id) show(id, false); }
-function goHome() { stack.length = 0; show('scr-home', false); }
+function goTab(id) { stack.length = 0; show(id, false); }
+function goHome() { goTab('scr-home'); }
+$$('#tabbar button').forEach(b => b.onclick = () => goTab(b.dataset.tab));
+/* Fortschritt im Einrichtungs-Ablauf */
+function setupOrder() { return ['scr-age', ...(S.minor ? ['scr-parent'] : []), 'scr-rules', 'scr-consent', 'scr-profile']; }
+function renderSetupHead(id) {
+  const order = setupOrder(), i = order.indexOf(id), el = $('#' + id + ' .setup-head'); if (!el || i < 0) return;
+  el.innerHTML = `<button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><div class="prog">${order.map((_, k) => `<i class="${k <= i ? 'on' : ''}"></i>`).join('')}</div><span class="lbl">${i + 1} / ${order.length}</span>`;
+}
 document.addEventListener('click', e => {
   if (e.target.closest('[data-back]')) { back(); return; }
   const d = e.target.closest('[data-doc]');
@@ -181,33 +192,33 @@ function renderWorld(ctx, v, W, H, opts) {
   const s = v.s, T = p => [v.cx + p.x * s, v.cy + p.y * s];
   const path = (pts, close = true) => { ctx.beginPath(); pts.forEach((p, k) => { const [x, y] = T(p); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); if (close) ctx.closePath(); };
   const line = (pts, w, col, dash) => { path(pts, false); ctx.lineWidth = Math.max(.6, w * s); ctx.strokeStyle = col; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.setLineDash(dash || []); ctx.stroke(); ctx.setLineDash([]); };
-  ctx.fillStyle = '#0c0d10'; ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#23262d'; ctx.fillRect(0, 0, W, H);
   // Blöcke, Parks, Platz
   for (const b of WORLD.blocks) {
-    path(b.poly); ctx.fillStyle = b.plaza ? '#15161a' : b.park ? '#0c1712' : '#101114'; ctx.fill();
+    path(b.poly); ctx.fillStyle = b.plaza ? '#30333b' : b.park ? '#1e3a2a' : '#262930'; ctx.fill();
     if (b.plaza) { // Pflaster-Muster und Brunnen
-      ctx.save(); path(b.poly); ctx.clip(); ctx.strokeStyle = 'rgba(255,255,255,.025)'; ctx.lineWidth = 1;
+      ctx.save(); path(b.poly); ctx.clip(); ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1;
       for (let g = -900; g < 900; g += 9) { const [x, y] = T({ x: g, y: -900 }), [x2, y2] = T({ x: g + 120, y: 900 }); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x2, y2); ctx.stroke(); }
       ctx.restore();
     }
   }
-  { const [x, y] = T({ x: -32, y: -30 }); ctx.beginPath(); ctx.arc(x, y, 13 * s, 0, 7); ctx.fillStyle = '#0d1a24'; ctx.fill(); ctx.strokeStyle = 'rgba(100,180,255,.18)'; ctx.lineWidth = 1; ctx.stroke(); }
-  for (const t of WORLD.trees) { const [x, y] = T(t); ctx.beginPath(); ctx.arc(x, y, t.r * s, 0, 7); ctx.fillStyle = '#10241a'; ctx.fill(); ctx.beginPath(); ctx.arc(x - t.r * s * .3, y - t.r * s * .3, t.r * s * .45, 0, 7); ctx.fillStyle = '#163222'; ctx.fill(); }
+  { const [x, y] = T({ x: -32, y: -30 }); ctx.beginPath(); ctx.arc(x, y, 13 * s, 0, 7); ctx.fillStyle = '#1f4560'; ctx.fill(); ctx.strokeStyle = 'rgba(120,190,255,.35)'; ctx.lineWidth = 1; ctx.stroke(); }
+  for (const t of WORLD.trees) { const [x, y] = T(t); ctx.beginPath(); ctx.arc(x, y, t.r * s, 0, 7); ctx.fillStyle = '#285236'; ctx.fill(); ctx.beginPath(); ctx.arc(x - t.r * s * .3, y - t.r * s * .3, t.r * s * .45, 0, 7); ctx.fillStyle = '#36694a'; ctx.fill(); }
   // Fluss
-  line(WORLD.river, 64, '#0f1c27'); line(WORLD.river, 54, '#0a1520');
+  line(WORLD.river, 64, '#24506d'); line(WORLD.river, 54, '#1b3f58');
   // Straßen: Rand, dann Belag
-  const W_ = [8, 13, 17, 22], C_ = ['#1b1d22', '#23262c', '#292c33', '#2d2f35'];
-  for (const r of WORLD.roads) line(r.pts, W_[r.cls] + 3, '#08090b');
+  const W_ = [8, 13, 17, 22], C_ = ['#3a3d46', '#464a54', '#51555f', '#5d5a52'];
+  for (const r of WORLD.roads) line(r.pts, W_[r.cls] + 3, '#1b1d22');
   for (const r of WORLD.roads) line(r.pts, W_[r.cls], C_[r.cls]);
-  for (const r of WORLD.roads) if (r.cls >= 2) line(r.pts, 1, 'rgba(255,255,255,.07)', [6 * s, 9 * s]);
+  for (const r of WORLD.roads) if (r.cls >= 2) line(r.pts, 1, 'rgba(255,255,255,.14)', [6 * s, 9 * s]);
   // Bahntrasse
-  line(WORLD.rail, 16, '#121317'); line(WORLD.rail, 9, 'rgba(255,255,255,.06)', [1.2 * s, 3.5 * s]); line(WORLD.rail, 1.2, 'rgba(255,255,255,.12)');
+  line(WORLD.rail, 16, '#2c2a2e'); line(WORLD.rail, 9, 'rgba(255,255,255,.1)', [1.2 * s, 3.5 * s]); line(WORLD.rail, 1.2, 'rgba(255,255,255,.22)');
   // Häuser mit Höhe: dunkle Fassade nach Süden versetzt, Dach darüber
   const off = Math.max(1.2, 6 * s);
-  for (const b of WORLD.blocks) for (const h of b.bld) { path(h.pts.map(p => ({ x: p.x, y: p.y + h.h * off / s }))); ctx.fillStyle = '#060708'; ctx.fill(); }
+  for (const b of WORLD.blocks) for (const h of b.bld) { path(h.pts.map(p => ({ x: p.x, y: p.y + h.h * off / s }))); ctx.fillStyle = '#16181c'; ctx.fill(); }
   for (const b of WORLD.blocks) for (const h of b.bld) {
-    path(h.pts); const l = 22 + Math.round(h.h * 7); ctx.fillStyle = `rgb(${l},${l + 1},${l + 5})`; ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.035)'; ctx.lineWidth = 1; ctx.stroke();
+    path(h.pts); const l = 52 + Math.round(h.h * 12); ctx.fillStyle = `rgb(${l},${l + 2},${l + 8})`; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.07)'; ctx.lineWidth = 1; ctx.stroke();
   }
   // Gesperrte Bereiche: rot getönt, dezente Streifen
   for (const b of WORLD.blocked) {
@@ -225,18 +236,19 @@ function renderWorld(ctx, v, W, H, opts) {
     ctx.font = `600 ${Math.round(8.5 * Math.min(1.3, s))}px "Geist Mono", monospace`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     for (const l of WORLD.labels) {
       const m = lerpP(l.a, l.b, .5), [x, y] = T(m); let ang = Math.atan2(l.b.y - l.a.y, l.b.x - l.a.x); if (ang > Math.PI / 2) ang -= Math.PI; if (ang < -Math.PI / 2) ang += Math.PI;
-      ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineWidth = 3; ctx.strokeStyle = '#0c0d10'; ctx.strokeText(l.t, 0, 0);
-      ctx.fillStyle = l.water ? 'rgba(90,150,200,.45)' : 'rgba(236,235,230,.34)'; ctx.fillText(l.t, 0, 0); ctx.restore();
+      ctx.save(); ctx.translate(x, y); ctx.rotate(ang); ctx.lineWidth = 3; ctx.strokeStyle = '#23262d'; ctx.strokeText(l.t, 0, 0);
+      ctx.fillStyle = l.water ? 'rgba(140,200,240,.7)' : 'rgba(236,235,230,.6)'; ctx.fillText(l.t, 0, 0); ctx.restore();
     }
     ctx.textBaseline = 'alphabetic';
   }
   // Vignette
+  if (opts.noVignette) return;
   const g = ctx.createRadialGradient(W / 2, H / 2, Math.min(W, H) * .35, W / 2, H / 2, Math.max(W, H) * .75);
-  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.45)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  g.addColorStop(0, 'rgba(0,0,0,0)'); g.addColorStop(1, 'rgba(0,0,0,.3)'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
 }
 function drawZone(ctx, v, W, H, r) {
   ctx.save(); ctx.beginPath(); ctx.rect(0, 0, W, H); ctx.arc(v.cx, v.cy, r * v.s, 0, Math.PI * 2, true);
-  ctx.fillStyle = 'rgba(8,9,11,.62)'; ctx.fill('evenodd'); ctx.restore();
+  ctx.fillStyle = 'rgba(8,9,11,.45)'; ctx.fill('evenodd'); ctx.restore();
   ctx.save(); ctx.setLineDash([10, 7]); ctx.strokeStyle = TAPE; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.arc(v.cx, v.cy, r * v.s, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
 }
@@ -281,7 +293,16 @@ function miniLoop(t) {
 }
 
 /* ---------- onboarding ---------- */
-$('#welcomeGo').onclick = () => show('scr-age');
+$('#welcomeGo').onclick = () => playIntro(() => show('scr-age'));
+$('#welcomeSkip').onclick = () => show('scr-age');
+onShow['scr-age'] = () => renderSetupHead('scr-age');
+onShow['scr-parent'] = () => renderSetupHead('scr-parent');
+onShow['scr-rules'] = () => {
+  renderSetupHead('scr-rules');
+  const check = () => { $('#rulesGo').disabled = !($('#cSafe').checked && $('#cAgb').checked); };
+  $('#cSafe').onchange = check; $('#cAgb').onchange = check; check();
+};
+$('#rulesGo').onclick = () => { Object.assign(S.consents, { agb: true, safe: true }); save(); show('scr-consent'); };
 $('#dob').addEventListener('input', () => {
   const v = $('#dob').value, msg = $('#ageMsg'); let ok = false;
   if (v) {
@@ -295,12 +316,12 @@ $('#dob').addEventListener('input', () => {
 });
 $('#ageGo').onclick = () => {
   S.dob = $('#dob').value; S.minor = ageFrom(S.dob) < 18; save();
-  show(S.minor ? 'scr-parent' : 'scr-consent');
+  show(S.minor ? 'scr-parent' : 'scr-rules');
 };
 $('#parentMail').addEventListener('input', () => { $('#parentSend').disabled = !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($('#parentMail').value.trim()); });
 $('#parentSend').onclick = () => { S.parent.mail = $('#parentMail').value.trim(); save(); $('#parentSent').hidden = false; $('#parentConfirm').hidden = false; toast('Bestätigungs-E-Mail angefordert (Demo)'); };
 $('#parentConfirm').onclick = () => { S.parent.confirmed = true; S.parent.confirmedAt = new Date().toISOString(); save(); $('#parentGo').disabled = false; $('#parentConfirm').textContent = 'Bestätigt ✓'; $('#parentConfirm').disabled = true; };
-$('#parentGo').onclick = () => show('scr-consent');
+$('#parentGo').onclick = () => show('scr-rules');
 
 const ICONS = {
   loc: '<path d="M12 21s-6-5.3-6-11a6 6 0 0112 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',
@@ -316,26 +337,29 @@ const PERMS = [
   { k: 'push', t: 'Mitteilungen', d: 'Einladungen und Rundenstart.' },
   { k: 'stats', t: 'Anonyme Statistik', d: 'Welche Modi beliebt sind. Kein Tracking, keine Werbung.' }
 ];
-function permRows(prefix) {
-  return PERMS.map(p => `<div class="perm"><span class="ic"><svg viewBox="0 0 24 24">${ICONS[p.k]}</svg></span><span><b>${p.t}${p.req ? '<span class="req">PFLICHT</span>' : ''}</b><small>${p.d}</small></span><label class="switch"><input type="checkbox" id="${prefix}${p.k}" aria-label="${p.t}"${S.consents[p.k] ? ' checked' : ''}><span></span></label></div>`).join('');
+function permRows(prefix, optionalOnly) {
+  return PERMS.filter(p => !(optionalOnly && p.req)).map(p => `<div class="perm"><span class="ic"><svg viewBox="0 0 24 24">${ICONS[p.k]}</svg></span><span><b>${p.t}${p.req ? '<span class="req">PFLICHT</span>' : ''}</b><small>${p.d}</small></span><label class="switch"><input type="checkbox" id="${prefix}${p.k}" aria-label="${p.t}"${S.consents[p.k] ? ' checked' : ''}><span></span></label></div>`).join('');
 }
 onShow['scr-consent'] = () => {
-  $('#permList').innerHTML = permRows('perm_') + '<p class="note">Dein Handy fragt danach noch einmal selbst nach. Du kannst alles jederzeit im Datenschutz-Center ändern.</p>';
-  const check = () => { $('#consentGo').disabled = !($('#cAgb').checked && $('#cDs').checked && $('#cSafe').checked && $('#perm_loc').checked); };
+  renderSetupHead('scr-consent');
+  $('#permList').innerHTML = permRows('perm_', true);
+  const check = () => { $('#consentGo').disabled = !($('#cDs').checked && $('#perm_loc').checked); };
   $$('#scr-consent input').forEach(i => i.onchange = check); check();
 };
 $('#consentGo').onclick = () => {
-  Object.assign(S.consents, { agb: true, ds: true, safe: true, at: new Date().toISOString() });
+  Object.assign(S.consents, { ds: true, at: new Date().toISOString() });
   PERMS.forEach(p => S.consents[p.k] = $('#perm_' + p.k).checked);
   save(); show('scr-profile');
 };
 let pickedColor = COLORS[0];
+function pinPreview() { const pp = $('#pinPrev'); pp.style.background = pickedColor; pp.style.setProperty('--pc', pickedColor); pp.textContent = ($('#pName').value.trim().charAt(0) || '?').toUpperCase(); }
 onShow['scr-profile'] = () => {
+  renderSetupHead('scr-profile'); pinPreview();
   $('#colorPick').innerHTML = COLORS.map(c => `<button style="background:${c}" aria-label="Farbe ${c}" aria-pressed="${c === pickedColor}" data-c="${c}"></button>`).join('');
   $$('#colorPick button').forEach(b => b.onclick = () => { pickedColor = b.dataset.c; onShow['scr-profile'](); });
   if (S.minor) { $('#emergencyField').hidden = true; }
 };
-$('#pName').addEventListener('input', () => { $('#profileGo').disabled = $('#pName').value.trim().length < 2; });
+$('#pName').addEventListener('input', () => { $('#profileGo').disabled = $('#pName').value.trim().length < 2; pinPreview(); });
 $('#profileGo').onclick = () => {
   S.profile = { name: $('#pName').value.trim().slice(0, 14), color: pickedColor };
   S.emergency = S.minor ? S.parent.mail : $('#pEmergency').value.trim();
@@ -347,13 +371,27 @@ onShow['scr-home'] = () => {
   $('#homeName').textContent = S.profile.name; $('#homeDot').style.background = S.profile.color; $('#homeDot').textContent = S.profile.name.charAt(0).toUpperCase();
   const b = $('#homeBadge'); b.className = 'badge' + (S.pass ? ' pass' : S.minor ? ' minor' : '');
   b.textContent = S.pass ? 'Pass' : S.minor ? 'U18 · Free' : 'Free';
+  const h = new Date().getHours();
+  $('#homeHello').textContent = h < 11 ? 'Guten Morgen' : h < 18 ? 'Bereit für die Jagd' : 'Heute Abend draußen?';
+  $('#modeRail').innerHTML = MODES.filter(m => !m.soon).map(m => `<button class="mode" data-k="${m.k}">${m.pass && !S.pass ? '<span class="lock">PASS</span>' : ''}<span class="mi"><svg class="i" viewBox="0 0 24 24">${MODE_ICON[m.k]}</svg></span><b>${m.t}</b><small>${m.d}</small></button>`).join('');
+  $$('#modeRail .mode').forEach(b => b.onclick = () => {
+    if (!S.consents.loc) return needLoc();
+    const m = MODES.find(x => x.k === b.dataset.k); if (m.pass && !S.pass) return upsell('Der Modus „' + m.t + '“');
+    C = defaultsCreate(); C.mode = m.k; show('scr-create');
+  });
+};
+onShow['scr-me'] = () => {
+  const a = $('#meAvatar'); a.style.background = S.profile.color; a.style.setProperty('--pc', S.profile.color); a.textContent = S.profile.name.charAt(0).toUpperCase();
+  $('#meName').textContent = S.profile.name;
+  const b = $('#meBadge'); b.className = 'badge' + (S.pass ? ' pass' : S.minor ? ' minor' : ''); b.textContent = S.pass ? 'Pass aktiv' : S.minor ? 'U18 · Free' : 'Free';
   $('#stRounds').textContent = S.stats.rounds; $('#stCatches').textContent = S.stats.catches; $('#stEscapes').textContent = S.stats.escapes;
   $('#stKm').textContent = (S.stats.meters / 1000).toFixed(1).replace('.', ',');
-  $('#passMenuSub').textContent = S.pass ? 'Aktiv seit ' + new Date(S.pass.at).toLocaleDateString('de-DE') : '19,99 € einmalig, kein Abo';
 };
+$('#homeIntro').onclick = () => playIntro();
+$('#meIntro').onclick = () => playIntro();
+$('#goModes').onclick = () => $('#goCreate').click();
 $('#goCreate').onclick = () => { if (!S.consents.loc) return needLoc(); C = defaultsCreate(); show('scr-create'); };
 $('#goJoin').onclick = () => { if (!S.consents.loc) return needLoc(); show('scr-join'); };
-$('#goPass').onclick = () => show('scr-pass');
 $('#goPrivacy').onclick = () => show('scr-privacy');
 $('#goLegal').onclick = () => show('scr-legal');
 function needLoc() {
@@ -606,28 +644,28 @@ function darkStyle(st) {
   const hide = l => { l.layout = l.layout || {}; l.layout.visibility = 'none'; };
   for (const l of st.layers) {
     const id = l.id.toLowerCase();
-    if (l.type === 'background') P(l, 'background-color', '#0b0c0f');
+    if (l.type === 'background') P(l, 'background-color', '#23262d');
     else if (l.type === 'fill') {
       if (l.paint) delete l.paint['fill-pattern'];
-      P(l, 'fill-color', /water/.test(id) ? '#0a1620' : /park|wood|grass|wetland|pitch|cemetery|landcover|natural|forest/.test(id) ? '#0e1813' : /building/.test(id) ? '#17181d' : '#101115');
+      P(l, 'fill-color', /water/.test(id) ? '#1b3f58' : /park|wood|grass|wetland|pitch|cemetery|landcover|natural|forest/.test(id) ? '#1e3a2a' : /building/.test(id) ? '#373a44' : '#262930');
       P(l, 'fill-outline-color', 'rgba(0,0,0,0)');
     }
-    else if (l.type === 'fill-extrusion') { P(l, 'fill-extrusion-color', '#1b1d23'); P(l, 'fill-extrusion-opacity', .9); }
+    else if (l.type === 'fill-extrusion') { P(l, 'fill-extrusion-color', '#373a44'); P(l, 'fill-extrusion-opacity', .9); }
     else if (l.type === 'line') {
       if (l.paint) delete l.paint['line-pattern'];
       if (/boundary|admin/.test(id)) { hide(l); continue; }
-      P(l, 'line-color', /water|river|stream|canal|ditch|drain/.test(id) ? '#0d1a26'
-        : /rail|transit|subway|tram/.test(id) ? '#2b1e1c'
-        : /casing/.test(id) ? '#0b0c0f'
-        : /motorway|trunk/.test(id) ? '#3a2a26'
-        : /primary|secondary|tertiary/.test(id) ? '#2a2d34'
-        : /path|foot|pedestrian|track|steps|cycle/.test(id) ? '#1d1f24' : '#23262c');
+      P(l, 'line-color', /water|river|stream|canal|ditch|drain/.test(id) ? '#24506d'
+        : /rail|transit|subway|tram/.test(id) ? '#4a4048'
+        : /casing/.test(id) ? '#1b1d22'
+        : /motorway|trunk/.test(id) ? '#6b5c48'
+        : /primary|secondary|tertiary/.test(id) ? '#51555f'
+        : /path|foot|pedestrian|track|steps|cycle/.test(id) ? '#33363e' : '#464a54');
     }
     else if (l.type === 'symbol') {
       if (/poi|shield|oneway|airport|aerodrome|country|state|continent/.test(id) || !(l.layout && l.layout['text-field'])) { hide(l); continue; }
       if (l.layout) delete l.layout['icon-image'];
-      P(l, 'text-color', /water/.test(id) ? '#2c4a63' : '#6b6d75');
-      P(l, 'text-halo-color', '#0b0c0f'); P(l, 'text-halo-width', 1.2);
+      P(l, 'text-color', /water/.test(id) ? '#8cc8f0' : '#b4b6be');
+      P(l, 'text-halo-color', '#23262d'); P(l, 'text-halo-width', 1.2);
     }
     else if (l.type === 'raster' || l.type === 'hillshade') hide(l);
   }
@@ -1217,7 +1255,7 @@ $('#privDeleteNo').onclick = () => { $('#privDelete').hidden = false; $('#privDe
 $('#privDeleteYes').onclick = () => {
   S = fresh(); try { localStorage.removeItem(KEY); } catch (e) {}
   ['dob', 'parentMail', 'pName', 'pEmergency'].forEach(id => $('#' + id).value = '');
-  ['cAgb', 'cDs', 'cSafe'].forEach(id => $('#' + id).checked = false);
+  ['cAgb', 'cDs', 'cSafe', 'perm_loc'].forEach(id => $('#' + id).checked = false);
   $('#ageGo').disabled = true; $('#parentGo').disabled = true; $('#profileGo').disabled = true;
   stack.length = 0; show('scr-welcome', false); toast('Konto gelöscht.');
 };
@@ -1254,6 +1292,191 @@ function openDoc(k) {
   $('#docBody').innerHTML = md(LEGAL[k] || 'Nicht gefunden.');
   if ($('#game').hidden) show('scr-doc');
 }
+
+/* ---------- Einführungsfilm (60 s, auf Canvas gezeichnet) ---------- */
+const INTRO = [
+  { d: 6, cap: 'PINGED ist Manhunt in echt. Draußen, in deiner Stadt.' },
+  { d: 8, cap: 'Ihr teilt euch auf: Jäger gegen Läufer.' },
+  { d: 8, cap: 'Die Läufer bekommen Vorsprung. Dann beginnt die Jagd.' },
+  { d: 9, cap: 'Die Jäger sehen dich nicht. Nur alle paar Minuten verrät ein Ping, wo du bist.' },
+  { d: 8, cap: 'Als Läufer zeigt dir der Kompass, wie nah ein Jäger ist.' },
+  { d: 7, cap: 'Kommt ein Jäger auf 10 Meter ran, bist du gefangen. Ohne Anfassen.' },
+  { d: 7, cap: 'Bleib in der Zone. Wer rausläuft, ist für alle live sichtbar.' },
+  { d: 7, cap: 'Verkehr geht vor. Nur öffentliche Orte. Und jetzt: Viel Spaß!' }
+];
+const INTRO_T = INTRO.reduce((a, s) => a + s.d, 0);
+const IR = [ // Läufer: Ziel nach dem Vorsprung
+  { c: '#32d74b', n: 'Mara', to: { x: 150, y: -70 } }, { c: '#64d2ff', n: 'Noah', to: { x: -170, y: -120 } },
+  { c: '#bf5af2', n: 'Lina', to: { x: 215, y: 130 } }, { c: '#ff9f0a', n: 'Cyrus', to: { x: -110, y: 170 } }
+];
+const IH = [{ n: 'Dominick', at: { x: -32, y: 14 } }, { n: 'Elif', at: { x: -26, y: -16 } }];
+let introWorld = null, IV = null;
+const ease = p => p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+const lerp = (a, b, p) => a + (b - a) * p;
+function introScene(t) { let a = 0; for (let i = 0; i < INTRO.length; i++) { if (t < a + INTRO[i].d) return { i, p: (t - a) / INTRO[i].d, s: t - a, start: a }; a += INTRO[i].d; } return { i: INTRO.length - 1, p: 1, s: INTRO[INTRO.length - 1].d, start: INTRO_T - INTRO[INTRO.length - 1].d }; }
+function runnerAt(r, k, t) {
+  const j = { x: 14 + Math.sin(k * 2.1) * 20, y: Math.cos(k * 1.7) * 18 };
+  if (t < 14) return j;
+  let p = ease(clamp((t - 14) / 7, 0, 1)), q = lerpP(j, r.to, p);
+  if (k === 2 && t > 46) q = lerpP(r.to, { x: 60, y: 350 }, ease(clamp((t - 46.5) / 4, 0, 1)));
+  return { x: q.x + Math.sin(t * .7 + k) * 6 * p, y: q.y + Math.cos(t * .6 + k) * 6 * p };
+}
+function hunterAt(h, k, t) {
+  const S0 = k === 0 ? { x: 40, y: -20 } : { x: -90, y: 60 };
+  if (k === 0 && t > 31) { const tt = Math.min(t, 43); return lerpP(S0, runnerAt(IR[0], 0, tt), ease(clamp((tt - 31) / 12, 0, 1)) * .95); }
+  if (t < 22) return h.at;
+  return lerpP(h.at, S0, ease(clamp((t - 22) / 8, 0, 1)));
+}
+function introCam(i, p) {
+  return [
+    { x: 0, y: 0, z: lerp(.42, .62, p) }, { x: 0, y: 0, z: 2.4 }, { x: 0, y: 0, z: lerp(2.4, .85, ease(clamp(p * 1.3, 0, 1))) },
+    { x: 20, y: 0, z: .82 }, { x: 120, y: -55, z: 1.7 }, { x: 140, y: -66, z: 2.6 }, { x: 40, y: 20, z: .58 }, { x: 0, y: 0, z: .5 }
+  ][i];
+}
+function drawIntro(ctx, W, H, t) {
+  const sc = introScene(t), base = Math.min(W, H * .62) / 390;
+  let cam = introCam(sc.i, sc.p);
+  if (sc.i > 0 && sc.s < 1.4) { const pc = introCam(sc.i - 1, 1), q = ease(sc.s / 1.4); cam = { x: lerp(pc.x, cam.x, q), y: lerp(pc.y, cam.y, q), z: lerp(pc.z, cam.z, q) }; }
+  const k = cam.z * base, T = p => [W / 2 + (p.x - cam.x) * k, H * .46 + (p.y - cam.y) * k];
+  ctx.fillStyle = '#1d1f25'; ctx.fillRect(0, 0, W, H);
+  for (const L of introWorld) ctx.drawImage(L.c, W / 2 - (cam.x + L.half) * k, H * .46 - (cam.y + L.half) * k, 2 * L.half * k, 2 * L.half * k);
+  // Zone
+  if (sc.i >= 2) { const [cx, cy] = T({ x: 0, y: 0 }); ctx.save(); ctx.setLineDash([10, 7]); ctx.strokeStyle = TAPE; ctx.lineWidth = 2; ctx.globalAlpha = sc.i === 2 ? clamp(sc.s, 0, 1) : 1; ctx.beginPath(); ctx.arc(cx, cy, R0 * k, 0, 7); ctx.stroke(); ctx.restore(); }
+  const pin = (p, col, r = 8, glow = true) => { const [x, y] = T(p); ctx.save(); if (glow) { ctx.shadowColor = col; ctx.shadowBlur = 16; } ctx.beginPath(); ctx.arc(x, y, r + 2.5, 0, 7); ctx.fillStyle = '#fff'; ctx.fill(); ctx.restore(); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = col; ctx.fill(); return [x, y]; };
+  const rings = (x, y, col, ph = 0) => { for (let q = 0; q < 2; q++) { const pu = ((t + ph + q * .8) % 1.6) / 1.6; ctx.globalAlpha = 1 - pu; ctx.beginPath(); ctx.arc(x, y, 10 + pu * 34, 0, 7); ctx.strokeStyle = col; ctx.lineWidth = 2.5; ctx.stroke(); } ctx.globalAlpha = 1; };
+  LBL = [];
+  const hunterView = sc.i === 3;
+  // Läufer
+  IR.forEach((r, n) => {
+    const p = runnerAt(r, n, t);
+    if (hunterView || sc.i === 0) return;
+    if (sc.i >= 5 && n === 0 && t > 43) { const [x, y] = pin(p, '#8d8e96', 7, false); label(ctx, 'gefangen', x, y - 22, '#f4f4f6', 'rgba(255,69,58,.85)'); return; }
+    const out = sc.i === 6 && Math.hypot(p.x, p.y) > R0;
+    const [x, y] = pin(p, out ? HUNT : r.c, sc.i === 1 ? 10 : 8);
+    if (out) { rings(x, y, HUNT); label(ctx, `${r.n} · live sichtbar`, x, y - 24, '#fff', 'rgba(255,69,58,.9)'); }
+    else if (sc.i !== 2 || sc.p > .7) label(ctx, r.n, x, y - 22);
+  });
+  // Pings in der Jäger-Sicht
+  if (hunterView) {
+    [.18, .62].forEach((at, w) => {
+      if (sc.p < at) return;
+      const age = (sc.p - at) * INTRO[3].d;
+      if (w === 0 && sc.p > .62) return;
+      if (age < .05 && !IV.pinged[w]) { IV.pinged[w] = 1; if (IV.sound) sfx.ping(); }
+      IR.forEach((r, n) => { const [x, y] = pin(runnerAt(r, n, IV.start3 + at * INTRO[3].d), r.c); rings(x, y, r.c, n * .3); label(ctx, r.n, x, y - 24); });
+      const sw = clamp(age / .9, 0, 1); if (sw < 1) { const [cx, cy] = T({ x: 0, y: 0 }); ctx.beginPath(); ctx.arc(cx, cy, sw * R0 * k * 1.1, 0, 7); ctx.strokeStyle = `rgba(50,215,75,${.6 * (1 - sw)})`; ctx.lineWidth = 3; ctx.stroke(); }
+    });
+  }
+  // Jäger
+  IH.forEach((h, n) => {
+    const p = hunterAt(h, n, t);
+    if (sc.i === 0) return;
+    if (sc.i === 4 || sc.i === 5) { if (n === 1) return; }
+    const [x, y] = pin(p, HUNT, sc.i === 1 ? 10 : 8);
+    if (sc.i === 5 && n === 0 && t < 43) { const m = T(runnerAt(IR[0], 0, t)); ctx.beginPath(); ctx.arc(m[0], m[1], 10 * k, 0, 7); ctx.strokeStyle = 'rgba(255,69,58,.6)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]); }
+    label(ctx, h.n, x, y - 22);
+  });
+  LBL = null;
+  // Szenen-Overlays
+  const cx = W / 2, cy = H * .46;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  if (sc.i === 0) {
+    const a = clamp(sc.s / 1.2, 0, 1) * (1 - clamp((sc.s - 5.2) / .8, 0, 1));
+    ctx.fillStyle = `rgba(8,9,11,${.55 * a})`; ctx.fillRect(0, 0, W, H);
+    ctx.globalAlpha = a; ctx.fillStyle = '#f4f4f6'; const fs = Math.min(92, W * .22); ctx.font = `900 ${fs}px "Geist", sans-serif`;
+    ctx.fillText('PINGED', cx - fs * .1, cy); const tw = ctx.measureText('PINGED').width;
+    ctx.beginPath(); ctx.arc(cx - fs * .1 + tw / 2 + fs * .14, cy + fs * .26, fs * .085 * (1 + .15 * Math.sin(t * 5)), 0, 7); ctx.fillStyle = TAPE; ctx.fill();
+    ctx.font = `600 ${Math.round(fs * .17)}px "Geist", sans-serif`; ctx.fillStyle = '#b9bac1'; ctx.fillText('MANHUNT IN ECHT', cx, cy + fs * .78); ctx.globalAlpha = 1;
+  }
+  const chip = (txt, x, y, bg, fg = '#fff', size = 15) => { ctx.font = `700 ${size}px "Geist", sans-serif`; const w = ctx.measureText(txt).width + size * 1.6, h = size * 2.1; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, h / 2) : ctx.rect(x - w / 2, y - h / 2, w, h); ctx.fill(); ctx.fillStyle = fg; ctx.fillText(txt, x, y + 1); };
+  if (sc.i === 1 && sc.p > .25) { const a = clamp((sc.p - .25) * 4, 0, 1); ctx.globalAlpha = a; chip('2 Jäger', cx - 82, cy + 110, 'rgba(255,69,58,.92)'); chip('4 Läufer', cx + 82, cy + 110, 'rgba(50,215,75,.92)', '#04210c'); ctx.globalAlpha = 1; }
+  if (sc.i === 2) {
+    const rem = Math.max(0, 180 * (1 - clamp((sc.s - .6) / 6.2, 0, 1))), r = 46, y0 = H * .2;
+    ctx.fillStyle = 'rgba(10,11,14,.8)'; ctx.beginPath(); ctx.arc(cx, y0, r + 12, 0, 7); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 6; ctx.beginPath(); ctx.arc(cx, y0, r, 0, 7); ctx.stroke();
+    ctx.strokeStyle = TAPE; ctx.beginPath(); ctx.arc(cx, y0, r, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * rem / 180); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '700 22px "Geist Mono", monospace'; ctx.fillText(fmt(rem), cx, y0 + 1);
+    if (rem === 0) chip('JAGD STARTET', cx, y0 + 82, HUNT, '#fff', 16);
+  }
+  if (sc.i === 3) {
+    chip('Sicht der Jäger', cx, H * .17, 'rgba(10,11,14,.8)', '#f4f4f6', 14);
+    const nxt = sc.p < .18 ? (.18 - sc.p) * 9 * 20 : sc.p < .62 ? (.62 - sc.p) * 9 * 20 : 0;
+    chip(sc.p < .62 ? `Nächster Ping in ${fmt(nxt)}` : 'Ping!', cx, H * .17 + 40, sc.p >= .62 || (sc.p >= .18 && sc.p < .26) ? 'rgba(50,215,75,.92)' : 'rgba(10,11,14,.8)', sc.p >= .62 || (sc.p >= .18 && sc.p < .26) ? '#04210c' : '#fff', 14);
+  }
+  if (sc.i === 4) {
+    const m = runnerAt(IR[0], 0, t), h = hunterAt(IH[0], 0, t), d = Math.hypot(h.x - m.x, h.y - m.y);
+    const band = d < 40 ? 'Sehr nah' : d < 90 ? 'Nah' : 'Mittel', near = d < 90;
+    if (near) { const v = ctx.createRadialGradient(cx, cy, Math.min(W, H) * .3, cx, cy, Math.max(W, H) * .7); v.addColorStop(0, 'rgba(255,69,58,0)'); v.addColorStop(1, `rgba(255,69,58,${.25 + .12 * Math.sin(t * 9)})`); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H); }
+    const y0 = H * .72, ang = Math.atan2(h.y - m.y, h.x - m.x);
+    ctx.fillStyle = 'rgba(10,11,14,.85)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx - 120, y0 - 44, 240, 88, 28) : ctx.rect(cx - 120, y0 - 44, 240, 88); ctx.fill();
+    ctx.save(); ctx.translate(cx - 70, y0); ctx.strokeStyle = 'rgba(255,255,255,.2)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(0, 0, 26, 0, 7); ctx.stroke(); ctx.rotate(ang + Math.PI / 2);
+    ctx.fillStyle = HUNT; ctx.beginPath(); ctx.moveTo(0, -20); ctx.lineTo(9, 10); ctx.lineTo(0, 4); ctx.lineTo(-9, 10); ctx.closePath(); ctx.fill(); ctx.restore();
+    ctx.textAlign = 'left'; ctx.fillStyle = near ? HUNT : '#fff'; ctx.font = '800 24px "Geist", sans-serif'; ctx.fillText(band, cx - 30, y0 - 8);
+    ctx.fillStyle = '#8d8e96'; ctx.font = '500 14px "Geist", sans-serif'; ctx.fillText(`Jäger · ${Math.round(d / 10) * 10} m`, cx - 30, y0 + 16); ctx.textAlign = 'center';
+    if (near && Math.floor(t * 1.6) !== IV.beat) { IV.beat = Math.floor(t * 1.6); if (IV.sound) sfx.beat(.35); }
+  }
+  if (sc.i === 5 && t > 43) {
+    const a = clamp((t - 43) * 3, 0, 1), sz = lerp(1.5, 1, ease(a));
+    if (!IV.caught) { IV.caught = 1; if (IV.sound) sfx.catch(); try { navigator.vibrate && navigator.vibrate([60, 40, 120]); } catch (e) {} }
+    ctx.save(); ctx.translate(cx, H * .2); ctx.scale(sz, sz); ctx.globalAlpha = a; chip('MARA GEFANGEN', 0, 0, HUNT, '#fff', 20); ctx.restore(); ctx.globalAlpha = 1;
+  }
+  if (sc.i === 6 && t > 49) { ctx.globalAlpha = clamp((t - 49) * 2, 0, 1); chip('Außerhalb der Zone', cx, H * .17, HUNT, '#fff', 15); ctx.globalAlpha = 1; }
+  if (sc.i === 7) {
+    ctx.fillStyle = `rgba(8,9,11,${.78 * clamp(sc.s, 0, 1)})`; ctx.fillRect(0, 0, W, H);
+    const items = [['Verkehr geht vor', HUNT], ['Nur öffentliche Orte', TAPE], ['Kein Körperkontakt', RUN]];
+    items.forEach(([txt, col], n) => {
+      const a = clamp((sc.s - .5 - n * .6) * 2.5, 0, 1); if (!a) return;
+      const y = H * .26 + n * 74; ctx.globalAlpha = a * (1 - clamp((sc.s - 5.6) * 2, 0, 1));
+      ctx.beginPath(); ctx.arc(cx - 120, y, 22, 0, 7); ctx.fillStyle = col; ctx.fill();
+      ctx.fillStyle = '#0b0b0b'; ctx.font = '800 20px "Geist", sans-serif'; ctx.fillText(String(n + 1), cx - 120, y + 1);
+      ctx.textAlign = 'left'; ctx.fillStyle = '#fff'; ctx.font = `800 ${Math.min(24, W * .062)}px "Geist", sans-serif`; ctx.fillText(txt, cx - 86, y + 1); ctx.textAlign = 'center';
+    });
+    ctx.globalAlpha = 1;
+    if (sc.s > 5.6) { const a = clamp((sc.s - 5.6) * 2, 0, 1); ctx.globalAlpha = a; ctx.fillStyle = '#fff'; ctx.font = `900 ${Math.min(72, W * .18)}px "Geist", sans-serif`; ctx.fillText('PINGED', cx, H * .34); ctx.globalAlpha = 1; }
+  }
+  ctx.textBaseline = 'alphabetic';
+}
+function playIntro(done) {
+  const el = $('#intro'), c = $('#introCanvas');
+  el.hidden = false; $('#introEnd').hidden = true; $('#tabbar').hidden = true;
+  if (!introWorld) {
+    // zwei Ebenen: grob und groß für weite Kamerafahrten, fein für Nahaufnahmen
+    const mk = (half, px) => { const c2 = document.createElement('canvas'); c2.width = c2.height = half * 2 * px; renderWorld(c2.getContext('2d'), { cx: half * px, cy: half * px, s: px }, half * 2 * px, half * 2 * px, { labels: px > 1, blockedLabels: false, noVignette: true }); return { c: c2, half }; };
+    introWorld = [mk(1000, .8), mk(480, 2)];
+    IV = {};
+  }
+  Object.assign(IV, { t0: performance.now(), done, sound: IV.sound !== false, said: -1, pinged: [], caught: 0, beat: -1, start3: INTRO[0].d + INTRO[1].d + INTRO[2].d, run: true, paused: false });
+  audio();
+  $('#introBars').innerHTML = INTRO.map(() => '<i><b></b></i>').join('');
+  $('#introSound').classList.toggle('off', !IV.sound);
+  const finish = () => { IV.run = false; try { speechSynthesis.cancel(); } catch (e) {} $('#introCap').innerHTML = ''; $('#introEnd').hidden = false; $('#introGo').textContent = done ? 'Konto einrichten' : 'Fertig'; };
+  IV.finish = finish;
+  const loop = now => {
+    if (!IV.run || el.hidden) return;
+    const t = Math.min(INTRO_T, (now - IV.t0) / 1000), sc = introScene(t);
+    const { ctx, W, H } = fitCanvas(c); drawIntro(ctx, W, H, t);
+    $$('#introBars b').forEach((b, n) => b.style.width = (n < sc.i ? 100 : n === sc.i ? sc.p * 100 : 0) + '%');
+    if (sc.i !== IV.said) {
+      IV.said = sc.i; $('#introCap').innerHTML = `<span>${esc(INTRO[sc.i].cap)}</span>`;
+      if (IV.sound) { sayIntro(INTRO[sc.i].cap); if (sc.i !== 3) sfx.beat(.25); }
+    }
+    if (t >= INTRO_T) return finish();
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+}
+function sayIntro(txt) {
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(txt); u.lang = 'de-DE'; u.rate = 1.08; const v = speechSynthesis.getVoices().find(v => v.lang && v.lang.startsWith('de')); if (v) u.voice = v; speechSynthesis.speak(u); } catch (e) {}
+}
+function closeIntro(goOn) {
+  IV.run = false; try { speechSynthesis.cancel(); } catch (e) {}
+  $('#intro').hidden = true; const d = IV.done; IV.done = null;
+  if (goOn && d) d(); else { const cur = document.querySelector('.screen:not([hidden])'); if (cur) show(cur.id, false); }
+}
+$('#introSkip').onclick = () => closeIntro(true);
+$('#introGo').onclick = () => closeIntro(true);
+$('#introAgain').onclick = () => playIntro(IV.done);
+$('#introSound').onclick = () => { IV.sound = !IV.sound; $('#introSound').classList.toggle('off', !IV.sound); if (!IV.sound) try { speechSynthesis.cancel(); } catch (e) {} };
 
 /* ---------- boot ---------- */
 function boot() {

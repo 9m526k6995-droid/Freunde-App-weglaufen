@@ -218,6 +218,76 @@ textarea.input { padding: 12px 14px; min-height: 160px; font: 12px/1.5 var(--mon
 @keyframes reveal { from { transform: scale(.92) translateY(14px); opacity: 0; filter: blur(8px); } to { transform: none; opacity: 1; filter: none; } }
 .rolecard.show { animation: reveal .6s cubic-bezier(.2, .8, .2, 1); }
 
+
+/* setup flow */
+.setup-head { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 14px; padding-top: 6px; }
+.setup-head .prog { display: flex; gap: 5px; }
+.setup-head .prog i { flex: 1; height: 4px; border-radius: 4px; background: rgba(255, 255, 255, .1); overflow: hidden; position: relative; }
+.setup-head .prog i.on::after { content: ""; position: absolute; inset: 0; background: var(--signal); border-radius: 4px; animation: fill .5s ease-out; }
+@keyframes fill { from { transform: translateX(-100%); } to { transform: none; } }
+.setup-head .lbl { font: 600 12.5px/1 var(--sans); color: var(--muted); font-variant-numeric: tabular-nums; }
+.hero-ic { width: 60px; height: 60px; border-radius: 20px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); margin-top: 8px; }
+.hero-ic svg.i { width: 30px; height: 30px; }
+.title { font: 800 32px/1.06 var(--sans); letter-spacing: -.035em; margin-top: -6px; }
+.cta { position: sticky; bottom: 0; padding: 14px 0 calc(env(safe-area-inset-bottom, 0px) + 10px); margin-top: 4px; background: linear-gradient(180deg, rgba(8, 9, 11, 0), var(--bg) 30%); }
+.rules { display: flex; flex-direction: column; gap: 10px; }
+.rule { display: grid; grid-template-columns: 38px 1fr; gap: 14px; align-items: start; background: var(--elev); border-radius: var(--r-lg); padding: 16px; }
+.rule .n { width: 38px; height: 38px; border-radius: 12px; background: rgba(255, 69, 58, .14); color: var(--hunt); display: grid; place-items: center; font: 800 17px/1 var(--sans); }
+.rule b { font-size: 16.5px; font-weight: 700; letter-spacing: -.01em; }
+.rule p { color: var(--muted); font-size: 14px; margin-top: 3px; }
+.facts { display: flex; flex-direction: column; gap: 14px; background: linear-gradient(160deg, rgba(50, 215, 75, .1), rgba(50, 215, 75, .02)); border-radius: var(--r-lg); padding: 18px; }
+.facts div { display: grid; grid-template-columns: 24px 1fr; gap: 12px; font-size: 15px; color: #d6d7dc; }
+.facts svg.i { color: var(--run); width: 22px; height: 22px; margin-top: 1px; }
+.pin-prev { display: grid; place-items: center; padding: 24px 0 4px; }
+.avatar.big { width: 92px; height: 92px; font-size: 38px; box-shadow: 0 0 0 6px rgba(255, 255, 255, .06), 0 20px 50px -10px var(--pc, transparent); transition: background .3s, box-shadow .3s; }
+
+/* tabs */
+body.tabs .app { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px); }
+body.tabs [data-hide-tab] { visibility: hidden; }
+.tabbar { position: fixed; z-index: 15; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 12px); width: min(360px, calc(100% - 32px)); display: grid; grid-template-columns: repeat(3, 1fr); padding: 6px; border-radius: 26px; background: rgba(28, 29, 33, .78); backdrop-filter: blur(24px) saturate(1.5); -webkit-backdrop-filter: blur(24px) saturate(1.5); box-shadow: 0 14px 40px rgba(0, 0, 0, .5), inset 0 0 0 1px rgba(255, 255, 255, .07); }
+.tabbar button { border: 0; background: transparent; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 8px 4px 7px; border-radius: 20px; color: var(--muted); font: 600 11px/1 var(--sans); transition: color .2s, background .2s; }
+.tabbar button svg.i { width: 23px; height: 23px; }
+.tabbar button[aria-current="page"] { color: var(--signal); background: rgba(255, 214, 10, .1); }
+
+/* home */
+.actions-2 { display: grid; grid-template-columns: 1.25fr 1fr; gap: 10px; }
+.act { border: 0; cursor: pointer; text-align: left; border-radius: var(--r-lg); padding: 16px; background: var(--elev); display: flex; flex-direction: column; gap: 3px; min-width: 0; transition: transform .15s; }
+.act:active { transform: scale(.97); }
+.act .ai { width: 40px; height: 40px; border-radius: 14px; display: grid; place-items: center; background: rgba(255, 255, 255, .08); margin-bottom: 12px; }
+.act b { font: 700 18px/1.1 var(--sans); letter-spacing: -.02em; }
+.act small { font-size: 13px; color: var(--muted); }
+.act.primary { background: var(--signal); color: var(--signal-ink); }
+.act.primary .ai { background: rgba(0, 0, 0, .1); }
+.act.primary small { color: rgba(20, 17, 0, .65); }
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; padding: 0 4px; margin-bottom: -8px; }
+.sec-head span { font: 700 20px/1 var(--sans); letter-spacing: -.02em; }
+.link { border: 0; background: none; color: var(--signal); font: 600 15px/1 var(--sans); cursor: pointer; padding: 6px; }
+.mode-rail { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 calc(-1 * max(18px, env(safe-area-inset-left, 0px))); padding: 2px max(18px, env(safe-area-inset-left, 0px)) 6px; scrollbar-width: none; }
+.mode-rail::-webkit-scrollbar { display: none; }
+.mode-rail .mode { flex: 0 0 150px; scroll-snap-align: start; }
+.intro-card { border: 0; cursor: pointer; display: grid; grid-template-columns: 52px 1fr; gap: 14px; align-items: center; text-align: left; padding: 14px; border-radius: var(--r-lg); background: linear-gradient(120deg, #24210f, var(--elev) 70%); }
+.intro-card .play { width: 52px; height: 52px; border-radius: 50%; background: var(--signal); display: grid; place-items: center; box-shadow: 0 8px 24px -6px rgba(255, 214, 10, .6); }
+.intro-card .play svg { width: 22px; height: 22px; fill: var(--signal-ink); margin-left: 3px; }
+.intro-card b { display: block; font-size: 16px; font-weight: 700; }
+.intro-card small { color: var(--muted); font-size: 13px; }
+.me-head { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 0 4px; text-align: center; }
+.me-head b { font: 800 30px/1 var(--sans); letter-spacing: -.035em; }
+
+/* intro film */
+.intro { position: fixed; inset: 0; z-index: 30; background: #000; }
+.intro canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.intro-top { position: absolute; left: 0; right: 0; top: 0; padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 0; display: flex; flex-direction: column; gap: 12px; }
+.bars { display: flex; gap: 4px; }
+.bars i { flex: 1; height: 3px; border-radius: 3px; background: rgba(255, 255, 255, .22); overflow: hidden; }
+.bars i b { display: block; height: 100%; width: 0; background: #fff; }
+.intro-ctl { display: flex; justify-content: space-between; align-items: center; }
+.intro-ctl .circle { background: rgba(0, 0, 0, .35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.intro-ctl .circle.off { opacity: .5; }
+.skip { border: 0; cursor: pointer; background: rgba(0, 0, 0, .35); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #fff; font: 600 14px/1 var(--sans); padding: 12px 16px; border-radius: 999px; }
+.intro-cap { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 44px); width: min(420px, calc(100% - 36px)); text-align: center; font: 700 21px/1.3 var(--sans); letter-spacing: -.015em; text-shadow: 0 2px 16px rgba(0, 0, 0, .8); }
+.intro-cap span { display: inline; background: rgba(0, 0, 0, .55); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding: 3px 9px; border-radius: 8px; line-height: 1.6; }
+.intro-end { position: absolute; left: 50%; transform: translateX(-50%); bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); width: min(420px, calc(100% - 36px)); display: flex; flex-direction: column; gap: 10px; animation: enter .5s ease-out; }
+
 /* game */
 .game { position: fixed; inset: 0; background: #0b0c0f; z-index: 20; overflow: hidden; }
 .game #gameMap { position: absolute; inset: 0; }
@@ -337,75 +407,116 @@ textarea.input { padding: 12px 14px; min-height: 160px; font: 12px/1.5 var(--mon
   <span class="eyebrow">Manhunt in echt · ab 14</span>
   <h1 class="logo">PINGED<span class="dot"></span></h1>
   <p class="lead">Jäger gegen Läufer, draußen in deiner Stadt. Die Jäger sehen dich nur, wenn du gepingt wirst.</p>
-  <button class="btn" id="welcomeGo">Loslegen</button>
-  <p class="note" style="text-align:center">Im nächsten Schritt bestätigst du AGB, Datenschutz und Sicherheitsregeln.</p>
+  <button class="btn" id="welcomeGo"><svg class="i" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>So geht's · 1 Minute</button>
+  <button class="btn ghost" id="welcomeSkip">Direkt Konto einrichten</button>
 </section>
 
 <!-- AGE -->
 <section class="screen" id="scr-age" hidden>
-  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 1 von 4</span><span style="width:40px"></span></div><h2>Wie alt bist du?</h2></div>
+  <div class="setup-head" data-step="1"></div>
+  <div class="hero-ic" style="--c:var(--info)"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M4 10h16M9 3v4M15 3v4"/></svg></div>
+  <h2 class="title">Wie alt bist du?</h2>
   <p class="lead">PINGED ist ab 14. Unter 18 brauchst du das Okay deiner Eltern und spielst nur private Runden bis 22 Uhr.</p>
   <label class="field" for="dob">Geburtsdatum<input class="input" type="date" id="dob" max="2026-10-24"></label>
-  <p class="note" id="ageMsg">Wir speichern dein Geburtsdatum nur, um Altersgrenzen einzuhalten.</p>
-  <button class="btn" id="ageGo" disabled>Weiter</button>
+  <p class="note" id="ageMsg">Wir speichern dein Geburtsdatum nur, um die Altersgrenzen einzuhalten.</p>
+  <div class="cta"><button class="btn" id="ageGo" disabled>Weiter</button></div>
 </section>
 
 <!-- PARENT -->
 <section class="screen" id="scr-parent" hidden>
-  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 2 von 4</span><span style="width:40px"></span></div><h2>Okay der Eltern</h2></div>
-  <p class="lead">Ein Erziehungsberechtigter muss zustimmen, bevor du spielen kannst.</p>
-  <div class="card">
-    <label class="field" for="parentMail">E-Mail eines Erziehungsberechtigten<input class="input" type="email" id="parentMail" placeholder="mama@beispiel.de" autocomplete="off"></label>
-    <p class="note">Wir schicken die <a href="#" data-doc="eltern">Einverständniserklärung</a> an diese Adresse. Sie wird auch dein Notfallkontakt für den SOS-Knopf.</p>
-    <button class="btn dark small" id="parentSend" disabled>Bestätigung anfordern</button>
-    <div id="parentSent" hidden class="demo-note">Demo: Hier geht jetzt eine E-Mail mit Bestätigungslink raus. Tippe unten, um die Bestätigung zu simulieren.</div>
-    <button class="btn ghost small" id="parentConfirm" hidden>Eltern haben bestätigt (Demo)</button>
-  </div>
-  <button class="btn" id="parentGo" disabled>Weiter</button>
+  <div class="setup-head" data-step="2"></div>
+  <div class="hero-ic" style="--c:#ff9f0a"><svg class="i" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><circle cx="17" cy="10" r="2.5"/><path d="M3 20c.8-3.5 3.2-5.5 6-5.5s5.2 2 6 5.5M15 15.5c2.6 0 4.6 1.6 5.4 4.5"/></svg></div>
+  <h2 class="title">Okay deiner Eltern</h2>
+  <p class="lead">Ein Erziehungsberechtigter muss zustimmen, bevor du spielen kannst. Die Adresse ist gleichzeitig dein Notfallkontakt für den SOS-Knopf.</p>
+  <label class="field" for="parentMail">E-Mail eines Elternteils<input class="input" type="email" id="parentMail" placeholder="mama@beispiel.de" autocomplete="off"></label>
+  <button class="btn dark small" id="parentSend" disabled>Bestätigung anfordern</button>
+  <div id="parentSent" hidden class="demo-note">Demo: Hier geht jetzt eine E-Mail mit der <a href="#" data-doc="eltern">Einverständniserklärung</a> und einem Bestätigungslink raus. Tippe unten, um die Bestätigung zu simulieren.</div>
+  <button class="btn ghost small" id="parentConfirm" hidden>Eltern haben bestätigt (Demo)</button>
+  <div class="cta"><button class="btn" id="parentGo" disabled>Weiter</button></div>
 </section>
 
-<!-- CONSENT -->
-<section class="screen" id="scr-consent" hidden>
-  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 3 von 4</span><span style="width:40px"></span></div><h2>Deine Einwilligungen</h2></div>
-  <p class="lead">Alles außer dem Standort ist freiwillig und jederzeit im Datenschutz-Center änderbar.</p>
-  <div class="group">
-    <label class="check" for="cAgb"><input type="checkbox" id="cAgb"><span class="t">Ich akzeptiere die <a href="#" data-doc="agb">AGB</a>.<span class="req">PFLICHT</span></span></label>
-    <label class="check" for="cDs"><input type="checkbox" id="cDs"><span class="t">Ich habe die <a href="#" data-doc="datenschutz">Datenschutzerklärung</a> gelesen.<span class="req">PFLICHT</span></span></label>
-    <label class="check" for="cSafe"><input type="checkbox" id="cSafe"><span class="t">Ich halte mich an die <a href="#" data-doc="sicherheit">10 Sicherheitsregeln</a> und spiele auf eigene Verantwortung.<span class="req">PFLICHT</span><small>Verkehr geht vor, nur öffentliche Orte, kein Körperkontakt.</small></span></label>
+<!-- RULES -->
+<section class="screen" id="scr-rules" hidden>
+  <div class="setup-head" data-step="3"></div>
+  <div class="hero-ic" style="--c:var(--hunt)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.6-3.3 7.7-8 9-4.7-1.3-8-4.4-8-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+  <h2 class="title">Drei Regeln, die immer gelten</h2>
+  <p class="lead">Das Spiel ist draußen, im echten Leben. Darum gilt:</p>
+  <div class="rules">
+    <div class="rule"><span class="n">1</span><div><b>Verkehr geht vor</b><p>Nie über Rot, nie auf die Straße rennen. Kein Ping ist das wert.</p></div></div>
+    <div class="rule"><span class="n">2</span><div><b>Nur öffentliche Orte</b><p>Keine Privatgrundstücke, Gleise, Baustellen oder Gewässer. Gesperrte Bereiche zeigt die Karte rot.</p></div></div>
+    <div class="rule"><span class="n">3</span><div><b>Fangen ohne Anfassen</b><p>Gefangen ist, wer 10 Meter an einem Jäger dran ist. Kein Schubsen, kein Festhalten.</p></div></div>
   </div>
-  <span class="section-title">Berechtigungen</span>
+  <div class="group">
+    <label class="check" for="cSafe"><input type="checkbox" id="cSafe"><span class="t">Ich halte mich an die <a href="#" data-doc="sicherheit">Sicherheitsregeln</a> und spiele auf eigene Verantwortung.</span></label>
+    <label class="check" for="cAgb"><input type="checkbox" id="cAgb"><span class="t">Ich akzeptiere die <a href="#" data-doc="agb">AGB</a> und die <a href="#" data-doc="community">Community-Richtlinien</a>.</span></label>
+  </div>
+  <div class="cta"><button class="btn" id="rulesGo" disabled>Weiter</button></div>
+</section>
+
+<!-- CONSENT (Daten) -->
+<section class="screen" id="scr-consent" hidden>
+  <div class="setup-head" data-step="4"></div>
+  <div class="hero-ic" style="--c:var(--run)"><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-6-5.3-6-11a6 6 0 0112 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></svg></div>
+  <h2 class="title">Deine Daten, kurz und klar</h2>
+  <div class="facts">
+    <div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span>Dein Standort wird <b>nur während einer Runde</b> geteilt, nur mit deinen Mitspielern.</span></div>
+    <div><svg class="i" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg><span>Nach der Runde wird er <b>innerhalb von 24 Stunden gelöscht</b>.</span></div>
+    <div><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg><span><b>Keine Werbung, kein Tracking,</b> kein Verkauf deiner Daten.</span></div>
+  </div>
+  <span class="section-title">Nötig zum Spielen</span>
+  <div class="group">
+    <div class="perm"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-6-5.3-6-11a6 6 0 0112 0c0 5.7-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/></svg></span><span><b>Standort während der Runde</b><small>Ohne Standort keine Pings.</small></span><label class="switch"><input type="checkbox" id="perm_loc" aria-label="Standort"><span></span></label></div>
+    <label class="check" for="cDs"><input type="checkbox" id="cDs"><span class="t">Ich habe die <a href="#" data-doc="datenschutz">Datenschutzerklärung</a> gelesen.</span></label>
+  </div>
+  <span class="section-title">Freiwillig</span>
   <div class="group" id="permList"></div>
-  <button class="btn" id="consentGo" disabled>Weiter</button>
+  <p class="note" style="padding:0 6px;margin-top:-6px">Alles lässt sich später unter Profil → Datenschutz ändern. Dein Handy fragt zusätzlich selbst nach.</p>
+  <div class="cta"><button class="btn" id="consentGo" disabled>Weiter</button></div>
 </section>
 
 <!-- PROFILE -->
 <section class="screen" id="scr-profile" hidden>
-  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span class="eyebrow">Schritt 4 von 4</span><span style="width:40px"></span></div><h2>Dein Profil</h2></div>
+  <div class="setup-head" data-step="5"></div>
+  <div class="pin-prev"><span class="avatar big" id="pinPrev">?</span></div>
+  <h2 class="title" style="text-align:center">So sehen dich die anderen</h2>
   <label class="field" for="pName">Spielername<input class="input" id="pName" maxlength="14" placeholder="z. B. Cyrus" autocomplete="off"></label>
   <div class="field">Deine Farbe auf der Karte<div class="colors" id="colorPick"></div></div>
   <label class="field" for="pEmergency" id="emergencyField">Notfallkontakt für SOS (optional)<input class="input" id="pEmergency" placeholder="Telefon oder E-Mail" autocomplete="off"></label>
-  <button class="btn" id="profileGo" disabled>Fertig</button>
+  <div class="cta"><button class="btn" id="profileGo" disabled>Fertig, ab auf die Straße</button></div>
 </section>
 
-<!-- HOME -->
-<section class="screen" id="scr-home" hidden>
+<!-- HOME (Tab Spielen) -->
+<section class="screen tab" id="scr-home" hidden>
   <div class="home-head">
-    <div class="who"><span class="avatar" id="homeDot"></span><div style="min-width:0"><small>Bereit für die Jagd</small><b id="homeName"></b></div></div>
+    <div class="who"><span class="avatar" id="homeDot"></span><div style="min-width:0"><small id="homeHello">Bereit für die Jagd</small><b id="homeName"></b></div></div>
     <span class="badge" id="homeBadge">Free</span>
   </div>
   <div class="map-card"><canvas id="homeCanvas"></canvas><div class="float"><span class="chip"><span class="livedot"></span>4 Läufer gepingt</span></div></div>
-  <div class="row">
-    <button class="btn" id="goCreate">Runde erstellen</button>
+  <div class="actions-2">
+    <button class="act primary" id="goCreate"><span class="ai"><svg class="i" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span><b>Runde erstellen</b><small>Du bist Host</small></button>
+    <button class="act" id="goJoin"><span class="ai"><svg class="i" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="4"/><path d="M9 12h6M12 9l3 3-3 3"/></svg></span><b>Beitreten</b><small>Mit Code</small></button>
   </div>
-  <button class="btn ghost" id="goJoin">Mit Code beitreten</button>
+  <div class="sec-head"><span>Spielmodi</span><button class="link" id="goModes">Alle</button></div>
+  <div class="mode-rail" id="modeRail"></div>
+  <button class="intro-card" id="homeIntro"><span class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span><span><b>So funktioniert PINGED</b><small>Der Einführungsfilm, 1 Minute</small></span></button>
+</section>
+
+<!-- ME (Tab Profil) -->
+<section class="screen tab" id="scr-me" hidden>
+  <div class="me-head"><span class="avatar big" id="meAvatar"></span><b id="meName"></b><span class="badge" id="meBadge">Free</span></div>
   <div class="stats">
     <div class="stat"><b id="stRounds">0</b><span>Runden</span></div>
     <div class="stat"><b id="stCatches">0</b><span>Catches</span></div>
     <div class="stat"><b id="stEscapes">0</b><span>Entkommen</span></div>
     <div class="stat"><b id="stKm">0,0</b><span>km</span></div>
   </div>
+  <span class="section-title">Hilfe</span>
   <div class="menu">
-    <button id="goPass"><span class="ic" style="background:var(--signal);color:var(--signal-ink)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg></span><span><b>PINGED Pass</b><small id="passMenuSub">19,99 € einmalig, kein Abo</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button id="meIntro"><span class="ic" style="background:var(--signal);color:var(--signal-ink)"><svg class="i" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span><span><b>Einführungsfilm</b><small>So funktioniert das Spiel</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+    <button data-doc="sicherheit"><span class="ic" style="background:var(--hunt)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.6-3.3 7.7-8 9-4.7-1.3-8-4.4-8-9V6z"/></svg></span><span><b>Sicherheitsregeln</b><small>Die 10 Regeln für draußen</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
+  </div>
+  <span class="section-title">Daten und Recht</span>
+  <div class="menu">
     <button id="goPrivacy"><span class="ic" style="background:var(--info)"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg></span><span><b>Datenschutz-Center</b><small>Einwilligungen, Datenexport, Konto löschen</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
     <button id="goLegal"><span class="ic" style="background:#5e5ce6"><svg class="i" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5M10 13h6M10 17h6"/></svg></span><span><b>Rechtliches</b><small>AGB, Datenschutz, Impressum, Widerruf</small></span><svg class="i chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></svg></button>
   </div>
@@ -492,8 +603,8 @@ textarea.input { padding: 12px 14px; min-height: 160px; font: 12px/1.5 var(--mon
 </section>
 
 <!-- PASS -->
-<section class="screen" id="scr-pass" hidden>
-  <div class="nav"><div class="bar"><button class="circle" data-back aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div></div>
+<section class="screen tab" id="scr-pass" hidden>
+  <div class="nav"><div class="bar"><button class="circle" data-back data-hide-tab aria-label="Zurück"><svg class="i" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button><span></span><span style="width:40px"></span></div></div>
   <div class="pass-hero">
     <span style="font:700 13px/1 var(--sans);letter-spacing:.06em;opacity:.7">PINGED PASS</span>
     <span class="t">Einmal zahlen.<br>Für immer drin.</span>
@@ -590,6 +701,23 @@ textarea.input { padding: 12px 14px; min-height: 160px; font: 12px/1.5 var(--mon
       </div>
     </div>
   </div>
+</div>
+
+<nav class="tabbar" id="tabbar" hidden>
+  <button data-tab="scr-home"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.5"/><path d="M7.8 7.8a6 6 0 000 8.4M16.2 7.8a6 6 0 010 8.4M5 5a10 10 0 000 14M19 5a10 10 0 010 14"/></svg><span>Spielen</span></button>
+  <button data-tab="scr-pass"><svg class="i" viewBox="0 0 24 24"><path d="M12 3l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.9z"/></svg><span>Pass</span></button>
+  <button data-tab="scr-me"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>Profil</span></button>
+</nav>
+
+<!-- INTRO FILM -->
+<div class="intro" id="intro" hidden>
+  <canvas id="introCanvas"></canvas>
+  <div class="intro-top">
+    <div class="bars" id="introBars"></div>
+    <div class="intro-ctl"><button class="circle" id="introSound" aria-label="Ton an oder aus"><svg class="i" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16 9a4 4 0 010 6M18.5 6.5a8 8 0 010 11"/></svg></button><button class="skip" id="introSkip">Überspringen</button></div>
+  </div>
+  <div class="intro-cap" id="introCap" aria-live="polite"></div>
+  <div class="intro-end" id="introEnd" hidden><button class="btn" id="introGo">Konto einrichten</button><button class="btn ghost small" id="introAgain">Nochmal ansehen</button></div>
 </div>
 
 <div class="overlay" id="overlay" hidden><div class="card" id="overlayCard"></div></div>
